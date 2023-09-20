@@ -1,0 +1,25 @@
+			[RECOPILACIÓN DE DATOS MEMORIA]
+==============================================================================
+
+- Especificación requisitos:
+	* Ética/Legislación:
+        	+ Art. 32.1 Ley de propiedad Intelectual violado
+                	|> Existen licencias para poder emplear este tipo de 
+			   info
+
+- Flujo de desarrollo:
+	
+	* Metodología: 
+		+ Kanban(?)
+			|> Scrum quizás no tenga sentido ya que no se toma ventaja de
+		 	   la separación de responsabilidades en diferentes roles
+			|> Kanban es muy visual (Fácil de usar con plantilla trello)
+	
+	* Git workflow: 
+		+ Master en la fase inicial 
+	
+- Diseño:
+	* Arquitectura diseñada mediante diagramas C4 utilizando código
+	  PlantUML
+
+==============================================================================
