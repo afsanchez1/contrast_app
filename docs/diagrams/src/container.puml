@@ -1,0 +1,18 @@
+@startuml system_context
+!include <C4/C4_Container>
+
+Person(User, "User", "Application user")
+System_Boundary(SysBound, "Newspaper scraper System") {
+  Container(WebApp, "Single-Page Application", "JavaScript and React", "Provides all of the functionality for managing news content to customers via their web browser")
+  Container(Backend, "Scraper API", "Elixir","Provides newspaper scraping functionality, gathering data from various online newspapers")
+}
+System(NewsWebApp1, "Newspaper Web Application 1", "A newspapper web application")
+System(NewsWebApp2, "Newspaper Web Application N", "A newspapper web application")
+
+Rel(User, WebApp, "Searches topics and selects headlines from different newspapers to compare their contents", "HTTPS")
+Rel(WebApp, Backend, "Makes API calls to", "JSON/HTTPS")
+Rel(Backend, NewsWebApp1, "Scrapes data", "HTTPS")
+Rel(Backend, NewsWebApp2, "Scrapes data", "HTTPS")
+
+@enduml
+
