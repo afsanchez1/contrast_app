@@ -3,7 +3,10 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   use Tesla
   alias NewspaperScraper.Model.ArticleSummary, as: ArticleSummary
   alias NewspaperScraper.Model.Article, as: Article
+  alias NewspaperScraper.Model.Author, as: Author
+  alias NewspaperScraper.Model.Topic, as: Topic
 
+  @newspaper_name "El País"
   @el_pais_base_url "https://elpais.com"
   @el_pais_api "/pf/api/v3/content/fetch/enp-search-results"
 
@@ -27,56 +30,119 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
     url = Tesla.build_url(@el_pais_api, query: query)
 
-    Tesla.get(@client, url)
+    case Tesla.get(@client, url) do
+      {:ok, res} -> {:ok, res.body["articles"]}
+      {:error, err} -> {:error, err}
+    end
   end
 
   # -----------------------------------------------------------------------------------
 
   @impl Scraper
-  def parse_search_results({:ok, %Tesla.Env{body: %{"articles" => articles}}}) do
+  def parse_search_results({:error, err}), do: {:error, err}
+
+  @impl Scraper
+  def parse_search_results({:ok, articles}) do
     Enum.map(
       articles,
       fn article ->
-        date_time =
-          article["updatedTs"]
-          |> DateTime.from_unix(:second)
-          |> Tuple.to_list()
-          |> Enum.at(1)
-          |> DateTime.to_iso8601()
+        date_time = parse_search_date_time(article["updatedTs"])
+        authors = parse_search_authors(article["authors"])
+        is_premium = check_premium(article["url"])
 
         %ArticleSummary{
-          newspaper: "El País",
-          authors: article["authors"],
+          newspaper: @newspaper_name,
+          authors: authors,
           title: article["title"],
           excerpt: article["excerpt"],
           date_time: date_time,
-          url: article["url"]
+          url: article["url"],
+          is_premium: is_premium
         }
       end
     )
-    # TODO eliminar pretty
-    |> Jason.encode(pretty: true)
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  defp parse_search_date_time(date_time) do
+    DateTime.from_unix(date_time, :second)
+    |> Tuple.to_list()
+    |> Enum.at(1)
+    |> DateTime.to_iso8601()
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  defp parse_search_authors(authors) do
+    Enum.map(
+      authors,
+      fn author ->
+        %Author{
+          name: author["name"],
+          url: author["url"]
+        }
+      end
+    )
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  defp check_premium(url) do
+    {:ok, {html_doc, _art_url}} = get_article(url)
+
+    case parse_document(html_doc) do
+      {:ok, _} -> false
+      {:error, :forbbiden_content} -> true
+    end
   end
 
   # ===================================================================================
 
   @impl Scraper
-  def get_article(url), do: Tesla.get(@client, url)
+  def get_article(url) do
+    case Tesla.get(@client, url) do
+      {:ok, res} -> {:ok, {res.body, url}}
+      {:error, err} -> {:error, err}
+    end
+  end
 
   # -----------------------------------------------------------------------------------
 
   @impl Scraper
-  def parse_article({:ok, %Tesla.Env{body: html_doc, url: url}}) do
-    {:ok, html} = Floki.parse_document(html_doc)
+  def parse_article({:error, err}), do: {:error, err}
 
+  @impl Scraper
+  def parse_article({:ok, {html_doc, url}}) do
+    case parse_document(html_doc) do
+      {:ok, html} -> {:ok, html_to_article(html, url)}
+      {:error, err} -> {:error, err}
+    end
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  defp parse_document(html_doc) do
+    {:ok, html} = Floki.parse_document(html_doc)
+    premium_html = Floki.find(html, ".a_t_i-s")
+
+    case premium_html do
+      [] -> {:ok, html}
+      _other -> {:error, :forbbiden_content}
+    end
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  defp html_to_article(html, url) do
     temp_art =
       parse_header(%{}, html)
-      |> parse_authors(html)
+      |> parse_art_authors(html)
       |> parse_date_and_location(html)
       |> parse_body(html)
 
     %Article{
-      newspaper: "El País",
+      newspaper: @newspaper_name,
       topic: temp_art.topic,
       headline: temp_art.headline,
       subheadline: temp_art.subheadline,
@@ -86,8 +152,6 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
       body: temp_art.body,
       url: url
     }
-    # TODO delete pretty
-    |> Jason.encode(pretty: true)
   end
 
   # -----------------------------------------------------------------------------------
@@ -104,8 +168,10 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
     header_text = find_text(header_html)
 
     topic =
-      %{
-        name: Enum.at(header_text, 0),
+      %Topic{
+        name:
+          Enum.at(header_text, 0)
+          |> String.capitalize(),
         url:
           Floki.attribute(header_html, ".a_k_n", "href")
           |> Enum.at(0)
@@ -126,7 +192,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
-  defp parse_authors(parsed_art, html) do
+  defp parse_art_authors(parsed_art, html) do
     authors_html = Floki.find(html, ".a_md_a")
 
     authors_text = find_text(authors_html)
@@ -136,7 +202,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
       Enum.with_index(
         authors_text,
         fn author_text, index ->
-          %{
+          %Author{
             name: author_text,
             url: Enum.at(authors_urls, index)
           }
@@ -157,7 +223,6 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
       |> Enum.at(0)
       |> String.trim()
 
-    # TODO already an ISO 8601 date (check should be implemented)
     {:ok, date_time, offset} =
       Floki.attribute(date_and_location_html, "time", "datetime")
       |> Enum.at(0)
@@ -169,6 +234,8 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
     |> Map.put(:date_time, parsed_date_time)
   end
 
+  # -----------------------------------------------------------------------------------
+
   defp parse_body(parsed_art, html) do
     parsed_body =
       Floki.find(html, ".a_c")
@@ -179,9 +246,13 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
         {_others, _attrs, _children} -> nil
       end)
       |> Enum.join("")
+      |> String.split("\n")
+      |> Enum.filter(fn paragraph -> paragraph !== "" end)
 
     Map.put(parsed_art, :body, parsed_body)
   end
+
+  # -----------------------------------------------------------------------------------
 
   defp parse_paragraph(children) do
     Enum.concat(children, ["\n"])
@@ -191,21 +262,17 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # ===================================================================================
 
   def search_articles_test do
-    search_articles("ucrania", 1, 2)
+    search_articles("rubiales", 1, 10)
     |> parse_search_results()
-    |> Tuple.to_list()
-    |> Enum.at(1)
-    |> IO.puts()
   end
 
   def get_article_test do
     get_article(
       # "https://elpais.com/espana/madrid/2023-09-28/un-concejal-del-psoe-de-madrid-expulsado-del-pleno-por-darle-tres-toques-en-la-cara-a-almeida.html"
-      "https://elpais.com/internacional/2023-09-28/detenido-un-hombre-tras-dos-tiroteos-en-roterdam-que-causan-varios-muertos.html"
+      # "https://elpais.com/internacional/2023-09-28/detenido-un-hombre-tras-dos-tiroteos-en-roterdam-que-causan-varios-muertos.html"
+      "https://elpais.com/espana/catalunya/2023-09-28/erc-y-junts-pactan-condicionar-la-investidura-de-sanchez-a-que-haya-avances-hacia-el-referendum.html"
+      # "https://elpais.com/sociedad/2023-09-28/detenido-un-menor-por-agredir-con-arma-blanca-a-varios-docentes-y-alumnos-de-un-instituto-de-jerez-de-la-frontera.html"
     )
     |> parse_article()
-    |> Tuple.to_list()
-    |> Enum.at(1)
-    |> IO.puts()
   end
 end

@@ -5,7 +5,8 @@ defmodule NewspaperScraper.Model.ArticleSummary do
     :title,
     :excerpt,
     :date_time,
-    :url
+    :url,
+    :is_premium
   ]
   @derive {Jason.Encoder, only: @art_sum_keys}
   @enforce_keys @art_sum_keys
