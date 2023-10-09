@@ -1,12 +1,10 @@
 defmodule NewspaperScraper.Model.Article do
   @art_keys [
     :newspaper,
-    :topic,
     :headline,
     :subheadline,
     :authors,
-    :date_time,
-    :location,
+    :last_date_time,
     :body,
     :url
   ]

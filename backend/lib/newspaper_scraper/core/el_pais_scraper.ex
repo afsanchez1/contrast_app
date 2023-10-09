@@ -4,7 +4,6 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   alias NewspaperScraper.Model.ArticleSummary, as: ArticleSummary
   alias NewspaperScraper.Model.Article, as: Article
   alias NewspaperScraper.Model.Author, as: Author
-  alias NewspaperScraper.Model.Topic, as: Topic
 
   @newspaper_name "El País"
   @el_pais_base_url "https://elpais.com"
@@ -43,24 +42,31 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   @impl Scraper
   def parse_search_results({:ok, articles}) do
-    Enum.map(
-      articles,
-      fn article ->
-        date_time = parse_search_date_time(article["updatedTs"])
-        authors = parse_search_authors(article["authors"])
-        is_premium = check_premium(article["url"])
+    try do
+      parsed_arts =
+        Enum.map(
+          articles,
+          fn article ->
+            date_time = parse_search_date_time(article["updatedTs"])
+            authors = parse_search_authors(article["authors"])
+            is_premium = check_premium(article["url"])
 
-        %ArticleSummary{
-          newspaper: @newspaper_name,
-          authors: authors,
-          title: article["title"],
-          excerpt: article["excerpt"],
-          date_time: date_time,
-          url: article["url"],
-          is_premium: is_premium
-        }
-      end
-    )
+            %ArticleSummary{
+              newspaper: @newspaper_name,
+              authors: authors,
+              title: article["title"],
+              excerpt: article["excerpt"],
+              date_time: date_time,
+              url: article["url"],
+              is_premium: is_premium
+            }
+          end
+        )
+
+      {:ok, parsed_arts}
+    rescue
+      e -> {:error, e}
+    end
   end
 
   # -----------------------------------------------------------------------------------
@@ -89,13 +95,18 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # -----------------------------------------------------------------------------------
 
   defp check_premium(url) do
-    {:ok, {html_doc, _art_url}} = get_article(url)
+    get_article(url)
+    |> aux_check_premium()
+  end
 
+  defp aux_check_premium({:ok, {html_doc, _art_url}}) do
     case parse_document(html_doc) do
       {:ok, _} -> false
       {:error, :forbbiden_content} -> true
     end
   end
+
+  defp aux_check_premium({:error, err}), do: err
 
   # ===================================================================================
 
@@ -136,19 +147,17 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   defp html_to_article(html, url) do
     temp_art =
-      parse_header(%{}, html)
+      parse_art_header(%{}, html)
       |> parse_art_authors(html)
-      |> parse_date_and_location(html)
-      |> parse_body(html)
+      |> parse_art_date(html)
+      |> parse_art_body(html)
 
     %Article{
       newspaper: @newspaper_name,
-      topic: temp_art.topic,
       headline: temp_art.headline,
       subheadline: temp_art.subheadline,
       authors: temp_art.authors,
-      date_time: temp_art.date_time,
-      location: temp_art.location,
+      last_date_time: temp_art.date_time,
       body: temp_art.body,
       url: url
     }
@@ -156,38 +165,33 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
-  defp find_text(html) do
-    Floki.text(html, sep: "-")
-    |> String.split("-")
-  end
+  defp parse_art_header(parsed_art, html) do
+    header_html =
+      Floki.find(html, ".a_e_txt")
 
-  # -----------------------------------------------------------------------------------
+    parsed_header =
+      Floki.traverse_and_update(header_html, fn
+        {"div", _attrs, children} ->
+          children
 
-  defp parse_header(parsed_art, html) do
-    header_html = Floki.find(html, ".a_e_txt")
-    header_text = find_text(header_html)
+        {"h1", [{"class", "a_t"}], children} ->
+          {:headline,
+           children
+           |> Enum.at(0)
+           |> String.trim()}
 
-    topic =
-      %Topic{
-        name:
-          Enum.at(header_text, 0)
-          |> String.capitalize(),
-        url:
-          Floki.attribute(header_html, ".a_k_n", "href")
-          |> Enum.at(0)
-      }
+        {"h2", [{"class", "a_st"}], children} ->
+          {:subheadline,
+           children
+           |> Enum.at(0)
+           |> String.trim()}
 
-    headline =
-      Enum.at(header_text, 1)
-      |> String.trim()
+        _other ->
+          nil
+      end)
 
-    subheadline =
-      Enum.at(header_text, 2)
-      |> String.trim()
-
-    Map.put(parsed_art, :topic, topic)
-    |> Map.put(:headline, headline)
-    |> Map.put(:subheadline, subheadline)
+    Map.put(parsed_art, :headline, parsed_header[:headline])
+    |> Map.put(:subheadline, parsed_header[:subheadline])
   end
 
   # -----------------------------------------------------------------------------------
@@ -195,83 +199,126 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   defp parse_art_authors(parsed_art, html) do
     authors_html = Floki.find(html, ".a_md_a")
 
-    authors_text = find_text(authors_html)
-    authors_urls = Floki.attribute(html, ".a_md_a_n", "href")
+    parsed_authors =
+      Floki.traverse_and_update(authors_html, fn
+        {"div", _attrs, children} ->
+          children
 
-    authors =
-      Enum.with_index(
-        authors_text,
-        fn author_text, index ->
+        {"a", [{"href", url} | _], children} ->
           %Author{
-            name: author_text,
-            url: Enum.at(authors_urls, index)
+            name:
+              children
+              |> Enum.at(0),
+            url: url
           }
-        end
-      )
 
-    Map.put(parsed_art, :authors, authors)
-  end
-
-  # -----------------------------------------------------------------------------------
-
-  defp parse_date_and_location(parsed_art, html) do
-    date_and_location_html = Floki.find(html, ".a_md_f")
-    date_and_location_text = find_text(date_and_location_html)
-
-    location =
-      date_and_location_text
-      |> Enum.at(0)
-      |> String.trim()
-
-    {:ok, date_time, offset} =
-      Floki.attribute(date_and_location_html, "time", "datetime")
-      |> Enum.at(0)
-      |> DateTime.from_iso8601()
-
-    parsed_date_time = DateTime.to_iso8601(date_time, :extended, offset)
-
-    Map.put(parsed_art, :location, location)
-    |> Map.put(:date_time, parsed_date_time)
-  end
-
-  # -----------------------------------------------------------------------------------
-
-  defp parse_body(parsed_art, html) do
-    parsed_body =
-      Floki.find(html, ".a_c")
-      |> Floki.traverse_and_update(fn
-        {"div", _attrs, children} -> children
-        {"p", _attrs, children} -> parse_paragraph(children)
-        {"a", _attrs, children} -> children
-        {_others, _attrs, _children} -> nil
+        _other ->
+          nil
       end)
-      |> Enum.join("")
-      |> String.split("\n")
-      |> Enum.filter(fn paragraph -> paragraph !== "" end)
+
+    Map.put(parsed_art, :authors, parsed_authors)
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  defp parse_art_date(parsed_art, html) do
+    date_html = Floki.find(html, ".a_md_f")
+
+    parsed_date_time =
+      Floki.traverse_and_update(date_html, fn
+        {"div", _attrs, children} ->
+          children
+
+        {"span", _attrs, children} ->
+          children
+
+        {"time", attrs, _children} ->
+          {"data-date", d_t} =
+            Enum.find(attrs, fn
+              {"data-date", _} -> true
+              _other -> false
+            end)
+
+          {:ok, date_time, offset} = DateTime.from_iso8601(d_t)
+          {:date_time, DateTime.to_iso8601(date_time, :extended, offset)}
+
+        _other ->
+          nil
+      end)
+
+    {:date_time, p_d_t} =
+      Enum.find(parsed_date_time, fn
+        {:date_time, _} -> true
+        _other -> false
+      end)
+
+    Map.put(parsed_art, :date_time, p_d_t)
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  defp parse_art_body(parsed_art, html) do
+    body_html = Floki.find(html, ".a_c")
+
+    parsed_body =
+      Floki.traverse_and_update(body_html, fn
+        {"div", [{"id", "les"}], _} ->
+          nil
+
+        {"div", _attrs, children} ->
+          children
+
+        {"h3", _attrs, children} ->
+          {"h3", Enum.at(children, 0)}
+
+        {"p", _attrs, children} ->
+          {"p", parse_paragraph(children)}
+
+        {"a", _attrs, children} ->
+          children
+
+        _other ->
+          nil
+      end)
 
     Map.put(parsed_art, :body, parsed_body)
   end
 
   # -----------------------------------------------------------------------------------
 
-  defp parse_paragraph(children) do
-    Enum.concat(children, ["\n"])
-    |> Enum.join("")
+  defp parse_paragraph(p_html) do
+    parsed_paragraph =
+      Floki.traverse_and_update(p_html, fn
+        {"a", _attrs, [""]} ->
+          nil
+
+        {"a", _attrs, children} ->
+          Enum.at(children, 0)
+
+        "" ->
+          nil
+
+        p_text ->
+          p_text
+      end)
+      |> Enum.join("")
+
+    case parsed_paragraph do
+      "" -> nil
+      other -> other
+    end
   end
 
   # ===================================================================================
 
   def search_articles_test do
-    search_articles("rubiales", 1, 10)
+    search_articles("rubiales", 1, 3)
     |> parse_search_results()
   end
 
   def get_article_test do
     get_article(
-      # "https://elpais.com/espana/madrid/2023-09-28/un-concejal-del-psoe-de-madrid-expulsado-del-pleno-por-darle-tres-toques-en-la-cara-a-almeida.html"
-      # "https://elpais.com/internacional/2023-09-28/detenido-un-hombre-tras-dos-tiroteos-en-roterdam-que-causan-varios-muertos.html"
-      "https://elpais.com/espana/catalunya/2023-09-28/erc-y-junts-pactan-condicionar-la-investidura-de-sanchez-a-que-haya-avances-hacia-el-referendum.html"
-      # "https://elpais.com/sociedad/2023-09-28/detenido-un-menor-por-agredir-con-arma-blanca-a-varios-docentes-y-alumnos-de-un-instituto-de-jerez-de-la-frontera.html"
+      "https://elpais.com/espana/2023-10-09/canarias-recibe-a-425-inmigrantes-de-seis-cayucos-en-una-sola-noche.html"
     )
     |> parse_article()
   end
