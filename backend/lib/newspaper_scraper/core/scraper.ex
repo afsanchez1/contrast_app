@@ -15,7 +15,7 @@ defmodule Scraper do
   @doc """
   Parses the search results to a JSON
   """
-  @callback parse_search_results(res :: {:ok, list(struct())} | {:error, any()}) ::
+  @callback parse_search_results(articles :: list(struct())) ::
               {:ok, list(ArticleSummary)} | {:error, any()}
 
   @doc """
@@ -26,7 +26,7 @@ defmodule Scraper do
   @doc """
   Converts the article HTML to a JSON
   """
-  @callback parse_article(res :: {:ok, {html_doc(), url()}} | {:error, any()}) ::
+  @callback parse_article(article :: html_doc(), url :: url()) ::
               %Article{
                 newspaper: <<_::64>>,
                 headline: String.t(),

@@ -1,9 +1,9 @@
 defmodule NewspaperScraper.Core.ElPaisScraper do
   @behaviour Scraper
   use Tesla
-  alias NewspaperScraper.Model.ArticleSummary, as: ArticleSummary
-  alias NewspaperScraper.Model.Article, as: Article
-  alias NewspaperScraper.Model.Author, as: Author
+  alias NewspaperScraper.Model.ArticleSummary
+  alias NewspaperScraper.Model.Article
+  alias NewspaperScraper.Model.Author
 
   @newspaper_name "El País"
   @el_pais_base_url "https://elpais.com"
@@ -38,10 +38,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # -----------------------------------------------------------------------------------
 
   @impl Scraper
-  def parse_search_results({:error, err}), do: {:error, err}
-
-  @impl Scraper
-  def parse_search_results({:ok, articles}) do
+  def parse_search_results(articles) do
     try do
       parsed_arts =
         Enum.map(
@@ -95,18 +92,18 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # -----------------------------------------------------------------------------------
 
   defp check_premium(url) do
-    get_article(url)
-    |> aux_check_premium()
+    with {:ok, {html_doc, _art_url}} <- get_article(url),
+         {:ok, check} <- aux_check_premium(html_doc),
+         do: check,
+         else: (error -> error)
   end
 
-  defp aux_check_premium({:ok, {html_doc, _art_url}}) do
+  defp aux_check_premium(html_doc) do
     case parse_document(html_doc) do
-      {:ok, _} -> false
-      {:error, :forbbiden_content} -> true
+      {:ok, _} -> {:ok, false}
+      {:error, :forbbiden_content} -> {:ok, true}
     end
   end
-
-  defp aux_check_premium({:error, err}), do: err
 
   # ===================================================================================
 
@@ -121,10 +118,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # -----------------------------------------------------------------------------------
 
   @impl Scraper
-  def parse_article({:error, err}), do: {:error, err}
-
-  @impl Scraper
-  def parse_article({:ok, {html_doc, url}}) do
+  def parse_article(html_doc, url) do
     try do
       case parse_document(html_doc) do
         {:ok, html} -> {:ok, html_to_article(html, url)}
@@ -312,18 +306,4 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
       other -> {"p", other}
     end
   end
-
-  # ===================================================================================
-
- # def search_articles_test do
- #   search_articles("rubiales", 1, 3)
- #   |> parse_search_results()
- # end
-#
- # def get_article_test do
- #   get_article(
- #     "https://elpais.com/internacional/2023-10-10/guerra-entre-israel-y-gaza-en-directo.html"
- #   )
- #   |> parse_article()
- # end
 end
