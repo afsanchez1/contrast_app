@@ -271,5 +271,24 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
                )
                |> ElPaisScraper.parse_article()
     end
+
+    test "should fail parsing empty HTML" do
+      html = ""
+      url = "http://testurl.udc"
+
+      assert {:error, _} = ElPaisScraper.parse_article({:ok, {html, url}})
+    end
+
+    test "should fail parsing HTML without requested info" do
+      html = """
+      <!DOCTYPE html>
+      <html lang='es'>
+      </html>
+      """
+
+      url = "http://testurl.udc"
+
+      assert {:error, _} = ElPaisScraper.parse_article({:ok, {html, url}})
+    end
   end
 end

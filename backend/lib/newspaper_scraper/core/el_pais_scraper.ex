@@ -125,9 +125,13 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   @impl Scraper
   def parse_article({:ok, {html_doc, url}}) do
-    case parse_document(html_doc) do
-      {:ok, html} -> {:ok, html_to_article(html, url)}
-      {:error, err} -> {:error, err}
+    try do
+      case parse_document(html_doc) do
+        {:ok, html} -> {:ok, html_to_article(html, url)}
+        {:error, err} -> {:error, err}
+      end
+    rescue
+      e -> {:error, e}
     end
   end
 
@@ -272,7 +276,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
           {"h3", Enum.at(children, 0)}
 
         {"p", _attrs, children} ->
-          {"p", parse_paragraph(children)}
+          parse_paragraph(children)
 
         {"a", _attrs, children} ->
           children
@@ -305,21 +309,21 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
     case parsed_paragraph do
       "" -> nil
-      other -> other
+      other -> {"p", other}
     end
   end
 
   # ===================================================================================
 
-  def search_articles_test do
-    search_articles("rubiales", 1, 3)
-    |> parse_search_results()
-  end
-
-  def get_article_test do
-    get_article(
-      "https://elpais.com/espana/2023-10-09/canarias-recibe-a-425-inmigrantes-de-seis-cayucos-en-una-sola-noche.html"
-    )
-    |> parse_article()
-  end
+ # def search_articles_test do
+ #   search_articles("rubiales", 1, 3)
+ #   |> parse_search_results()
+ # end
+#
+ # def get_article_test do
+ #   get_article(
+ #     "https://elpais.com/internacional/2023-10-10/guerra-entre-israel-y-gaza-en-directo.html"
+ #   )
+ #   |> parse_article()
+ # end
 end
