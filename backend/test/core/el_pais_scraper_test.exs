@@ -12,6 +12,20 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
     {:ok, search_res: search_res}
   end
 
+  describe "scraper_check/1" do
+    test "url doesn't belong to scraper" do
+      url = "https://www.elmundo.es/internacional"
+      assert not ElPaisScraper.scraper_check(url)
+    end
+
+    test "url belongs to scraper" do
+      url =
+        "https://cincodias.elpais.com/cincodias/2023/09/08/legal/1694176476_943900.html?rel=buscador_noticias"
+
+      assert not ElPaisScraper.scraper_check(url)
+    end
+  end
+
   describe "ElPaisScraper.search_articles/3" do
     test "search is not empty", context do
       search_res = context[:search_res]

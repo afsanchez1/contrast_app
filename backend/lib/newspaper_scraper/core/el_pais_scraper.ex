@@ -6,7 +6,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   alias NewspaperScraper.Model.Author
 
   @newspaper_name "El País"
-  @el_pais_base_url "https://elpais.com"
+  @el_pais_base_url "elpais.com"
   @el_pais_api "/pf/api/v3/content/fetch/enp-search-results"
 
   @middleware [
@@ -18,6 +18,13 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # ===================================================================================
 
   @impl Scraper
+  def scraper_check(url) do
+    String.contains?(@el_pais_base_url, url)
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  @impl Scraper
   def search_articles(topic, page, limit) do
     query =
       """
@@ -27,7 +34,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
          \"language\":\"es\"}
       """
 
-    url = Tesla.build_url(@el_pais_api, query: query)
+    url = Tesla.build_url("https://#{@el_pais_base_url}#{@el_pais_api}", query: query)
 
     case Tesla.get(@client, url) do
       {:ok, res} -> {:ok, res.body["articles"]}
