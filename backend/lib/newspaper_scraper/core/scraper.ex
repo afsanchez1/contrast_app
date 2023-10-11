@@ -7,24 +7,29 @@ defmodule Scraper do
   @type html_doc :: String.t()
 
   @doc """
+  Checks if the url belongs to the scraper
+  """
+  @callback scraper_check(url :: url()) :: true | false
+
+  @doc """
   Searches articles based on a topic
   """
   @callback search_articles(topic :: String.t(), page :: integer(), limit :: integer()) ::
               {:ok, list(struct())} | {:error, any()}
 
   @doc """
-  Parses the search results to a JSON
+  Parses search results
   """
   @callback parse_search_results(articles :: list(struct())) ::
               {:ok, list(ArticleSummary)} | {:error, any()}
 
   @doc """
-  Gets the article HTML document
+  Gets the article HTML
   """
   @callback get_article(url :: url()) :: {:ok, {html_doc(), url()}} | {:error, any()}
 
   @doc """
-  Converts the article HTML to a JSON
+  Parses the article HTML
   """
   @callback parse_article(article :: html_doc(), url :: url()) ::
               %Article{
