@@ -53,7 +53,7 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
   describe "ElPaisScraper.parse_search_results/1" do
     test "parsing result has same size", context do
       search_result = context[:search_res]
-      {:ok, parsing_result} = ElPaisScraper.parse_search_results({:ok, search_result})
+      {:ok, parsing_result} = ElPaisScraper.parse_search_results(search_result)
 
       assert length(search_result) === length(parsing_result)
     end
@@ -87,7 +87,7 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
         }
       ]
 
-      {:ok, parsing_result} = ElPaisScraper.parse_search_results({:ok, search_result})
+      {:ok, parsing_result} = ElPaisScraper.parse_search_results(search_result)
       article_summary = Enum.at(parsing_result, 0)
 
       assert article_summary.newspaper === "El País"
@@ -130,7 +130,7 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
         }
       ]
 
-      assert {:error, _} = ElPaisScraper.parse_search_results({:ok, bad_formatted_result})
+      assert {:error, _} = ElPaisScraper.parse_search_results(bad_formatted_result)
     end
 
     test "premium check works" do
@@ -161,7 +161,7 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
         }
       ]
 
-      {:ok, parsing_result} = ElPaisScraper.parse_search_results({:ok, search_result})
+      {:ok, parsing_result} = ElPaisScraper.parse_search_results(search_result)
       premium_article = Enum.at(parsing_result, 0)
       non_premium_article = Enum.at(parsing_result, 1)
 
@@ -188,11 +188,14 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
 
   describe "ElPaisScraper.parse_article/1" do
     test "parses opinion article properly" do
-      {:ok, parsing_result} =
-        ElPaisScraper.get_article(
-          "https://elpais.com/opinion/2023-10-08/guerra-entre-hamas-e-israel.html"
-        )
-        |> ElPaisScraper.parse_article()
+      parsing_result =
+        with {:ok, {html_doc, url}} <-
+               ElPaisScraper.get_article(
+                 "https://elpais.com/opinion/2023-10-08/guerra-entre-hamas-e-israel.html"
+               ),
+             {:ok, parsing_result} <- ElPaisScraper.parse_article(html_doc, url),
+             do: parsing_result,
+             else: (error -> error)
 
       exptd_headline = "Hamás reta a Israel"
 
@@ -225,11 +228,14 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
     end
 
     test "parses article with headings properly" do
-      {:ok, parsing_result} =
-        ElPaisScraper.get_article(
-          "https://cincodias.elpais.com/cincodias/2023/09/08/legal/1694176476_943900.html?rel=buscador_noticias"
-        )
-        |> ElPaisScraper.parse_article()
+      parsing_result =
+        with {:ok, {html_doc, url}} <-
+               ElPaisScraper.get_article(
+                 "https://cincodias.elpais.com/cincodias/2023/09/08/legal/1694176476_943900.html?rel=buscador_noticias"
+               ),
+             {:ok, parsing_result} <- ElPaisScraper.parse_article(html_doc, url),
+             do: parsing_result,
+             else: (error -> error)
 
       exptd_headline = "Caso Rubiales: los entresijos del TAD"
 
@@ -266,17 +272,22 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
 
     test "should fail parsing premium article" do
       assert {:error, _err} =
-               ElPaisScraper.get_article(
-                 "https://elpais.com/internacional/2023-10-09/por-que-la-potente-israel-no-vio-venir-el-ataque-de-hamas.html"
+               with(
+                 {:ok, {html_doc, url}} <-
+                   ElPaisScraper.get_article(
+                     "https://elpais.com/internacional/2023-10-09/por-que-la-potente-israel-no-vio-venir-el-ataque-de-hamas.html"
+                   ),
+                 {:ok, parsing_result} <- ElPaisScraper.parse_article(html_doc, url),
+                 do: parsing_result,
+                 else: (error -> error)
                )
-               |> ElPaisScraper.parse_article()
     end
 
     test "should fail parsing empty HTML" do
       html = ""
       url = "http://testurl.udc"
 
-      assert {:error, _} = ElPaisScraper.parse_article({:ok, {html, url}})
+      assert {:error, _} = ElPaisScraper.parse_article(html, url)
     end
 
     test "should fail parsing HTML without requested info" do
@@ -288,7 +299,7 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
 
       url = "http://testurl.udc"
 
-      assert {:error, _} = ElPaisScraper.parse_article({:ok, {html, url}})
+      assert {:error, _} = ElPaisScraper.parse_article(html, url)
     end
   end
 end

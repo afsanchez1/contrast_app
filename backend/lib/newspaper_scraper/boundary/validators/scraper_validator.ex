@@ -11,15 +11,17 @@ defmodule NewspaperScraper.Boundary.ScraperValidator do
     |> mandatory(fields, :topic, &validate_topic/1)
     |> mandatory(fields, :page, &validate_page/1)
     |> mandatory(fields, :limit, &validate_limit/1)
+    |> has_errors()
   end
 
   def get_article_errors(fields) when is_map(fields) do
     []
     |> mandatory(fields, :url, &validate_url/1)
+    |> has_errors()
   end
 
   defp validate_topic(topic) when is_binary(topic) do
-    check(not String.match?(topic, ~r{^(?=\s*$)}), {:error, "topic is mandatory"})
+    check(not String.match?(topic, ~r{^(?=\s*$)}), {:error, "is mandatory"})
   end
 
   defp validate_topic(_topic), do: {:error, "must be a binary"}
