@@ -1,7 +1,7 @@
 defmodule NewspaperScraper.Core.ElPaisScraperTest do
   alias NewspaperScraper.Core.ElPaisScraper
   alias NewspaperScraper.Model.Author
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest ElPaisScraper
 
   @page 1
@@ -15,14 +15,14 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
   describe "scraper_check/1" do
     test "url doesn't belong to scraper" do
       url = "https://www.elmundo.es/internacional"
-      assert not ElPaisScraper.scraper_check(url)
+      assert {:error, "invalid url"} === ElPaisScraper.scraper_check(url)
     end
 
     test "url belongs to scraper" do
       url =
         "https://cincodias.elpais.com/cincodias/2023/09/08/legal/1694176476_943900.html?rel=buscador_noticias"
 
-      assert not ElPaisScraper.scraper_check(url)
+      assert :ok === ElPaisScraper.scraper_check(url)
     end
   end
 

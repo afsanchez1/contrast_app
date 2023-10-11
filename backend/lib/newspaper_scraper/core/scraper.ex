@@ -9,7 +9,7 @@ defmodule Scraper do
   @doc """
   Checks if the url belongs to the scraper
   """
-  @callback scraper_check(url :: url()) :: true | false
+  @callback scraper_check(url :: url()) :: :ok | {:error, any()}
 
   @doc """
   Searches articles based on a topic

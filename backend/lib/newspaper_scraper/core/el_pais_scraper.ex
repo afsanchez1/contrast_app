@@ -19,7 +19,10 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   @impl Scraper
   def scraper_check(url) do
-    String.contains?(@el_pais_base_url, url)
+    case String.contains?(url, @el_pais_base_url) do
+      true -> :ok
+      false -> {:error, "invalid url"}
+    end
   end
 
   # -----------------------------------------------------------------------------------
