@@ -1,16 +1,21 @@
 defmodule NewspaperScraper.Boundary.ScraperManager do
   require Logger
   use GenServer
+  alias NewspaperScraper.Core.ElPaisScraper
 
   @timeout 10_000
+  @scrapers [
+    ElPaisScraper
+  ]
 
   @impl true
   def init(scrapers) when is_list(scrapers) do
+    Logger.info("ScraperManager is ready")
     {:ok, scrapers}
   end
 
   @impl true
-  def init(_scrapers), do: {:error, "Scrapers must be a list"}
+  def init(_scrapers), do: {:error, "scrapers must be a list"}
 
   @impl true
   def handle_call({:search_articles, %{topic: topic, page: page, limit: limit}}, _from, scrapers) do
@@ -69,5 +74,9 @@ defmodule NewspaperScraper.Boundary.ScraperManager do
 
   def get_article(manager \\ __MODULE__, url) do
     GenServer.call(manager, {:get_article, %{url: url}}, @timeout)
+  end
+
+  def start_link(options \\ []) do
+    GenServer.start_link(__MODULE__, @scrapers, options)
   end
 end

@@ -1,6 +1,6 @@
 defmodule Boundary.Validators.ScraperValidatorTest do
   alias NewspaperScraper.Boundary.ScraperValidator
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   describe "search_articles_errors/1" do
     test "should fail when no fields are given" do
