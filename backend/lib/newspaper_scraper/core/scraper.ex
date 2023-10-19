@@ -1,7 +1,7 @@
 defmodule Scraper do
-  alias NewspaperScraper.Model.Author, as: Author
-  alias NewspaperScraper.Model.ArticleSummary, as: ArticleSummary
-  alias NewspaperScraper.Model.Article, as: Article
+  alias NewspaperScraper.Model.Author
+  alias NewspaperScraper.Model.ArticleSummary
+  alias NewspaperScraper.Model.Article
 
   @type url :: String.t()
   @type html_doc :: String.t()
@@ -38,7 +38,7 @@ defmodule Scraper do
                 subheadline: String.t(),
                 authors: list(Author),
                 last_date_time: String.t(),
-                body: list(String.t()),
+                body: list(String.t()), #TODO Actualizar esto
                 url: url()
               }
               | {:error, any()}

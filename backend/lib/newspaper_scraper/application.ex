@@ -3,6 +3,9 @@ defmodule NewspaperScraper.Application do
   # for more information on OTP Applications
   @moduledoc false
   alias NewspaperScraper.Boundary.ScraperManager
+  alias NewspaperScraper.Boundary.Managers.ScraperEventManager
+  alias NewspaperScraper.Boundary.Managers.ScraperRequestHandler
+  alias NewspaperScraper.Boundary.Managers.ScraperParsingHandler
   require Logger
 
   use Application
@@ -12,7 +15,10 @@ defmodule NewspaperScraper.Application do
     Logger.info("Starting Application...")
 
     children = [
-      {ScraperManager, [name: ScraperManager]}
+      {ScraperManager, [name: ScraperManager]},
+      {ScraperEventManager, []},
+      {ScraperRequestHandler, []},
+      {ScraperParsingHandler, []}
     ]
 
     opts = [strategy: :one_for_one, name: NewspaperScraper.Supervisor]
