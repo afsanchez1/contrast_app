@@ -1,13 +1,29 @@
 defmodule NewspaperScraper.Boundary.Managers.ScraperParsingHandlerSupervisor do
   alias NewspaperScraper.Boundary.Managers.ScraperParsingHandler
-  alias NewspaperScraper.Boundary.Managers.ScraperRequestHandler
+  alias NewspaperScraper.Utils.Managers.ScraperParsingHandlerSupervisorUtils
   use ConsumerSupervisor
+
+  require Logger
+
+  @max_demand 10
+  @min_demand 5
 
   def start_link(arg) do
     ConsumerSupervisor.start_link(__MODULE__, arg)
   end
 
-  def init(_arg) do
+  def init(arg) do
+    Logger.info("ScraperParsingHandlerSupervisor is ready")
+
+    subscription_names = arg[:subscription_names]
+
+    subscriptions =
+      ScraperParsingHandlerSupervisorUtils.build_subscriptions(
+        subscription_names,
+        @max_demand,
+        @min_demand
+      )
+
     children = [
       %{
         id: ScraperParsingHandler,
@@ -18,7 +34,7 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperParsingHandlerSupervisor do
 
     opts = [
       strategy: :one_for_one,
-      subscribe_to: [{ScraperRequestHandler, max_demand: 10, min_demand: 5}]
+      subscribe_to: subscriptions
     ]
 
     ConsumerSupervisor.init(children, opts)

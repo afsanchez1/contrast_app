@@ -1,40 +1,45 @@
 defmodule NewspaperScraper.Boundary.ScraperManager do
-  require Logger
-  use GenServer
+  alias NewspaperScraper.Utils.Managers.ScraperManagerUtils
   alias NewspaperScraper.Boundary.Managers.ScraperEventManager
-  alias NewspaperScraper.Boundary.Managers.ScraperRequestHandler
-  alias NewspaperScraper.Boundary.Managers.ScraperParsingHandlerSupervisor
+  use GenServer
 
-  @timeout 10_000
+  require Logger
+
+  @timeout 20_000
   def start_link(options \\ []) do
-    GenServer.start_link(__MODULE__, :ok, options)
+    GenServer.start_link(__MODULE__, options[:args], options)
   end
 
   def search_articles(manager \\ __MODULE__, topic, page, limit) do
-    GenServer.call(
-      manager,
-      {:search_articles, %{topic: topic, page: page, limit: limit}},
-      @timeout
-    )
+    req = %{
+      topic: topic,
+      page: page,
+      limit: limit
+    }
+
+    GenServer.call(manager, {:search_articles, req}, @timeout)
   end
 
   def get_article(manager \\ __MODULE__, url) do
-    GenServer.call(manager, {:get_article, %{url: url}}, @timeout)
+    req = %{
+      url: url
+    }
+
+    GenServer.call(manager, {:get_article, req}, @timeout)
   end
 
   # GenServer Callbacks
 
   @impl true
-  def init(:ok) do
+  def init(args) do
     Logger.info("ScraperManager is ready")
 
-    children = [
-      {ScraperEventManager, []},
-      {ScraperRequestHandler, []},
-      {ScraperParsingHandlerSupervisor, []}
-    ]
+    req_handlers = args[:req_handlers]
+
+    children = ScraperManagerUtils.build_children(req_handlers)
 
     Supervisor.start_link(children, strategy: :rest_for_one)
+
     {:ok, :ok}
   end
 

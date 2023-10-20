@@ -1,12 +1,12 @@
 defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
-  require Logger
   alias NewspaperScraper.Utils.Managers.StageUtils
   alias NewspaperScraper.Boundary.Managers.ScraperEventManager
   use GenStage
 
+  require Logger
 
-  def start_link(_args) do
-    GenStage.start_link(__MODULE__, :ok, name: __MODULE__)
+  def start_link(opts \\ []) do
+    GenStage.start_link(__MODULE__, :ok, opts)
   end
 
   def handle_requests({:search_articles, req: req, client: client}) do
@@ -41,7 +41,7 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
     {:parse_article, res: res, client: client}
   end
 
-  defp find_scraper(url, scrapers) do
+  def find_scraper(url, scrapers) do
     found = Enum.find(scrapers, fn scraper -> scraper.scraper_check(url) === :ok end)
 
     case found do
@@ -60,6 +60,7 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
 
   @impl true
   def handle_events(events, _from, state) do
+    IO.inspect(self())
     next_events = Enum.map(events, &handle_requests/1)
 
     {:noreply, next_events, state}

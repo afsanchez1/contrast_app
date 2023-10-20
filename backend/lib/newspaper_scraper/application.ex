@@ -15,7 +15,7 @@ defmodule NewspaperScraper.Application do
 
     children = [
       {Plug.Cowboy, scheme: :http, plug: ScraperRouter, options: [port: 8080]},
-      {ScraperManager, [name: ScraperManager]}
+      {ScraperManager, [name: ScraperManager, args: %{req_handlers: 4}]}
     ]
 
     opts = [strategy: :one_for_one, name: NewspaperScraper.Supervisor]

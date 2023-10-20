@@ -21,6 +21,8 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   @impl Scraper
   def get_scraper_name, do: @scraper_name
 
+  # -----------------------------------------------------------------------------------
+
   @impl Scraper
   def scraper_check(url) do
     case String.contains?(url, @el_pais_base_url) do
