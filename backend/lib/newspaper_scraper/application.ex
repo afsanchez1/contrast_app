@@ -12,6 +12,7 @@ defmodule NewspaperScraper.Application do
   @impl true
   def start(_type, _args) do
     Logger.info("Starting Application...")
+    Logger.info("Server running on: http://localhost:8080")
 
     children = [
       {Plug.Cowboy, scheme: :http, plug: ScraperRouter, options: [port: 8080]},

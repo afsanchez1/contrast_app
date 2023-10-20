@@ -60,7 +60,6 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
 
   @impl true
   def handle_events(events, _from, state) do
-    IO.inspect(self())
     next_events = Enum.map(events, &handle_requests/1)
 
     {:noreply, next_events, state}

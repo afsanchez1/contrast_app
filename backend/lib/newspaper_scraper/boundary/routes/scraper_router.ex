@@ -1,5 +1,7 @@
 defmodule NewspaperScraper.Boundary.Routes.ScraperRouter do
   alias NewspaperScraper.Boundary.ScraperManager
+  alias NewspaperScraper.Utils.Routes.RouterUtils
+
   use Plug.Router
 
   plug(Plug.Logger)
@@ -16,13 +18,17 @@ defmodule NewspaperScraper.Boundary.Routes.ScraperRouter do
 
   get "/search_articles" do
     conn_params = fetch_query_params(conn)
-    %{"topic" => topic, "page" => page, "limit" => limit} = conn_params.params
 
-    {:ok, res} =
-      ScraperManager.search_articles(topic, page, limit)
-      |> Jason.encode()
-
-    send_resp(conn, 200, res)
+    with %{"topic" => topic, "page" => page, "limit" => limit} <- conn_params.params,
+         parsed_art_summs when is_list(parsed_art_summs) <-
+           ScraperManager.search_articles(topic, page, limit),
+         {:ok, res} <- Jason.encode(parsed_art_summs) do
+      send_resp(conn, 200, res)
+    else
+      error ->
+        {:ok, error_res} = RouterUtils.transform_error(error) |> Jason.encode()
+        send_resp(conn, 400, error_res)
+    end
   end
 
   get "/get_article" do
