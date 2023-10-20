@@ -5,6 +5,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   alias NewspaperScraper.Model.Article
   alias NewspaperScraper.Model.Author
 
+  @scraper_name "el-pais"
   @newspaper_name "El País"
   @el_pais_base_url "elpais.com"
   @el_pais_api "/pf/api/v3/content/fetch/enp-search-results"
@@ -16,6 +17,9 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   @client Tesla.client(@middleware)
 
   # ===================================================================================
+
+  @impl Scraper
+  def get_scraper_name, do: @scraper_name
 
   @impl Scraper
   def scraper_check(url) do
@@ -277,7 +281,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
           children
 
         {"h3", _attrs, children} ->
-          {"h3", Enum.at(children, 0)}
+          %{h3: Enum.at(children, 0)}
 
         {"p", _attrs, children} ->
           parse_paragraph(children)
@@ -313,7 +317,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
     case parsed_paragraph do
       "" -> nil
-      other -> {"p", other}
+      other -> %{p: other}
     end
   end
 end

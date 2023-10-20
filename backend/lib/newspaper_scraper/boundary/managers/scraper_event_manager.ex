@@ -1,4 +1,5 @@
 defmodule NewspaperScraper.Boundary.Managers.ScraperEventManager do
+  require Logger
   alias NewspaperScraper.Utils.Managers.StageUtils
   use GenStage
 
@@ -14,6 +15,7 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperEventManager do
 
   @impl true
   def init(:ok) do
+    Logger.info("ScraperEventManager is ready")
     {:producer, {:queue.new(), 0}, dispatcher: GenStage.DemandDispatcher}
   end
 

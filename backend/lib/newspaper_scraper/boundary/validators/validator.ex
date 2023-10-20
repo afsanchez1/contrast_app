@@ -22,7 +22,7 @@ defmodule NewspaperScraper.Boundary.Validator do
   defp check_field(:ok, errors, _field_name), do: errors
 
   defp check_field({:error, message}, errors, field_name) do
-   errors ++ [{field_name, message}]
+    errors ++ [{field_name, message}]
   end
 
   def optional(errors, fields, field_name, validator) do

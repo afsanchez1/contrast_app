@@ -126,8 +126,8 @@ defmodule Boundary.Validators.ScraperValidatorTest do
 
     test "should work when url is correct" do
       url =
-         ScraperValidator.base_urls()
-         |> Enum.random()
+        ScraperValidator.base_urls()
+        |> Enum.random()
 
       fields = %{url: url}
 

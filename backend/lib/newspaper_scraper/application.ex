@@ -2,10 +2,9 @@ defmodule NewspaperScraper.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
+  alias NewspaperScraper.Boundary.Routes.ScraperRouter
   alias NewspaperScraper.Boundary.ScraperManager
-  alias NewspaperScraper.Boundary.Managers.ScraperEventManager
-  alias NewspaperScraper.Boundary.Managers.ScraperRequestHandler
-  alias NewspaperScraper.Boundary.Managers.ScraperParsingHandler
+
   require Logger
 
   use Application
@@ -15,10 +14,8 @@ defmodule NewspaperScraper.Application do
     Logger.info("Starting Application...")
 
     children = [
-      {ScraperManager, [name: ScraperManager]},
-      {ScraperEventManager, []},
-      {ScraperRequestHandler, []},
-      {ScraperParsingHandler, []}
+      {Plug.Cowboy, scheme: :http, plug: ScraperRouter, options: [port: 8080]},
+      {ScraperManager, [name: ScraperManager]}
     ]
 
     opts = [strategy: :one_for_one, name: NewspaperScraper.Supervisor]

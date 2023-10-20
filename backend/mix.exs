@@ -27,7 +27,8 @@ defmodule NewspaperScraper.MixProject do
       {:floki, "~> 0.34.3"},
       {:tesla, "~> 1.7"},
       {:jason, "~> 1.4.1"},
-      {:gen_stage, "~> 1.2"}
+      {:gen_stage, "~> 1.2"},
+      {:plug_cowboy, "~> 2.6"}
     ]
   end
 

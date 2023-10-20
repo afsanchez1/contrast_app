@@ -5,7 +5,12 @@ defmodule NewspaperScraper do
   def search_articles(request) do
     with :ok <- ScraperValidator.search_articles_errors(request),
          :ok <-
-           ScraperManager.search_articles(ScraperManager, request.topic, request.page, request.limit),
+           ScraperManager.search_articles(
+             ScraperManager,
+             request.topic,
+             request.page,
+             request.limit
+           ),
          do: :ok,
          else: (error -> error)
   end

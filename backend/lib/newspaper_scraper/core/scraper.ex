@@ -7,6 +7,11 @@ defmodule Scraper do
   @type html_doc :: String.t()
 
   @doc """
+  Returns the name of the scraper
+  """
+  @callback get_scraper_name() :: String.t()
+
+  @doc """
   Checks if the url belongs to the scraper
   """
   @callback scraper_check(url :: url()) :: :ok | {:error, any()}
@@ -38,7 +43,8 @@ defmodule Scraper do
                 subheadline: String.t(),
                 authors: list(Author),
                 last_date_time: String.t(),
-                body: list(String.t()), #TODO Actualizar esto
+                # TODO Actualizar esto
+                body: list(String.t()),
                 url: url()
               }
               | {:error, any()}

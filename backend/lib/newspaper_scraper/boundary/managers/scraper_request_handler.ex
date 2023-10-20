@@ -1,7 +1,9 @@
 defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
+  require Logger
   alias NewspaperScraper.Utils.Managers.StageUtils
   alias NewspaperScraper.Boundary.Managers.ScraperEventManager
   use GenStage
+
 
   def start_link(_args) do
     GenStage.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -52,7 +54,8 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
 
   @impl true
   def init(:ok) do
-    {:producer_consumer, :ok, subscribe_to: [ScraperEventManager]}
+    Logger.info("ScraperRequestHandler is ready")
+    {:producer_consumer, :ok, subscribe_to: [{ScraperEventManager, max_demand: 10, min_demand: 5}]}
   end
 
   @impl true
