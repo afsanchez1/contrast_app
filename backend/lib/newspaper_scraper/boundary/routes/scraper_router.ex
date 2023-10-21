@@ -1,6 +1,7 @@
 defmodule NewspaperScraper.Boundary.Routes.ScraperRouter do
-  alias NewspaperScraper.Boundary.ScraperManager
   alias NewspaperScraper.Utils.Routes.RouterUtils
+  alias NewspaperScraper.Utils.Routes.ScraperRouterUtils
+  alias NewspaperScraper.Boundary.ScraperAPI
 
   use Plug.Router
 
@@ -17,11 +18,13 @@ defmodule NewspaperScraper.Boundary.Routes.ScraperRouter do
   plug(:dispatch)
 
   get "/search_articles" do
-    conn_params = fetch_query_params(conn)
+    query_params =
+      fetch_query_params(conn).query_params
+      |> RouterUtils.transform_query_params()
+      |> ScraperRouterUtils.transform_search_articles_query_params()
 
-    with %{"topic" => topic, "page" => page, "limit" => limit} <- conn_params.params,
-         parsed_art_summs when is_list(parsed_art_summs) <-
-           ScraperManager.search_articles(topic, page, limit),
+    with parsed_art_summs when is_list(parsed_art_summs) <-
+           ScraperAPI.search_articles(query_params),
          {:ok, res} <- Jason.encode(parsed_art_summs) do
       send_resp(conn, 200, res)
     else
@@ -32,15 +35,18 @@ defmodule NewspaperScraper.Boundary.Routes.ScraperRouter do
   end
 
   get "/get_article" do
-    conn_params = fetch_query_params(conn)
-    %{"url" => url} = conn_params.params
+    query_params =
+      fetch_query_params(conn).query_params
+      |> RouterUtils.transform_query_params()
 
-    {:ok, res} =
-      ScraperManager.get_article(url)
-      |> dbg()
-      |> Jason.encode()
-
-    send_resp(conn, 200, res)
+    with {:ok, parsed_art} <- ScraperAPI.get_article(query_params),
+         {:ok, res} <- Jason.encode(parsed_art) do
+      send_resp(conn, 200, res)
+    else
+      error ->
+        {:ok, error_res} = RouterUtils.transform_error(error) |> Jason.encode()
+        send_resp(conn, 400, error_res)
+    end
   end
 
   match(_, do: send_resp(conn, 404, "Not Found"))

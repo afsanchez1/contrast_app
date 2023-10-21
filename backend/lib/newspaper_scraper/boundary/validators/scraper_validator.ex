@@ -24,7 +24,7 @@ defmodule NewspaperScraper.Boundary.ScraperValidator do
   end
 
   defp validate_topic(topic) when is_binary(topic) do
-    check(validate_strings(topic), {:error, "is mandatory"})
+    check(validate_strings(topic), {:error, "cannot be empty"})
   end
 
   defp validate_topic(_topic), do: {:error, "must be a binary"}
@@ -40,7 +40,7 @@ defmodule NewspaperScraper.Boundary.ScraperValidator do
   defp validate_limit(_limit), do: {:error, "must be an integer"}
 
   defp validate_url(url) when is_binary(url) do
-    with :ok <- check(validate_strings(url), {:error, "is mandatory"}),
+    with :ok <- check(validate_strings(url), {:error, "cannot be empty"}),
          :ok <- check(validate_newspaper_url(url), {:error, "must be a valid newspaper"}),
          do: :ok,
          else: (error -> error)

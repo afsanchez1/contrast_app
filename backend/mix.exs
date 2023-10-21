@@ -41,10 +41,14 @@ defmodule NewspaperScraper.MixProject do
   defp test_coverage do
     [
       ignore_modules: [
-        NewspaperScraper,
         NewspaperScraper.Application,
+        NewspaperScraper.Core.Scraper,
         NewspaperScraper.Model.Article,
-        NewspaperScraper.Model.ArticleSummary
+        NewspaperScraper.Model.ArticleSummary,
+        NewspaperScraper.Model.Author,
+        Jason.Encoder.NewspaperScraper.Model.Article,
+        Jason.Encoder.NewspaperScraper.Model.ArticleSummary,
+        Jason.Encoder.NewspaperScraper.Model.Author
       ]
     ]
   end

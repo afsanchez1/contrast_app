@@ -38,7 +38,7 @@ defmodule Boundary.Validators.ScraperValidatorTest do
     test "should fail when topic is empty" do
       empty_topic = %{topic: "", page: 1, limit: 2}
       blank_topic = %{topic: "     ", page: 1, limit: 2}
-      msg = "is mandatory"
+      msg = "cannot be empty"
 
       assert {:error, [topic: e_t_err]} =
                ScraperValidator.search_articles_errors(empty_topic)
@@ -102,7 +102,7 @@ defmodule Boundary.Validators.ScraperValidatorTest do
     test "should fail when url is empty" do
       empty_url = %{url: ""}
       blank_url = %{url: "     "}
-      msg = "is mandatory"
+      msg = "cannot be empty"
 
       assert {:error, [url: e_u_err]} =
                ScraperValidator.get_article_errors(empty_url)

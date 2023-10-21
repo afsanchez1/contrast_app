@@ -1,9 +1,11 @@
 defmodule NewspaperScraper.Core.ElPaisScraper do
-  @behaviour Scraper
-  use Tesla
+  alias NewspaperScraper.Core.Scraper
   alias NewspaperScraper.Model.ArticleSummary
   alias NewspaperScraper.Model.Article
   alias NewspaperScraper.Model.Author
+
+  @behaviour Scraper
+  use Tesla
 
   @scraper_name "el-pais"
   @newspaper_name "El País"

@@ -1,4 +1,4 @@
-defmodule Scraper do
+defmodule NewspaperScraper.Core.Scraper do
   alias NewspaperScraper.Model.Author
   alias NewspaperScraper.Model.ArticleSummary
   alias NewspaperScraper.Model.Article

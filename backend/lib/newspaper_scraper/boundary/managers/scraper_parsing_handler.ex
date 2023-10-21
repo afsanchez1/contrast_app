@@ -25,7 +25,7 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperParsingHandler do
     parsed_art =
       with {:ok, scraper: scraper, raw_art: raw_article, url: url} <- res,
            {:ok, parsed_art} <- scraper.parse_article(raw_article, url),
-           do: parsed_art,
+           do: {:ok, parsed_art},
            else: (error -> error)
 
     {:parsed_art, parsed: parsed_art, client: client}

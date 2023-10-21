@@ -55,7 +55,9 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
   @impl true
   def init(:ok) do
     Logger.info("ScraperRequestHandler is ready")
-    {:producer_consumer, :ok, subscribe_to: [{ScraperEventManager, max_demand: 10, min_demand: 5}]}
+
+    {:producer_consumer, :ok,
+     subscribe_to: [{ScraperEventManager, max_demand: 10, min_demand: 5}]}
   end
 
   @impl true

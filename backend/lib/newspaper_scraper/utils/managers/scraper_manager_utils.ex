@@ -25,6 +25,7 @@ defmodule NewspaperScraper.Utils.Managers.ScraperManagerUtils do
           Supervisor.child_spec({ScraperRequestHandler, name: name}, id: name)
         end
       )
+
     {children, names}
   end
 end
