@@ -7,7 +7,7 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperEventManager do
   end
 
   def push_event(event, timeout \\ 5000) do
-    GenStage.call(__MODULE__, {:notify, event}, timeout)
+    GenStage.call(__MODULE__, {:push, event}, timeout)
   end
 
   def dispatch_events(queue, 0, events) do
@@ -34,7 +34,7 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperEventManager do
   end
 
   @impl true
-  def handle_call({:notify, event}, from, {queue, pending_demand}) do
+  def handle_call({:push, event}, from, {queue, pending_demand}) do
     dispatch_events(:queue.in({from, event}, queue), pending_demand, [])
   end
 
