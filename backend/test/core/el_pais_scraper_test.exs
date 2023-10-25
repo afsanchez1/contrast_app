@@ -226,11 +226,11 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
       exptd_date_time = "2023-10-08T05:00:00+02:00"
 
       exptd_first_paragraph =
-        {"p",
+        %{p:
          "El tan temido enfrentamiento entre Israel y Hamás se desencadenó ayer cuando la organización palestina lanzó un ataque combinado sin precedentes contra el Estado judío que tuvo como primera respuesta un bombardeo israelí masivo de la Franja. La explosión de violencia amenaza con extenderse a otras zonas de la región —el primer balance provisional es el de centenares de muertos y heridos en ambos bandos, en su mayoría civiles— y las consecuencias políticas no pueden ser otras que la inestabilidad y el reforzamiento de las posiciones más radicales que consideran la paz no ya inalcanzable, sino una solución no deseada a un conflicto enquistado desde hace ya 56 años."}
 
       exptd_last_paragraph =
-        {"p",
+        %{p:
          "Es perentoria una mediación internacional efectiva que detenga el baño de sangre y su extensión a zonas como Cisjordania —ayer hubo choques en Jerusalén Este— y la frontera con Líbano que provocarían una situación fuera de control. Tanto Israel como Hamás tienen poderosos aliados sobre los que recae esta responsabilidad ineludible. Pero además resulta inaplazable abordar un conflicto al que el mundo se ha acostumbrado. Lo urgente es que los cañones callen, pero lo necesario es alcanzar una solución para que lo hagan para siempre."}
 
       assert exptd_headline === parsing_result.headline
@@ -266,14 +266,14 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
       exptd_date_time = "2023-09-11T10:35:41+02:00"
 
       exptd_first_paragraph =
-        {"p",
+        %{p:
          "El culebrón desatado tras la victoria de la selección femenina de fútbol en el Mundial por el caso Rubiales ha puesto en primera plana la labor del Tribunal Administrativo del Deporte (TAD), el organismo que resolverá el expediente abierto contra el expresidente de la RFEF (Real Federación Española de Fútbol). Los juristas que lo componen decidirán sobre la posible sanción a Luis Rubiales por el beso propinado a la jugadora Jenni Hermoso y por los actos indecorosos protagonizados tanto en el palco de autoridades como en la entrega de trofeos. En la noche del 10 de septiembre, el dirigente ha dimitido de todos sus cargos tras la formalización por la Fiscalía de una querella por agresión sexual y coacciones ante la Audiencia Nacional. Rubiales había sido apartado provisionalmente por la FIFA."}
 
       exptd_last_paragraph =
-        {"p",
+        %{p:
          "Como organizador del Mundial, explica Alberto Palomar, la FIFA tiene competencia para castigar la actuación del expresidente de los futbolistas españoles. La entidad suiza, agrega Rosalía Ortega, ha actuado en base a una “norma estrictamente privada, como es el artículo 51 del Código Disciplinario de la FIFA”. Y es que, asegura la abogada, la decisión privada de la FIFA “es completamente compatible con una sanción en España del TAD, basada en la vulneración de normativa pública española como es la Ley del Deporte” y podría terminar en el TAS (Tribunal de Arbitraje Deportivo de Lausana). Un camino que no podrá recorrer la futura resolución sobre Rubiales, por tratarse de cuestiones, explica Maite Nadal “vedadas actualmente al arbitraje."}
 
-      exptd_first_heading = {"h3", "Competencia"}
+      exptd_first_heading = %{h3: "Competencia"}
 
       assert exptd_headline === parsing_result.headline
       assert exptd_subheadline === parsing_result.subheadline

@@ -6,6 +6,7 @@ defmodule NewspaperScraper.Boundary.ScraperManager do
   require Logger
 
   @timeout 20_000
+
   def start_link(options \\ []) do
     GenServer.start_link(__MODULE__, options[:args], options)
   end
@@ -45,14 +46,14 @@ defmodule NewspaperScraper.Boundary.ScraperManager do
 
   @impl true
   def handle_call({:search_articles, req}, from, state) do
-    ScraperEventManager.sync_notify({:search_articles, req: req, client: from})
+    ScraperEventManager.push_event({:search_articles, req: req, client: from})
 
     {:noreply, state}
   end
 
   @impl true
   def handle_call({:get_article, req}, from, state) do
-    ScraperEventManager.sync_notify({:get_article, req: req, client: from})
+    ScraperEventManager.push_event({:get_article, req: req, client: from})
 
     {:noreply, state}
   end

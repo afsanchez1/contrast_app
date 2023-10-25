@@ -1,6 +1,7 @@
 defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
-  alias NewspaperScraper.Utils.Managers.StageUtils
   alias NewspaperScraper.Boundary.Managers.ScraperEventManager
+  alias NewspaperScraper.Core.ElPaisScraper
+
   use GenStage
 
   require Logger
@@ -9,11 +10,17 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
     GenStage.start_link(__MODULE__, :ok, opts)
   end
 
+  def get_scrapers() do
+    [
+      ElPaisScraper
+    ]
+  end
+
   def handle_requests({:search_articles, req: req, client: client}) do
     topic = req.topic
     page = req.page
     limit = req.limit
-    scrapers = StageUtils.get_scrapers()
+    scrapers = get_scrapers()
 
     res =
       Enum.map(
@@ -30,7 +37,7 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
 
   def handle_requests({:get_article, req: req, client: client}) do
     url = req.url
-    scrapers = StageUtils.get_scrapers()
+    scrapers = get_scrapers()
 
     res =
       with {:ok, scraper} <- find_scraper(url, scrapers),
