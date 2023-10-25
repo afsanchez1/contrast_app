@@ -143,7 +143,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
         {:error, err} -> {:error, err}
       end
     rescue
-      e -> {:error, e}
+      _e -> {:error, "parsing error"}
     end
   end
 
@@ -181,144 +181,202 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
+  defp find_element(_html, []) do
+    {:error, :not_found}
+  end
+
+  defp find_element(html, [selector | t]) do
+    case Floki.find(html, selector) do
+      [] -> find_element(html, t)
+      found -> found
+    end
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  defp transform_text_children(children) do
+    case children do
+      [] -> nil
+      [text] -> String.trim(text)
+      _other -> nil
+    end |> dbg()
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  defp transform_attributes(attrs), do: Map.new(attrs)
+
+  # -----------------------------------------------------------------------------------
+
   defp parse_art_header(parsed_art, html) do
-    header_html =
-      Floki.find(html, ".a_e_txt")
+    selectors = [".a_e_txt", ".articulo-titulares"]
 
-    parsed_header =
-      Floki.traverse_and_update(header_html, fn
-        {"div", _attrs, children} ->
-          children
+    case find_element(html, selectors) do
+      {:error, :not_found} ->
+        parsed_art
+        |> Map.put(:headline, %{error: "headline not found"})
+        |> Map.put(:subheadline, %{error: "subheadline not found"})
 
-        {"h1", [{"class", "a_t"}], children} ->
-          {:headline,
-           children
-           |> Enum.at(0)
-           |> String.trim()}
+      header_html ->
+        parsed_header =
+          Floki.traverse_and_update(header_html, fn
+            {"h1", _attrs, children} ->
+              {:headline, transform_text_children(children)}
 
-        {"h2", [{"class", "a_st"}], children} ->
-          {:subheadline,
-           children
-           |> Enum.at(0)
-           |> String.trim()}
+            {"h2", _attrs, children} ->
+              {:subheadline, transform_text_children(children)}
 
-        _other ->
-          nil
-      end)
+            {_other, _attrs, children} ->
+              children
 
-    Map.put(parsed_art, :headline, parsed_header[:headline])
-    |> Map.put(:subheadline, parsed_header[:subheadline])
+            _other ->
+              nil
+          end)
+
+        parsed_art
+        |> Map.put(:headline, parsed_header[:headline])
+        |> Map.put(:subheadline, parsed_header[:subheadline])
+    end
   end
 
   # -----------------------------------------------------------------------------------
 
   defp parse_art_authors(parsed_art, html) do
-    authors_html = Floki.find(html, ".a_md_a")
+    selectors = [".a_md_a", ".autor-texto"]
 
-    parsed_authors =
-      Floki.traverse_and_update(authors_html, fn
-        {"div", _attrs, children} ->
-          children
+    case find_element(html, selectors) do
+      {:error, :not_found} ->
+        Map.put(parsed_art, :authors, %{error: "authors not found"})
 
-        {"a", [{"href", url} | _], children} ->
-          %Author{
-            name:
+      authors_html ->
+        parsed_authors =
+          Floki.traverse_and_update(authors_html, fn
+            {"a", attrs, children} ->
+              transformed_attrs = transform_attributes(attrs)
+              url = transformed_attrs["href"]
+
+              %Author{
+                name: transform_text_children(children),
+                url: build_author_url(url)
+              }
+
+            {_other, _attrs, children} ->
               children
-              |> Enum.at(0),
-            url: url
-          }
 
-        _other ->
-          nil
-      end)
+            _other ->
+              nil
+          end)
 
-    Map.put(parsed_art, :authors, parsed_authors)
+        Map.put(parsed_art, :authors, parsed_authors)
+    end
+  end
+
+  defp build_author_url(url) do
+    case String.contains?(url, @el_pais_base_url) do
+      true -> url
+      false -> @el_pais_base_url <> url
+    end
   end
 
   # -----------------------------------------------------------------------------------
 
   defp parse_art_date(parsed_art, html) do
-    date_html = Floki.find(html, ".a_md_f")
+    selectors = [".a_md_f", ".articulo-datos"]
 
-    parsed_date_time =
-      Floki.traverse_and_update(date_html, fn
-        {"div", _attrs, children} ->
-          children
+    case find_element(html, selectors) do
+      {:error, :not_found} ->
+        Map.put(parsed_art, :date_time, %{error: "date_time not found"})
 
-        {"span", _attrs, children} ->
-          children
+      date_html ->
+        parsed_date_time =
+          Floki.traverse_and_update(date_html, fn
+            {"time", attrs, _children} ->
+              transformed_attrs = transform_attributes(attrs)
+              datetime = transformed_attrs["datetime"]
 
-        {"time", attrs, _children} ->
-          {"data-date", d_t} =
-            Enum.find(attrs, fn
-              {"data-date", _} -> true
-              _other -> false
-            end)
+              # Check HTML datetime attr is formatted as expected
+              with {:ok, date_time, offset} <- DateTime.from_iso8601(datetime) do
+                {:date_time, DateTime.to_iso8601(date_time, :extended, offset)}
+              else
+                _e -> {:date_time, %{error: "date_time format error"}}
+              end
 
-          {:ok, date_time, offset} = DateTime.from_iso8601(d_t)
-          {:date_time, DateTime.to_iso8601(date_time, :extended, offset)}
+            {_other, _attrs, children} ->
+              children
 
-        _other ->
-          nil
-      end)
+            _other ->
+              nil
+          end)
 
-    {:date_time, p_d_t} =
-      Enum.find(parsed_date_time, fn
-        {:date_time, _} -> true
-        _other -> false
-      end)
-
-    Map.put(parsed_art, :date_time, p_d_t)
+        Map.put(parsed_art, :date_time, parsed_date_time[:date_time])
+    end
   end
 
   # -----------------------------------------------------------------------------------
 
   defp parse_art_body(parsed_art, html) do
-    body_html = Floki.find(html, ".a_c")
+    selectors = [".a_c", ".articulo-cuerpo"]
 
-    parsed_body =
-      Floki.traverse_and_update(body_html, fn
-        {"div", [{"id", "les"}], _} ->
-          nil
+    case find_element(html, selectors) do
+      {:error, :not_found} ->
+        Map.put(parsed_art, :body, %{error: "body not found"})
 
-        {"div", _attrs, children} ->
-          children
+      body_html ->
+        parsed_body =
+          Floki.traverse_and_update(body_html, fn
+            {"div", _attrs, children} ->
+              children
 
-        {"h3", _attrs, children} ->
-          %{h3: Enum.at(children, 0)}
+            {"h3", _attrs, [children]} ->
+              %{h3: transform_text_children([children])}
 
-        {"p", _attrs, children} ->
-          parse_paragraph(children)
+            {"h3", _attrs, children} ->
+              text = Floki.text(children)
+              %{h3: transform_text_children([text])}
 
-        {"a", _attrs, children} ->
-          children
+            {"a", _attrs, children} ->
+              children
 
-        _other ->
-          nil
-      end)
+            {"i", _attrs, children} ->
+              children
 
-    Map.put(parsed_art, :body, parsed_body)
+            {"b", _attrs, children} ->
+              children
+
+            {"p", _attrs, children} ->
+              parse_paragraph(children)
+
+            {_other, _attrs, _children} ->
+              nil
+
+            _other ->
+              nil
+          end)
+
+        Map.put(parsed_art, :body, parsed_body)
+    end
+    |> dbg()
   end
 
   # -----------------------------------------------------------------------------------
 
   defp parse_paragraph(p_html) do
-    parsed_paragraph =
-      Floki.traverse_and_update(p_html, fn
-        {"a", _attrs, [""]} ->
-          nil
+    Floki.traverse_and_update(p_html, fn
+      {"a", _attrs, children} ->
+        transform_text_children(children)
 
-        {"a", _attrs, children} ->
-          Enum.at(children, 0)
+      {"i", _attrs, children} ->
+        transform_text_children(children)
 
-        "" ->
-          nil
+      p_text ->
+        transform_text_children([p_text])
+    end)
+    |> Enum.join("")
+    |> String.trim()
+    |> check_parsed_paragraph()
+  end
 
-        p_text ->
-          p_text
-      end)
-      |> Enum.join("")
-
+  defp check_parsed_paragraph(parsed_paragraph) do
     case parsed_paragraph do
       "" -> nil
       other -> %{p: other}
