@@ -196,10 +196,9 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   defp transform_text_children(children) do
     case children do
-      [] -> nil
-      [text] -> String.trim(text)
-      _other -> nil
-    end |> dbg()
+      "" -> nil
+      text -> String.trim(text)
+    end
   end
 
   # -----------------------------------------------------------------------------------
@@ -221,10 +220,10 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
         parsed_header =
           Floki.traverse_and_update(header_html, fn
             {"h1", _attrs, children} ->
-              {:headline, transform_text_children(children)}
+              {:headline, transform_text_children(Floki.text(children))}
 
             {"h2", _attrs, children} ->
-              {:subheadline, transform_text_children(children)}
+              {:subheadline, transform_text_children(Floki.text(children))}
 
             {_other, _attrs, children} ->
               children
@@ -251,17 +250,28 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
       authors_html ->
         parsed_authors =
           Floki.traverse_and_update(authors_html, fn
+            {"div", _attrs, children} ->
+              children
+
+            # When author has url
             {"a", attrs, children} ->
               transformed_attrs = transform_attributes(attrs)
               url = transformed_attrs["href"]
 
               %Author{
-                name: transform_text_children(children),
+                name: transform_text_children(Floki.text(children)),
                 url: build_author_url(url)
               }
 
-            {_other, _attrs, children} ->
+            {"span", [{"class", "autor-nombre"} | _r_attrs], children} ->
               children
+
+            # When author doesn't have url
+            {"span", _attrs, children} ->
+              %Author{
+                name: transform_text_children(Floki.text(children)),
+                url: nil
+              }
 
             _other ->
               nil
@@ -327,12 +337,11 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
             {"div", _attrs, children} ->
               children
 
-            {"h3", _attrs, [children]} ->
-              %{h3: transform_text_children([children])}
+            {"h2", _attrs, children} ->
+              %{h2: transform_text_children(Floki.text(children))}
 
             {"h3", _attrs, children} ->
-              text = Floki.text(children)
-              %{h3: transform_text_children([text])}
+              %{h3: transform_text_children(Floki.text(children))}
 
             {"a", _attrs, children} ->
               children
@@ -344,42 +353,33 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
               children
 
             {"p", _attrs, children} ->
-              parse_paragraph(children)
-
-            {_other, _attrs, _children} ->
-              nil
+              %{p: transform_text_children(Floki.text(children))}
 
             _other ->
               nil
           end)
+          |> filter_body_content()
 
         Map.put(parsed_art, :body, parsed_body)
     end
-    |> dbg()
   end
 
   # -----------------------------------------------------------------------------------
 
-  defp parse_paragraph(p_html) do
-    Floki.traverse_and_update(p_html, fn
-      {"a", _attrs, children} ->
-        transform_text_children(children)
+  defp filter_body_content(body) do
+    Enum.filter(body, fn
+      %{p: ""} ->
+        false
 
-      {"i", _attrs, children} ->
-        transform_text_children(children)
+      %{p: nil} ->
+        false
 
-      p_text ->
-        transform_text_children([p_text])
+      %{p: text} ->
+        not (String.contains?(text, "Sigue toda la información de Cinco Días") or
+               String.contains?(text, "apuntarte aquí para recibir nuestra newsletter semanal"))
+
+      _other ->
+        true
     end)
-    |> Enum.join("")
-    |> String.trim()
-    |> check_parsed_paragraph()
-  end
-
-  defp check_parsed_paragraph(parsed_paragraph) do
-    case parsed_paragraph do
-      "" -> nil
-      other -> %{p: other}
-    end
   end
 end

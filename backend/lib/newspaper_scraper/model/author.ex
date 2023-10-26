@@ -4,6 +4,6 @@ defmodule NewspaperScraper.Model.Author do
     :url
   ]
   @derive {Jason.Encoder, only: @author_keys}
-  @enforce_keys @author_keys
+  @enforce_keys [:name]
   defstruct @author_keys
 end

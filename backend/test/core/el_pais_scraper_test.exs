@@ -317,3 +317,5 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
     end
   end
 end
+
+# TODO caso de prueba de autor sin url
