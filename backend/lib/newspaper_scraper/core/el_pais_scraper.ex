@@ -64,7 +64,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
           fn article ->
             date_time = parse_search_date_time(article["updatedTs"])
             authors = parse_search_authors(article["authors"])
-            is_premium = check_premium(article["url"])
+            is_premium = search_check_premium(article["url"])
 
             %ArticleSummary{
               newspaper: @newspaper_name,
@@ -109,17 +109,24 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
-  defp check_premium(url) do
-    with {:ok, {html_doc, _art_url}} <- get_article(url),
-         {:ok, check} <- aux_check_premium(html_doc),
-         do: check,
-         else: (error -> error)
+  defp search_check_premium(url) do
+    with {:ok, {body, _url}} <- get_article(url),
+         {:ok, html} <- parse_document(body) do
+      check_premium(html)
+    else
+      # If we cannot determine if the article is premium, we assume it is (for security reasons)
+      _e -> true
+    end
   end
 
-  defp aux_check_premium(html_doc) do
-    case parse_document(html_doc) do
-      {:ok, _} -> {:ok, false}
-      {:error, :forbbiden_content} -> {:ok, true}
+  # -----------------------------------------------------------------------------------
+
+  defp check_premium(html) do
+    selectors = ["#ctn_freemium_article", "#ctn_premium_article"]
+
+    case find_element(html, selectors) do
+      {:error, :not_found} -> false
+      _other -> true
     end
   end
 
@@ -137,27 +144,17 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   @impl Scraper
   def parse_article(html_doc, url) do
-    try do
-      case parse_document(html_doc) do
-        {:ok, html} -> {:ok, html_to_article(html, url)}
-        {:error, err} -> {:error, err}
-      end
-    rescue
-      _e -> {:error, "parsing error"}
+    with {:ok, html} <- parse_document(html_doc),
+         false <- check_premium(html),
+         {:ok, parsed_html} <- html_to_article(html, url) do
+      {:ok, parsed_html}
+    else
+      {:error, e} -> {:error, e}
+      true -> {:error, "forbidden content"}
     end
   end
 
-  # -----------------------------------------------------------------------------------
-
-  defp parse_document(html_doc) do
-    {:ok, html} = Floki.parse_document(html_doc)
-    premium_html = Floki.find(html, ".a_t_i-s")
-
-    case premium_html do
-      [] -> {:ok, html}
-      _other -> {:error, :forbbiden_content}
-    end
-  end
+  defp parse_document(html_doc), do: Floki.parse_document(html_doc)
 
   # -----------------------------------------------------------------------------------
 
@@ -168,15 +165,23 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
       |> parse_art_date(html)
       |> parse_art_body(html)
 
-    %Article{
-      newspaper: @newspaper_name,
-      headline: temp_art.headline,
-      subheadline: temp_art.subheadline,
-      authors: temp_art.authors,
-      last_date_time: temp_art.date_time,
-      body: temp_art.body,
-      url: url
-    }
+    case temp_art.body do
+      # If the article body couldn't be parsed, it doesn't make sense to send the rest of the info
+      %{error: e} ->
+        {:error, e}
+
+      _other ->
+        {:ok,
+         %Article{
+           newspaper: @newspaper_name,
+           headline: temp_art.headline,
+           subheadline: temp_art.subheadline,
+           authors: temp_art.authors,
+           last_date_time: temp_art.date_time,
+           body: temp_art.body,
+           url: url
+         }}
+    end
   end
 
   # -----------------------------------------------------------------------------------
@@ -195,10 +200,9 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # -----------------------------------------------------------------------------------
 
   defp transform_text_children(children) do
-    case children do
-      "" -> nil
-      text -> String.trim(text)
-    end
+    children
+    |> Floki.text()
+    |> String.trim()
   end
 
   # -----------------------------------------------------------------------------------
@@ -220,10 +224,10 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
         parsed_header =
           Floki.traverse_and_update(header_html, fn
             {"h1", _attrs, children} ->
-              {:headline, transform_text_children(Floki.text(children))}
+              {:headline, transform_text_children(children)}
 
             {"h2", _attrs, children} ->
-              {:subheadline, transform_text_children(Floki.text(children))}
+              {:subheadline, transform_text_children(children)}
 
             {_other, _attrs, children} ->
               children
@@ -259,7 +263,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
               url = transformed_attrs["href"]
 
               %Author{
-                name: transform_text_children(Floki.text(children)),
+                name: transform_text_children(children),
                 url: build_author_url(url)
               }
 
@@ -269,7 +273,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
             # When author doesn't have url
             {"span", _attrs, children} ->
               %Author{
-                name: transform_text_children(Floki.text(children)),
+                name: transform_text_children(children),
                 url: nil
               }
 
@@ -284,7 +288,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   defp build_author_url(url) do
     case String.contains?(url, @el_pais_base_url) do
       true -> url
-      false -> @el_pais_base_url <> url
+      false -> "https://" <> @el_pais_base_url <> url
     end
   end
 
@@ -338,10 +342,10 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
               children
 
             {"h2", _attrs, children} ->
-              %{h2: transform_text_children(Floki.text(children))}
+              %{h2: transform_text_children(children)}
 
             {"h3", _attrs, children} ->
-              %{h3: transform_text_children(Floki.text(children))}
+              %{h3: transform_text_children(children)}
 
             {"a", _attrs, children} ->
               children
@@ -353,7 +357,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
               children
 
             {"p", _attrs, children} ->
-              %{p: transform_text_children(Floki.text(children))}
+              %{p: transform_text_children(children)}
 
             _other ->
               nil

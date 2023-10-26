@@ -259,7 +259,7 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
       exptd_authors = [
         %Author{
           name: "Patricia Esteban",
-          url: "https://cincodias.elpais.com/autor/patricia-esteban-baena/#?rel=author_top"
+          url: "https://elpais.com/autor/patricia_esteban_baena/a/"
         }
       ]
 
@@ -317,5 +317,3 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
     end
   end
 end
-
-# TODO caso de prueba de autor sin url
