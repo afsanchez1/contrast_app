@@ -29,12 +29,19 @@ defmodule NewspaperScraper.Boundary.ScraperValidator do
 
   defp validate_topic(_topic), do: {:error, "must be a binary"}
 
-  defp validate_page(page) when is_integer(page), do: :ok
+  defp validate_page(page) when is_integer(page) do
+    with :ok <- check(page >= 0, {:error, "page must be greater or equal than 0"}),
+         do: :ok,
+         else: (error -> error)
+  end
 
   defp validate_page(_page), do: {:error, "must be an integer"}
 
   defp validate_limit(limit) when is_integer(limit) do
-    check(limit <= @max_limit, {:error, "max. limit exceeded"})
+    with :ok <- check(limit <= @max_limit, {:error, "max. limit exceeded"}),
+         :ok <- check(limit > 0, {:error, "limit must be greater than 0"}),
+         do: :ok,
+         else: (error -> error)
   end
 
   defp validate_limit(_limit), do: {:error, "must be an integer"}

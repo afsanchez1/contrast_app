@@ -9,12 +9,12 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   @scraper_name "el-pais"
   @newspaper_name "El País"
-  @el_pais_base_url "elpais.com"
-  @el_pais_api "/pf/api/v3/content/fetch/enp-search-results"
+  @base_url Application.compile_env(:newspaper_scraper, :el_pais_base_url)
+  @api_url Application.compile_env(:newspaper_scraper, :el_pais_api_url)
 
   @middleware [
     Tesla.Middleware.JSON,
-    {Tesla.Middleware.BaseUrl, @el_pais_base_url}
+    {Tesla.Middleware.BaseUrl, @base_url}
   ]
   @client Tesla.client(@middleware)
 
@@ -27,7 +27,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   @impl Scraper
   def scraper_check(url) do
-    case String.contains?(url, @el_pais_base_url) do
+    case String.contains?(url, "elpais.com") do
       true -> :ok
       false -> {:error, "invalid url"}
     end
@@ -40,12 +40,12 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
     query =
       """
          {\"q\":\"#{topic}\",
-         \"page\":#{page},
+         \"page\":#{page + 1},
          \"limit\":#{limit},
          \"language\":\"es\"}
       """
 
-    url = Tesla.build_url("https://#{@el_pais_base_url}#{@el_pais_api}", query: query)
+    url = Tesla.build_url(@api_url, query: query)
 
     case Tesla.get(@client, url) do
       {:ok, res} -> {:ok, res.body["articles"]}
@@ -286,9 +286,9 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   end
 
   defp build_author_url(url) do
-    case String.contains?(url, @el_pais_base_url) do
+    case String.contains?(url, @base_url) do
       true -> url
-      false -> "https://" <> @el_pais_base_url <> url
+      false -> "https://" <> @base_url <> url
     end
   end
 

@@ -17,7 +17,7 @@ defmodule NewspaperScraper.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {NewspaperScraper.Application, []}
+      mod: {NewspaperScraper.Application, [env: Mix.env()]}
     ]
   end
 
@@ -34,7 +34,7 @@ defmodule NewspaperScraper.MixProject do
 
   defp aliases do
     [
-      test: "test --no-start --trace --cover"
+      test: "test --trace --cover"
     ]
   end
 
