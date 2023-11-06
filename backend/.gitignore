@@ -24,3 +24,6 @@ newspaper_scraper-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# HTMLs from resources
+/resources/el_pais/*.html

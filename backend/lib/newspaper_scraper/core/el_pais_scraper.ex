@@ -5,7 +5,6 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   alias NewspaperScraper.Model.Author
 
   @behaviour Scraper
-  use Tesla
 
   @scraper_name "el-pais"
   @newspaper_name "El País"
@@ -46,10 +45,18 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
       """
 
     url = Tesla.build_url(@api_url, query: query)
+    req = Tesla.get(@client, url)
 
-    case Tesla.get(@client, url) do
-      {:ok, res} -> {:ok, res.body["articles"]}
+    case req do
+      {:ok, res} -> handle_response(res)
       {:error, err} -> {:error, err}
+    end
+  end
+
+  defp handle_response(res) do
+    case res.status do
+      200 -> {:ok, res.body["articles"]}
+      _ -> {:error, res.body}
     end
   end
 
@@ -57,40 +64,41 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   @impl Scraper
   def parse_search_results(articles) do
-    try do
-      parsed_arts =
-        Enum.map(
-          articles,
-          fn article ->
-            date_time = parse_search_date_time(article["updatedTs"])
-            authors = parse_search_authors(article["authors"])
-            is_premium = search_check_premium(article["url"])
+    parsed_arts =
+      Enum.map(
+        articles,
+        fn article ->
+          date_time = parse_search_date_time(article["updatedTs"])
+          authors = parse_search_authors(article["authors"])
+          is_premium = search_check_premium(article["url"])
 
-            %ArticleSummary{
-              newspaper: @newspaper_name,
-              authors: authors,
-              title: article["title"],
-              excerpt: article["excerpt"],
-              date_time: date_time,
-              url: article["url"],
-              is_premium: is_premium
-            }
-          end
-        )
+          %ArticleSummary{
+            newspaper: @newspaper_name,
+            authors: authors,
+            title: article["title"],
+            excerpt: article["excerpt"],
+            date_time: date_time,
+            url: article["url"],
+            is_premium: is_premium
+          }
+        end
+      )
 
-      {:ok, parsed_arts}
-    rescue
-      e -> {:error, e}
+    case parsed_arts do
+      [] -> {:error, "no articles found to parse"}
+      [_ | _] -> {:ok, parsed_arts}
     end
   end
 
   # -----------------------------------------------------------------------------------
 
   defp parse_search_date_time(date_time) do
-    DateTime.from_unix(date_time, :second)
-    |> Tuple.to_list()
-    |> Enum.at(1)
-    |> DateTime.to_iso8601()
+    dt = DateTime.from_unix(date_time, :second)
+
+    case dt do
+      {:ok, datetime} -> DateTime.to_iso8601(datetime, :extended)
+      {:error, e} -> {:error, e}
+    end
   end
 
   # -----------------------------------------------------------------------------------
@@ -121,7 +129,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
-  defp check_premium(html) do
+  def check_premium(html) do
     selectors = ["#ctn_freemium_article", "#ctn_premium_article"]
 
     case find_element(html, selectors) do
@@ -207,7 +215,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
-  defp transform_attributes(attrs), do: Map.new(attrs)
+  def transform_attributes(attrs), do: Map.new(attrs)
 
   # -----------------------------------------------------------------------------------
 

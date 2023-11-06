@@ -1,0 +1,100 @@
+{
+  "search_articles": {
+    "valid_resp": {
+      "articles": [
+        {
+          "url": "http://localhost:8081/get_article?url=https://cincodias.elpais.com/cincodias/2023/10/30/gadgets/1698670440_830646.html",
+          "title": "Apple lanzará unos AirPods Max con puerto USB Tipo C, pero tardará en llegar",
+          "kicker": "GADGETS",
+          "kickerUrl": "https://cincodias.elpais.com/smartlife/gadgets/",
+          "authors": [
+            {
+              "name": "Alfonso De Frutos Sastre",
+              "url": "https://elpais.com/autor/alfonso-de-frutos-sastre/"
+            }
+          ],
+          "updatedTs": 1698670712,
+          "excerpt": "Un cambio muy lógico",
+          "photo": {
+            "uri": "https://imagenes.elpais.com/resizer/RlQmNoKuwvH-GjJKgDWyeB-wXK8=/414x311/d501.epimg.net/cincodias/imagenes/2023/10/30/gadgets/1698670440_830646_1698670638_miniatura_normal.jpg"
+          },
+          "infoFromArcio": {}
+        },
+        {
+          "url": "http://localhost:8081/get_article?url=https://cincodias.elpais.com/cincodias/2023/10/16/gadgets/1697458021_023854.html",
+          "title": "Se filtra el posible precio de las próximas gafas económicas de Apple",
+          "kicker": "GADGETS",
+          "kickerUrl": "https://cincodias.elpais.com/smartlife/gadgets/",
+          "authors": [
+            {
+              "name": "Alfonso De Frutos Sastre",
+              "url": "https://elpais.com/autor/alfonso-de-frutos-sastre/"
+            }
+          ],
+          "updatedTs": 1697459470,
+          "excerpt": "Costarán, como mínimo, 1000 dólares menos.",
+          "photo": {
+            "uri": "https://imagenes.elpais.com/resizer/RO4FhmMjPPUFDMRx-2ByiAR9H6c=/414x311/d501.epimg.net/cincodias/imagenes/2023/10/16/gadgets/1697458021_023854_1697458124_miniatura_normal.jpg"
+          },
+          "infoFromArcio": {}
+        },
+        {
+          "url": "http://localhost:8081/get_article?url=https://cincodias.elpais.com/cincodias/2023/10/09/gadgets/1696865525_377981.html",
+          "title": "Meta trabaja en sus propias Apple Vision Pro, y serán más económicas",
+          "kicker": "GADGETS",
+          "kickerUrl": "https://cincodias.elpais.com/smartlife/gadgets/",
+          "authors": [
+            {
+              "name": "Alfonso De Frutos Sastre",
+              "url": "https://elpais.com/autor/alfonso-de-frutos-sastre/"
+            }
+          ],
+          "updatedTs": 1696865666,
+          "excerpt": "Tampoco tendrán mandos de control",
+          "photo": {
+            "uri": "https://imagenes.elpais.com/resizer/tZmi0DOdWcMRgb9ecGA2w3JSfAw=/414x311/d501.epimg.net/cincodias/imagenes/2023/10/09/gadgets/1696865525_377981_1696865619_miniatura_normal.jpg"
+          },
+          "infoFromArcio": {}
+        }
+      ],
+      "numResults": 129,
+      "numResultsRel": "eq",
+      "numPages": 6,
+      "_id": "abba560913e458d4031a53acbaf95297c62f2aa94262245abfeb5443e577cf67"
+    },
+    "invalid_resps": {
+      "null_resp": null,
+      "bad_keys_resp": {
+        "articles": [
+          {
+            "bad_url": "http://localhost:8081/get_article?url=https://cincodias.elpais.com/cincodias/2023/10/09/gadgets/1696865525_377981.html",
+            "bad_title": "Meta trabaja en sus propias Apple Vision Pro, y serán más económicas",
+            "bad_authors": [
+              {
+                "name": "Alfonso De Frutos Sastre",
+                "url": "https://elpais.com/autor/alfonso-de-frutos-sastre/"
+              }
+            ],
+            "bad_updatedTs": 1696865666,
+            "bad_excerpt": "Tampoco tendrán mandos de control"
+          }
+        ]
+      },
+      "lost_field_resp": {
+        "articles": [
+          {
+            "url": "http://localhost:8081/get_article?url=https://cincodias.elpais.com/cincodias/2023/10/09/gadgets/1696865525_377981.html",
+            "authors": [
+              {
+                "name": "Alfonso De Frutos Sastre",
+                "url": "https://elpais.com/autor/alfonso-de-frutos-sastre/"
+              }
+            ],
+            "updatedTs": 1696865666,
+            "excerpt": "Tampoco tendrán mandos de control"
+          }
+        ]
+      }
+    } 
+  }
+}
