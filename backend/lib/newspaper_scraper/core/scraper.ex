@@ -5,6 +5,7 @@ defmodule NewspaperScraper.Core.Scraper do
 
   @type url :: String.t()
   @type html_doc :: String.t()
+  @type selector :: String.t()
 
   @doc """
   Returns the name of the scraper
@@ -15,6 +16,11 @@ defmodule NewspaperScraper.Core.Scraper do
   Checks if the url belongs to the scraper
   """
   @callback scraper_check(url :: url()) :: :ok | {:error, any()}
+
+  @doc """
+  Provides the selectors needed for a specific function
+  """
+  @callback get_selectors(env_function :: {fun(), arity()}) :: list(selector()) | nil
 
   @doc """
   Searches articles based on a topic

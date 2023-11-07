@@ -1,6 +1,7 @@
 defmodule NewspaperScraper.Client.ElPaisMockServer do
   alias NewspaperScraper.Core.ElPaisScraper
   alias NewspaperScraper.Utils.Test.TestUtils
+  alias NewspaperScraper.Utils.Core.ParsingUtils
   require Logger
   use Plug.Router
   use Agent
@@ -60,7 +61,7 @@ defmodule NewspaperScraper.Client.ElPaisMockServer do
 
     url = query_params["url"]
     file_name = String.split(url, "/") |> Enum.at(-1)
-    path = @resources_path <> "/" <> file_name
+    path = Enum.join([@resources_path, "/", file_name], "")
 
     case File.exists?(path) do
       true ->
@@ -109,16 +110,17 @@ defmodule NewspaperScraper.Client.ElPaisMockServer do
   # -----------------------------------------------------------------------------------
 
   defp filter_out_premium_content(html) do
-    ids = ["ctn_freemium_article", "ctn_premium_article"]
+    ids = ElPaisScraper.get_selectors({:check_premium, 0})
 
     Floki.traverse_and_update(html, fn
       {"div", attrs, children} ->
-        transformed_attrs = ElPaisScraper.transform_attributes(attrs)
+        transformed_attrs = ParsingUtils.transform_attributes(attrs)
         exists = Enum.member?(ids, transformed_attrs["id"])
 
-        case exists do
-          true -> {"div", attrs, []}
-          false -> {"div", attrs, children}
+        if exists do
+          {"div", attrs, []}
+        else
+          {"div", attrs, children}
         end
 
       other ->

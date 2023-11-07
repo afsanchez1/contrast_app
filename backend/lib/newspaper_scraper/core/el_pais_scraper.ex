@@ -1,5 +1,6 @@
 defmodule NewspaperScraper.Core.ElPaisScraper do
   alias NewspaperScraper.Core.Scraper
+  alias NewspaperScraper.Utils.Core.ParsingUtils
   alias NewspaperScraper.Model.ArticleSummary
   alias NewspaperScraper.Model.Article
   alias NewspaperScraper.Model.Author
@@ -30,6 +31,21 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
       true -> :ok
       false -> {:error, "invalid url"}
     end
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  @impl Scraper
+  def get_selectors({fun, _arity}) do
+    selectors = %{
+      check_premium: ["#ctn_freemium_article", "#ctn_premium_article"],
+      parse_art_header: [".a_e_txt", ".articulo-titulares"],
+      parse_art_authors: [".a_md_a", ".autor-texto"],
+      parse_art_date: [".a_md_f", ".articulo-datos"],
+      parse_art_body: [".a_c", ".articulo-cuerpo"]
+    }
+
+    selectors[fun]
   end
 
   # -----------------------------------------------------------------------------------
@@ -130,9 +146,9 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # -----------------------------------------------------------------------------------
 
   def check_premium(html) do
-    selectors = ["#ctn_freemium_article", "#ctn_premium_article"]
+    selectors = get_selectors(__ENV__.function)
 
-    case find_element(html, selectors) do
+    case ParsingUtils.find_element(html, selectors) do
       {:error, :not_found} -> false
       _other -> true
     end
@@ -168,7 +184,8 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   defp html_to_article(html, url) do
     temp_art =
-      parse_art_header(%{}, html)
+      %{}
+      |> parse_art_header(html)
       |> parse_art_authors(html)
       |> parse_art_date(html)
       |> parse_art_body(html)
@@ -194,35 +211,10 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
-  defp find_element(_html, []) do
-    {:error, :not_found}
-  end
-
-  defp find_element(html, [selector | t]) do
-    case Floki.find(html, selector) do
-      [] -> find_element(html, t)
-      found -> found
-    end
-  end
-
-  # -----------------------------------------------------------------------------------
-
-  defp transform_text_children(children) do
-    children
-    |> Floki.text()
-    |> String.trim()
-  end
-
-  # -----------------------------------------------------------------------------------
-
-  def transform_attributes(attrs), do: Map.new(attrs)
-
-  # -----------------------------------------------------------------------------------
-
   defp parse_art_header(parsed_art, html) do
-    selectors = [".a_e_txt", ".articulo-titulares"]
+    selectors = get_selectors(__ENV__.function)
 
-    case find_element(html, selectors) do
+    case ParsingUtils.find_element(html, selectors) do
       {:error, :not_found} ->
         parsed_art
         |> Map.put(:headline, %{error: "headline not found"})
@@ -232,10 +224,10 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
         parsed_header =
           Floki.traverse_and_update(header_html, fn
             {"h1", _attrs, children} ->
-              {:headline, transform_text_children(children)}
+              {:headline, ParsingUtils.transform_text_children(children)}
 
             {"h2", _attrs, children} ->
-              {:subheadline, transform_text_children(children)}
+              {:subheadline, ParsingUtils.transform_text_children(children)}
 
             {_other, _attrs, children} ->
               children
@@ -253,9 +245,9 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # -----------------------------------------------------------------------------------
 
   defp parse_art_authors(parsed_art, html) do
-    selectors = [".a_md_a", ".autor-texto"]
+    selectors = get_selectors(__ENV__.function)
 
-    case find_element(html, selectors) do
+    case ParsingUtils.find_element(html, selectors) do
       {:error, :not_found} ->
         Map.put(parsed_art, :authors, %{error: "authors not found"})
 
@@ -267,11 +259,11 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
             # When author has url
             {"a", attrs, children} ->
-              transformed_attrs = transform_attributes(attrs)
+              transformed_attrs = ParsingUtils.transform_attributes(attrs)
               url = transformed_attrs["href"]
 
               %Author{
-                name: transform_text_children(children),
+                name: ParsingUtils.transform_text_children(children),
                 url: build_author_url(url)
               }
 
@@ -281,7 +273,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
             # When author doesn't have url
             {"span", _attrs, children} ->
               %Author{
-                name: transform_text_children(children),
+                name: ParsingUtils.transform_text_children(children),
                 url: nil
               }
 
@@ -303,9 +295,9 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # -----------------------------------------------------------------------------------
 
   defp parse_art_date(parsed_art, html) do
-    selectors = [".a_md_f", ".articulo-datos"]
+    selectors = get_selectors(__ENV__.function)
 
-    case find_element(html, selectors) do
+    case ParsingUtils.find_element(html, selectors) do
       {:error, :not_found} ->
         Map.put(parsed_art, :date_time, %{error: "date_time not found"})
 
@@ -313,7 +305,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
         parsed_date_time =
           Floki.traverse_and_update(date_html, fn
             {"time", attrs, _children} ->
-              transformed_attrs = transform_attributes(attrs)
+              transformed_attrs = ParsingUtils.transform_attributes(attrs)
               datetime = transformed_attrs["datetime"]
 
               # Check HTML datetime attr is formatted as expected
@@ -337,9 +329,9 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # -----------------------------------------------------------------------------------
 
   defp parse_art_body(parsed_art, html) do
-    selectors = [".a_c", ".articulo-cuerpo"]
+    selectors = get_selectors(__ENV__.function)
 
-    case find_element(html, selectors) do
+    case ParsingUtils.find_element(html, selectors) do
       {:error, :not_found} ->
         Map.put(parsed_art, :body, %{error: "body not found"})
 
@@ -350,10 +342,10 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
               children
 
             {"h2", _attrs, children} ->
-              %{h2: transform_text_children(children)}
+              %{h2: ParsingUtils.transform_text_children(children)}
 
             {"h3", _attrs, children} ->
-              %{h3: transform_text_children(children)}
+              %{h3: ParsingUtils.transform_text_children(children)}
 
             {"a", _attrs, children} ->
               children
@@ -364,8 +356,11 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
             {"b", _attrs, children} ->
               children
 
+            {"strong", _attrs, children} ->
+              children
+
             {"p", _attrs, children} ->
-              %{p: transform_text_children(children)}
+              %{p: ParsingUtils.transform_text_children(children)}
 
             _other ->
               nil
