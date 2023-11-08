@@ -5,15 +5,15 @@ defmodule Boundary.Validators.ValidatorTest do
   describe "optional/4" do
     test "works as expected when optional fields are not present" do
       fields = %{}
-      validator = Validator.check(false, "test_msg")
+      validator = fn _ -> Validator.check(false, "test_msg") end
       validation = Validator.optional([], fields, :test_field, validator)
 
       assert [] === validation
     end
 
     test "works as expected when optional fields are present" do
-      fields = %{testfield: "hola"}
-      validator = Validator.check(is_binary(fields.testfield), "test_msg")
+      fields = %{test_field: "hola"}
+      validator = fn _ -> Validator.check(is_binary(fields.test_field), "test_msg") end
       validation = Validator.optional([], fields, :test_field, validator)
 
       assert [] === validation
@@ -22,7 +22,7 @@ defmodule Boundary.Validators.ValidatorTest do
 
     test "works as expected when optional fields are present but fail validation" do
       fields = %{test_field: "hola"}
-      validator = fn _ -> Validator.check(fields.testfield + 1, "test_msg") end
+      validator = fn _ -> Validator.check(fields.test_field + 1, "test_msg") end
       validation = Validator.optional([], fields, :test_field, validator)
 
       assert {:error, _} = validation
