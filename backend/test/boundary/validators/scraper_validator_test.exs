@@ -71,7 +71,7 @@ defmodule Boundary.Validators.ScraperValidatorTest do
       assert l_err === msg
     end
 
-    test "works when types and formats correct" do
+    test "works when types and format correct" do
       fields = %{topic: "any", page: 1, limit: ScraperValidator.max_limit()}
 
       assert :ok === ScraperValidator.search_articles_errors(fields)

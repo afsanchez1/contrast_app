@@ -8,6 +8,7 @@ defmodule NewspaperScraper.Boundary.Validator do
     try do
       fields
       |> Map.fetch!(field_name)
+      |> dbg()
       |> check_fun.()
       |> check_field(errors, field_name)
     rescue
