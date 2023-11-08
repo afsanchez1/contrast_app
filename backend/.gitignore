@@ -26,4 +26,4 @@ newspaper_scraper-*.tar
 /tmp/
 
 # HTMLs from resources
-/resources/el_pais/*.html
+/resources/test/el_pais/*.html
