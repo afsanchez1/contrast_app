@@ -4,7 +4,9 @@ defmodule NewspaperScraper.Utils.Routes.RouterUtils do
     Map.new([{:error, transformed_value}])
   end
 
-  def transform_error(error), do: Map.new([error])
+  def transform_error({:error, e}), do: Map.new([{:error, e}])
+
+  def transform_error(value) when is_map(value), do: value
 
   def transform_query_params(params) when params === %{}, do: %{}
 

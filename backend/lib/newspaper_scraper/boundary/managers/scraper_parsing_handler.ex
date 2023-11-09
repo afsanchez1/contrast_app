@@ -28,7 +28,7 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperParsingHandler do
         {:ok, scraper: scraper, raw_art: raw_article, url: url} ->
           with {:ok, parsed_art} <- scraper.parse_article(raw_article, url),
                do: {:ok, parsed_art},
-               else: (error -> StageUtils.build_error(scraper, error))
+               else: (error -> error)
 
         {:error, e} ->
           {:error, e}
@@ -38,9 +38,14 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperParsingHandler do
   end
 
   defp parse_search_results(res) do
-    with {:ok, scraper: scraper, raw_art_summs: raw_art_summs} <- res,
-         {:ok, parsed_art} <- scraper.parse_search_results(raw_art_summs),
-         do: %{scraper: scraper.get_scraper_name(), results: parsed_art},
-         else: (error -> error)
+    case res do
+      {:ok, scraper: scraper, raw_art_summs: raw_art_summs} ->
+        with {:ok, parsed_art} <- scraper.parse_search_results(raw_art_summs),
+             do: %{scraper: scraper.get_scraper_name(), results: parsed_art},
+             else: (error -> StageUtils.build_error(scraper, error))
+
+      {:error, e} ->
+        {:error, e}
+    end
   end
 end
