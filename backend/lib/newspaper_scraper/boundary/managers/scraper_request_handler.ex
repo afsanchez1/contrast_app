@@ -70,7 +70,15 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
 
   @impl true
   def handle_events(events, _from, state) do
-    next_events = Enum.map(events, &handle_requests/1)
+    tasks =
+      Enum.map(
+        events,
+        fn event ->
+          Task.async(fn -> handle_requests(event) end)
+        end
+      )
+
+    next_events = Task.await_many(tasks)
 
     {:noreply, next_events, state}
   end
