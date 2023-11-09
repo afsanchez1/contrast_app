@@ -14,7 +14,8 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   @middleware [
     Tesla.Middleware.JSON,
-    {Tesla.Middleware.BaseUrl, @base_url}
+    {Tesla.Middleware.BaseUrl, @base_url},
+    Tesla.Middleware.FollowRedirects
   ]
   @client Tesla.client(@middleware)
 
@@ -338,6 +339,10 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
       body_html ->
         parsed_body =
           Floki.traverse_and_update(body_html, fn
+            # Avoids picking more content than needed in live articles
+            {"div", [{"id", "les"}], _children} ->
+              nil
+
             {"div", _attrs, children} ->
               children
 
@@ -383,10 +388,12 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
       %{p: text} ->
         not (String.contains?(text, "Sigue toda la información de Cinco Días") or
-               String.contains?(text, "apuntarte aquí para recibir nuestra newsletter semanal"))
+               String.contains?(text, "nuestra newsletter semanal") or
+               String.contains?(text, "EL PAÍS") or
+               String.contains?(text, "Publicaciones nuevas"))
 
-      _other ->
-        true
+      text ->
+        not is_binary(text)
     end)
   end
 end
