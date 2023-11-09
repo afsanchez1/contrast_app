@@ -1,6 +1,5 @@
 defmodule NewspaperScraper.Boundary.Managers.ScraperParsingHandlerSupervisor do
   alias NewspaperScraper.Boundary.Managers.ScraperParsingHandler
-  alias NewspaperScraper.Utils.Managers.ScraperParsingHandlerSupervisorUtils
   use ConsumerSupervisor
 
   require Logger
@@ -18,7 +17,7 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperParsingHandlerSupervisor do
     subscription_names = arg[:subscription_names]
 
     subscriptions =
-      ScraperParsingHandlerSupervisorUtils.build_subscriptions(
+      build_subscriptions(
         subscription_names,
         @max_demand,
         @min_demand
@@ -38,5 +37,14 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperParsingHandlerSupervisor do
     ]
 
     ConsumerSupervisor.init(children, opts)
+  end
+
+  defp build_subscriptions(subscription_names, max_demand, min_demand) do
+    Enum.map(
+      subscription_names,
+      fn subscription_name ->
+        {subscription_name, max_demand: max_demand, min_demand: min_demand}
+      end
+    )
   end
 end

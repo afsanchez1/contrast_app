@@ -1,5 +1,6 @@
 defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
   alias NewspaperScraper.Boundary.Managers.ScraperEventManager
+  alias NewspaperScraper.Utils.Managers.StageUtils
   alias NewspaperScraper.Core.ElPaisScraper
 
   use GenStage
@@ -28,7 +29,7 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
         fn scraper ->
           with {:ok, raw_art_summs} <- scraper.search_articles(topic, page, limit),
                do: {:ok, scraper: scraper, raw_art_summs: raw_art_summs},
-               else: (error -> error)
+               else: (error -> StageUtils.build_error(scraper, error))
         end
       )
 

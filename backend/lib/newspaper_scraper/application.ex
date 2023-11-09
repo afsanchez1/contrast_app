@@ -29,7 +29,7 @@ defmodule NewspaperScraper.Application do
 
           [
             {Plug.Cowboy, scheme: :http, plug: ScraperRouter, options: [port: 8080]},
-            {ScraperManager, [name: ScraperManager, args: %{req_handlers: 4}]}
+            {ScraperManager, [name: ScraperManager, args: [num_req_handlers: 4]]}
           ]
 
         [_] ->

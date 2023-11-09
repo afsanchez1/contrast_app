@@ -1,4 +1,5 @@
 defmodule NewspaperScraper.Boundary.Managers.ScraperParsingHandler do
+  alias NewspaperScraper.Utils.Managers.StageUtils
   require Logger
 
   def start_link(event) do
@@ -23,10 +24,15 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperParsingHandler do
 
   def parse_responses({:parse_article, res: res, client: client}) do
     parsed_art =
-      with {:ok, scraper: scraper, raw_art: raw_article, url: url} <- res,
-           {:ok, parsed_art} <- scraper.parse_article(raw_article, url),
-           do: {:ok, parsed_art},
-           else: (error -> error)
+      case res do
+        {:ok, scraper: scraper, raw_art: raw_article, url: url} ->
+          with {:ok, parsed_art} <- scraper.parse_article(raw_article, url),
+               do: {:ok, parsed_art},
+               else: (error -> StageUtils.build_error(scraper, error))
+
+        {:error, e} ->
+          {:error, e}
+      end
 
     {:parsed_art, parsed: parsed_art, client: client}
   end

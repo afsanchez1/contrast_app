@@ -48,7 +48,7 @@ defmodule NewspaperScraper.Client.ElPaisMockServer do
     case topic do
       "API_not_found" -> send_resp(conn, 404, "not found")
       "API_server_error" -> send_resp(conn, 500, "internal server error")
-      "null_resp" -> handle_resp(:json, conn, resources.search_articles.invalid_resps.null_resp)
+      "empty_resp" -> handle_resp(:json, conn, resources.search_articles.invalid_resps.empty_resp)
       _ -> handle_resp(:json, conn, resources.search_articles.valid_resp)
     end
   end

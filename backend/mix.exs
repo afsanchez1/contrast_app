@@ -42,6 +42,7 @@ defmodule NewspaperScraper.MixProject do
     [
       ignore_modules: [
         NewspaperScraper.Application,
+        NewspaperScraper.Client.ElPaisMockServer,
         NewspaperScraper.Core.Scraper,
         NewspaperScraper.Model.Article,
         NewspaperScraper.Model.ArticleSummary,
