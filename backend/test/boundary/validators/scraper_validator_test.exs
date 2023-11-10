@@ -2,6 +2,8 @@ defmodule Boundary.Validators.ScraperValidatorTest do
   alias NewspaperScraper.Boundary.ScraperValidator
   use ExUnit.Case, async: true
 
+  # ===================================================================================
+
   describe "search_articles_errors/1" do
     test "should fail when no fields are given" do
       fields = %{}
@@ -15,6 +17,8 @@ defmodule Boundary.Validators.ScraperValidatorTest do
       assert l_err === msg
     end
 
+    # ---------------------------------------------------------------------------------
+
     test "should fail when one field is not given" do
       fields = %{page: 1, limit: 2}
       msg = "is mandatory"
@@ -25,6 +29,8 @@ defmodule Boundary.Validators.ScraperValidatorTest do
       assert t_err === msg
     end
 
+    # ---------------------------------------------------------------------------------
+
     test "should fail when topic type incorrect" do
       fields = %{topic: 2, page: 1, limit: 2}
       msg = "must be a binary"
@@ -34,6 +40,8 @@ defmodule Boundary.Validators.ScraperValidatorTest do
 
       assert t_err === msg
     end
+
+    # ---------------------------------------------------------------------------------
 
     test "should fail when topic is empty" do
       empty_topic = %{topic: "", page: 1, limit: 2}
@@ -50,6 +58,8 @@ defmodule Boundary.Validators.ScraperValidatorTest do
       assert b_t_err === msg
     end
 
+    # ---------------------------------------------------------------------------------
+
     test "should fail when page and limit types incorrect" do
       fields = %{topic: "any", page: "hello", limit: [:world]}
       msg = "must be an integer"
@@ -61,6 +71,8 @@ defmodule Boundary.Validators.ScraperValidatorTest do
       assert l_err === msg
     end
 
+    # ---------------------------------------------------------------------------------
+
     test "should fail when max. limit is exceeded" do
       fields = %{topic: "any", page: 1, limit: ScraperValidator.max_limit() + 1}
       msg = "max. limit exceeded"
@@ -71,12 +83,28 @@ defmodule Boundary.Validators.ScraperValidatorTest do
       assert l_err === msg
     end
 
+    # ---------------------------------------------------------------------------------
+
+    test "should fail when page is negative" do
+      fields = %{topic: "any", page: -1, limit: 2}
+      msg = "page must be greater or equal than 0"
+
+      assert {:error, [page: p_err]} =
+               ScraperValidator.search_articles_errors(fields)
+
+      assert p_err === msg
+    end
+
+    # ---------------------------------------------------------------------------------
+
     test "works when types and format correct" do
       fields = %{topic: "any", page: 1, limit: ScraperValidator.max_limit()}
 
       assert :ok === ScraperValidator.search_articles_errors(fields)
     end
   end
+
+  # ===================================================================================
 
   describe "get_article_errors/1" do
     test "should fail when no fields are given" do
@@ -89,6 +117,8 @@ defmodule Boundary.Validators.ScraperValidatorTest do
       assert u_err === msg
     end
 
+    # ---------------------------------------------------------------------------------
+
     test "should fail when url type incorrect" do
       fields = %{url: [:hello, :world]}
       msg = "must be a binary"
@@ -98,6 +128,8 @@ defmodule Boundary.Validators.ScraperValidatorTest do
 
       assert u_err === msg
     end
+
+    # ---------------------------------------------------------------------------------
 
     test "should fail when url is empty" do
       empty_url = %{url: ""}
@@ -114,6 +146,8 @@ defmodule Boundary.Validators.ScraperValidatorTest do
       assert b_u_err === msg
     end
 
+    # ---------------------------------------------------------------------------------
+
     test "should fail when url is invalid" do
       fields = %{url: "https://udc.es"}
       msg = "must be a valid newspaper"
@@ -123,6 +157,8 @@ defmodule Boundary.Validators.ScraperValidatorTest do
 
       assert u_err === msg
     end
+
+    # ---------------------------------------------------------------------------------
 
     test "should work when url is correct" do
       url =

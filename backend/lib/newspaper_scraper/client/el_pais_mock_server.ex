@@ -60,18 +60,25 @@ defmodule NewspaperScraper.Client.ElPaisMockServer do
       fetch_query_params(conn).query_params
 
     url = query_params["url"]
-    file_name = String.split(url, "/") |> Enum.at(-1)
-    path = Enum.join([@resources_path, "/", file_name], "")
 
-    case File.exists?(path) do
-      true ->
-        handle_resp(:html, conn, path)
+    case url do
+      "elpais.com/failed_html" ->
+        handle_resp(:json, conn, "failed")
 
-      false ->
-        html = get_and_convert_article(url)
-        File.touch!(path)
-        File.write!(path, html)
-        handle_resp(:html, conn, path)
+      _ ->
+        file_name = String.split(url, "/") |> Enum.at(-1)
+        path = Enum.join([@resources_path, "/", file_name], "")
+
+        case File.exists?(path) do
+          true ->
+            handle_resp(:html, conn, path)
+
+          false ->
+            html = get_and_convert_article(url)
+            File.touch!(path)
+            File.write!(path, html)
+            handle_resp(:html, conn, path)
+        end
     end
   end
 

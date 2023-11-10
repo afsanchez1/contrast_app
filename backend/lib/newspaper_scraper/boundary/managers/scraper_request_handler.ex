@@ -10,7 +10,7 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
   @max_demand 10
   @min_demand 5
 
-  def start_link(opts \\ []) do
+  def start_link(opts) do
     GenStage.start_link(__MODULE__, :ok, opts)
   end
 

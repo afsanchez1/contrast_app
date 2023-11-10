@@ -33,6 +33,13 @@ defmodule NewspaperScraper.Boundary.Routes.ScraperRouter do
     end
   end
 
+  # ---------------------------------------------------------------------------------
+
+  defp handle_error(conn, error) do
+    {:ok, error_res} = RouterUtils.transform_error(error) |> Jason.encode()
+    send_resp(conn, 400, error_res)
+  end
+
   # ===================================================================================
   # Scraper routes
   # ===================================================================================
@@ -50,12 +57,7 @@ defmodule NewspaperScraper.Boundary.Routes.ScraperRouter do
       send_resp(conn, 200, res)
     else
       error ->
-        transformed_error = RouterUtils.transform_error(error)
-
-        case Jason.encode(transformed_error) do
-          {:ok, parsed_res} -> send_resp(conn, 400, parsed_res)
-          {:error, _} -> send_resp(conn, 500, "internal server error")
-        end
+        handle_error(conn, error)
     end
   end
 
@@ -71,8 +73,7 @@ defmodule NewspaperScraper.Boundary.Routes.ScraperRouter do
       send_resp(conn, 200, res)
     else
       error ->
-        {:ok, error_res} = RouterUtils.transform_error(error) |> Jason.encode()
-        send_resp(conn, 400, error_res)
+        handle_error(conn, error)
     end
   end
 

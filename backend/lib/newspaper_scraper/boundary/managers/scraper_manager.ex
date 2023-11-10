@@ -10,7 +10,7 @@ defmodule NewspaperScraper.Boundary.ScraperManager do
 
   # ===================================================================================
 
-  def start_link(options \\ []) do
+  def start_link(options) do
     GenServer.start_link(__MODULE__, options[:args], options)
   end
 
@@ -78,12 +78,7 @@ defmodule NewspaperScraper.Boundary.ScraperManager do
 
     try do
       children = build_children(num_req_handlers)
-      sup = Supervisor.start_link(children, strategy: :rest_for_one)
-
-      case sup do
-        {:ok, pid} -> {:ok, pid}
-        {:error, e} -> {:stop, e}
-      end
+      Supervisor.start_link(children, strategy: :rest_for_one)
     rescue
       e -> {:stop, e.message}
     end

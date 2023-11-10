@@ -40,6 +40,7 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
   end
 
   # ===================================================================================
+
   describe "get_selectors/1" do
     test "returns selectors properly when function exists" do
       functions = [

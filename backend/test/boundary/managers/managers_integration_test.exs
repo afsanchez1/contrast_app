@@ -5,7 +5,7 @@ defmodule Boundary.Managers.ManagersIntegrationTest do
   import ExUnit.CaptureLog
 
   @base_url Application.compile_env(:newspaper_scraper, :el_pais_base_url)
-  @num_req_handlers 4
+  @num_req_handlers 1
 
   defp supervise_normal_children do
     start_supervised(
@@ -101,7 +101,7 @@ defmodule Boundary.Managers.ManagersIntegrationTest do
 
     # ---------------------------------------------------------------------------------
 
-    test "returns error when failing" do
+    test "returns error when request stage fails" do
       assert {:ok, _pid} = supervise_normal_children()
 
       url = "test_url"
@@ -109,6 +109,19 @@ defmodule Boundary.Managers.ManagersIntegrationTest do
       assert {:error, "invalid url"} = ScraperManager.get_article(url)
       assert :ok === clean_manager_supervision_tree()
     end
+  end
+
+  # ---------------------------------------------------------------------------------
+
+  test "returns error when parsing stage fails" do
+    assert {:ok, _pid} = supervise_normal_children()
+
+    url =
+      @base_url <>
+        "/get_article?url=elpais.com/failed_html"
+
+    assert {:error, _res} = ScraperManager.get_article(url) |> dbg()
+    assert :ok === clean_manager_supervision_tree()
   end
 
   # ===================================================================================
