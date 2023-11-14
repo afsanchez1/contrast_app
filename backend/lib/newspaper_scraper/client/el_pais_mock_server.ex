@@ -1,4 +1,7 @@
 defmodule NewspaperScraper.Client.ElPaisMockServer do
+  @moduledoc """
+  This module mocks https://elpais.com behaviour
+  """
   alias NewspaperScraper.Core.ElPaisScraper
   alias NewspaperScraper.Utils.Test.TestUtils
   alias NewspaperScraper.Utils.Core.ParsingUtils
@@ -7,7 +10,7 @@ defmodule NewspaperScraper.Client.ElPaisMockServer do
   use Agent
 
   @server_url Application.compile_env(:newspaper_scraper, :el_pais_base_url)
-  @reponses_path Application.compile_env(:newspaper_scraper, :el_pais_search_responses_path)
+  @responses_path Application.compile_env(:newspaper_scraper, :el_pais_search_responses_path) || "/non_existing_path"
   @resources_path Application.compile_env(:newspaper_scraper, :el_pais_resources_path)
   @agent_name :el_pais_agent
 
@@ -28,9 +31,12 @@ defmodule NewspaperScraper.Client.ElPaisMockServer do
   def init(_opts) do
     Logger.info("Server running on: #{@server_url}")
 
-    resources = TestUtils.read_and_parse_JSON!(@reponses_path, keys: :atoms)
-
-    Agent.start_link(fn -> resources end, name: @agent_name)
+    try do
+      resources = TestUtils.read_and_parse_JSON!(@responses_path, keys: :atoms)
+      Agent.start_link(fn -> resources end, name: @agent_name)
+    rescue
+      _e -> Logger.critical("Unable to start el_pais_mock_server")
+    end
   end
 
   # -----------------------------------------------------------------------------------

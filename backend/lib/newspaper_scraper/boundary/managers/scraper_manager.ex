@@ -1,4 +1,7 @@
 defmodule NewspaperScraper.Boundary.ScraperManager do
+  @moduledoc """
+  This module contains all the logic needed for generating requests for the scraper stages
+  """
   alias NewspaperScraper.Boundary.Managers.ScraperEventManager
   alias NewspaperScraper.Boundary.Managers.ScraperRequestHandler
   alias NewspaperScraper.Boundary.Managers.ScraperParsingHandlerSupervisor
@@ -6,16 +9,29 @@ defmodule NewspaperScraper.Boundary.ScraperManager do
 
   require Logger
 
-  @timeout 20_000
+  @timeout 30_000
 
   # ===================================================================================
 
-  def start_link(options) do
-    GenServer.start_link(__MODULE__, options[:args], options)
+  @doc """
+  Starts a link with a ScraperManager process
+  """
+  @spec start_link(opts :: list()) :: {:ok, pid()} | {:error, any()}
+  def start_link(opts) do
+    GenServer.start_link(__MODULE__, opts[:args], opts)
   end
 
   # ---------------------------------------------------------------------------------
 
+  @doc """
+  Calls the ScraperManager GenServer for searching articles
+  """
+  @spec search_articles(
+          manager :: module() | atom(),
+          topic :: String.t(),
+          page :: integer(),
+          limit :: integer()
+        ) :: term()
   def search_articles(manager \\ __MODULE__, topic, page, limit) do
     req = %{
       topic: topic,
@@ -28,6 +44,10 @@ defmodule NewspaperScraper.Boundary.ScraperManager do
 
   # ---------------------------------------------------------------------------------
 
+  @doc """
+  Calls the ScraperManager GenServer for getting articles
+  """
+  @spec get_article(manager :: module() | atom(), url :: String.t()) :: term()
   def get_article(manager \\ __MODULE__, url) do
     req = %{
       url: url
@@ -38,6 +58,8 @@ defmodule NewspaperScraper.Boundary.ScraperManager do
 
   # ===================================================================================
 
+  # Builds children for the supervisor created when starting the GenServer
+  @spec build_children(num_req_handlers :: integer()) :: list()
   defp build_children(num_req_handlers) do
     {req_handlers, names} = build_req_handlers(num_req_handlers)
 
@@ -48,6 +70,8 @@ defmodule NewspaperScraper.Boundary.ScraperManager do
 
   # ---------------------------------------------------------------------------------
 
+  # Builds ScraperRequestHandler names for further subscriptions
+  @spec build_req_handlers(num_req_handlers :: integer()) :: tuple()
   defp build_req_handlers(num_req_handlers) do
     names =
       for num <- 1..num_req_handlers do
@@ -113,6 +137,6 @@ defmodule NewspaperScraper.Boundary.ScraperManager do
 
   @impl true
   def terminate(reason, state) do
-    Logger.alert("ScraperManager terminated", reason: reason, state: state)
+    Logger.alert(%{message: "ScraperManager terminated", reason: reason, state: state})
   end
 end

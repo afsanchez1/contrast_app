@@ -120,7 +120,7 @@ defmodule Boundary.Managers.ManagersIntegrationTest do
       @base_url <>
         "/get_article?url=elpais.com/failed_html"
 
-    assert {:error, _res} = ScraperManager.get_article(url) |> dbg()
+    assert {:error, _res} = ScraperManager.get_article(url)
     assert :ok === clean_manager_supervision_tree()
   end
 

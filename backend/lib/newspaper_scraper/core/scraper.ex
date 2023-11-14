@@ -1,11 +1,12 @@
 defmodule NewspaperScraper.Core.Scraper do
-  alias NewspaperScraper.Model.Author
+  @moduledoc """
+  This module implements the scraper behaviour
+  """
   alias NewspaperScraper.Model.ArticleSummary
   alias NewspaperScraper.Model.Article
 
-  @type url :: String.t()
-  @type html_doc :: String.t()
-  @type selector :: String.t()
+  @type selector :: Floki.css_selector()
+  @type html_tree :: Floki.html_tree()
 
   @doc """
   Returns the name of the scraper
@@ -15,7 +16,7 @@ defmodule NewspaperScraper.Core.Scraper do
   @doc """
   Checks if the url belongs to the scraper
   """
-  @callback scraper_check(url :: url()) :: :ok | {:error, any()}
+  @callback scraper_check(url :: String.t()) :: :ok | {:error, any()}
 
   @doc """
   Provides the selectors needed for a specific function
@@ -26,32 +27,22 @@ defmodule NewspaperScraper.Core.Scraper do
   Searches articles based on a topic
   """
   @callback search_articles(topic :: String.t(), page :: integer(), limit :: integer()) ::
-              {:ok, list(struct())} | {:error, any()}
+              {:ok, list(map())} | {:error, any()}
 
   @doc """
   Parses search results
   """
-  @callback parse_search_results(articles :: list(struct())) ::
-              {:ok, list(ArticleSummary)} | {:error, any()}
+  @callback parse_search_results(articles :: list(map())) ::
+              {:ok, list(ArticleSummary.t())} | {:error, any()}
 
   @doc """
-  Gets the article HTML
+  Requests the article HTML
   """
-  @callback get_article(url :: url()) :: {:ok, {html_doc(), url()}} | {:error, any()}
+  @callback get_article(url :: String.t()) :: {:ok, {html_doc :: binary(), url :: String.t()}} | {:error, any()}
 
   @doc """
   Parses the article HTML
   """
-  @callback parse_article(article :: html_doc(), url :: url()) ::
-              %Article{
-                newspaper: <<_::64>>,
-                headline: String.t(),
-                subheadline: String.t(),
-                authors: list(Author),
-                last_date_time: String.t(),
-                # TODO Actualizar esto
-                body: list(String.t()),
-                url: url()
-              }
-              | {:error, any()}
+  @callback parse_article(article :: binary(), url :: String.t()) ::
+              {:ok, Article.t()} | {:error, any()}
 end

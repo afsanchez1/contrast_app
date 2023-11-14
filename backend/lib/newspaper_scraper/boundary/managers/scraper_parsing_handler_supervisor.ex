@@ -1,4 +1,7 @@
 defmodule NewspaperScraper.Boundary.Managers.ScraperParsingHandlerSupervisor do
+  @moduledoc """
+  This module implements the supervisor for ParsingHandlers
+  """
   alias NewspaperScraper.Boundary.Managers.ScraperParsingHandler
   use ConsumerSupervisor
 
@@ -7,6 +10,10 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperParsingHandlerSupervisor do
   @max_demand 10
   @min_demand 5
 
+  @doc """
+  Starts a link with a ScraperParsingHandlerSupervisor process
+  """
+  @spec start_link(keyword()) :: {:ok, pid()} | {:error, term()}
   def start_link(arg) do
     ConsumerSupervisor.start_link(__MODULE__, arg)
   end
@@ -39,6 +46,8 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperParsingHandlerSupervisor do
     ConsumerSupervisor.init(children, opts)
   end
 
+  # Creates the subscriptions for ParsingHandlers to all the existing RequestHandlers
+  @spec build_subscriptions(atom(), integer(), integer()) :: list()
   defp build_subscriptions(subscription_names, max_demand, min_demand) do
     Enum.map(
       subscription_names,

@@ -1,4 +1,7 @@
 defmodule NewspaperScraper.Core.ElPaisScraper do
+  @moduledoc """
+  This module contains all the logic needed for scraping https://elpais.com
+  """
   alias NewspaperScraper.Core.Scraper
   alias NewspaperScraper.Utils.Core.ParsingUtils
   alias NewspaperScraper.Model.ArticleSummary
@@ -109,6 +112,8 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
+  # UpdatedTs comes in Unix seconds so we parse it to ISO 8601:2019 format
+  @spec parse_search_date_time(date_time :: integer()) :: {:ok, String.t()} | {:error, atom()}
   defp parse_search_date_time(date_time) do
     dt = DateTime.from_unix(date_time, :second)
 
@@ -120,6 +125,8 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
+  # Parses authors to our defined Authors struct
+  @spec parse_search_authors(authors :: list(map())) :: list(Author.t()) | []
   defp parse_search_authors(authors) do
     Enum.map(
       authors,
@@ -134,6 +141,8 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
+  # Checks if the articles found are premium
+  @spec search_check_premium(url :: String.t()) :: true | false
   defp search_check_premium(url) do
     with {:ok, {body, _url}} <- get_article(url),
          {:ok, html} <- parse_document(body) do
@@ -146,6 +155,8 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
+  #  Checks if an article is premium
+  @spec check_premium(html :: Scraper.html_tree()) :: true | false
   def check_premium(html) do
     selectors = get_selectors(__ENV__.function)
 
@@ -183,6 +194,9 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
+  # Converts parsed html to our defined Article struct
+  @spec html_to_article(html :: Scraper.html_tree(), url :: String.t()) ::
+          {:ok, Article.t()} | {:error, any()}
   defp html_to_article(html, url) do
     temp_art =
       %{}
@@ -212,6 +226,8 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
+  # Parses the article header (title and subtitle) and appends the result to the parsed_art map
+  @spec parse_art_header(parsed_art :: map(), html :: Scraper.html_tree()) :: map()
   defp parse_art_header(parsed_art, html) do
     selectors = get_selectors(__ENV__.function)
 
@@ -245,6 +261,8 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
+  # Parses the article authors and appends the result to the parsed_art map
+  @spec parse_art_authors(parsed_art :: map(), html :: Scraper.html_tree()) :: map()
   defp parse_art_authors(parsed_art, html) do
     selectors = get_selectors(__ENV__.function)
 
@@ -286,6 +304,8 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
     end
   end
 
+  # Builds the author url in case it comes incomplete
+  @spec build_author_url(url :: String.t()) :: String.t()
   defp build_author_url(url) do
     case String.contains?(url, @base_url) do
       true -> url
@@ -295,6 +315,8 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
+  # Parses the article date and appends the result to the parsed_art map
+  @spec parse_art_date(parsed_art :: map(), html :: Scraper.html_tree()) :: map()
   defp parse_art_date(parsed_art, html) do
     selectors = get_selectors(__ENV__.function)
 
@@ -307,14 +329,8 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
           Floki.traverse_and_update(date_html, fn
             {"time", attrs, _children} ->
               transformed_attrs = ParsingUtils.transform_attributes(attrs)
-              datetime = transformed_attrs["datetime"]
-
-              # Check HTML datetime attr is formatted as expected
-              with {:ok, date_time, offset} <- DateTime.from_iso8601(datetime) do
-                {:date_time, DateTime.to_iso8601(date_time, :extended, offset)}
-              else
-                _e -> {:date_time, %{error: "date_time format error"}}
-              end
+              date_time = transformed_attrs["datetime"]
+              parse_article_date_time(date_time)
 
             {_other, _attrs, children} ->
               children
@@ -327,8 +343,23 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
     end
   end
 
+  # Check HTML datetime attr is formatted as expected
+  @spec parse_article_date_time(date_time :: String.t()) :: {:date_time, any()}
+  defp parse_article_date_time(date_time) do
+
+    case DateTime.from_iso8601(date_time) do
+      {:ok, date_time, offset} ->
+        {:date_time, DateTime.to_iso8601(date_time, :extended, offset)}
+
+      {:error, e} ->
+        {:date_time, %{error: e}}
+    end
+  end
+
   # -----------------------------------------------------------------------------------
 
+  # Parses the article body, filters it and appends the result to the parsed_art map
+  @spec parse_art_body(parsed_art :: map(), html :: Scraper.html_tree()) :: map()
   defp parse_art_body(parsed_art, html) do
     selectors = get_selectors(__ENV__.function)
 
@@ -358,6 +389,9 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
             {"i", _attrs, children} ->
               children
 
+            {"em", _attrs, children} ->
+              children
+
             {"b", _attrs, children} ->
               children
 
@@ -378,6 +412,8 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
+  # Filters unwanted content out from the parsed body
+  @spec filter_body_content(body :: list()) :: list()
   defp filter_body_content(body) do
     Enum.filter(body, fn
       %{p: ""} ->

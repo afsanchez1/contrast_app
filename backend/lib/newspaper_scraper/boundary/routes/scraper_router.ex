@@ -1,4 +1,7 @@
 defmodule NewspaperScraper.Boundary.Routes.ScraperRouter do
+  @moduledoc """
+  This module implements the routing for scraping functionalities
+  """
   alias NewspaperScraper.Utils.Routes.RouterUtils
   alias NewspaperScraper.Boundary.ScraperAPI
 
@@ -18,23 +21,25 @@ defmodule NewspaperScraper.Boundary.Routes.ScraperRouter do
 
   # ===================================================================================
 
+  # Transforms search_articles query parameters into their correct types
+  @spec transform_search_articles_query_params(map()) :: map()
   defp transform_search_articles_query_params(query) do
     for {key, value} <- query, into: %{} do
-      cond do
-        key === :page or key === :limit ->
-          case Integer.parse(value) do
-            {num, _rem} -> {key, num}
-            _ -> {key, value}
-          end
-
-        true ->
-          {key, value}
+      if key === :page or key === :limit do
+        case Integer.parse(value) do
+          {num, _rem} -> {key, num}
+          _ -> {key, value}
+        end
+      else
+        {key, value}
       end
     end
   end
 
   # ---------------------------------------------------------------------------------
 
+  # Handles error enconding and reply
+  @spec handle_error(Plug.Conn.t(), {:error, any()}) :: Plug.Conn.t() | no_return()
   defp handle_error(conn, error) do
     {:ok, error_res} = RouterUtils.transform_error(error) |> Jason.encode()
     send_resp(conn, 400, error_res)
