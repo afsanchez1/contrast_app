@@ -21,7 +21,7 @@ defmodule NewspaperScraper.Core.Scraper do
   @doc """
   Provides the selectors needed for a specific function
   """
-  @callback get_selectors(env_function :: {fun(), arity()}) :: list(selector()) | nil
+  @callback get_selectors(function :: atom()) :: list(selector()) | nil
 
   @doc """
   Searches articles based on a topic
@@ -38,7 +38,8 @@ defmodule NewspaperScraper.Core.Scraper do
   @doc """
   Requests the article HTML
   """
-  @callback get_article(url :: String.t()) :: {:ok, {html_doc :: binary(), url :: String.t()}} | {:error, any()}
+  @callback get_article(url :: String.t()) ::
+              {:ok, {html_doc :: binary(), url :: String.t()}} | {:error, any()}
 
   @doc """
   Parses the article HTML

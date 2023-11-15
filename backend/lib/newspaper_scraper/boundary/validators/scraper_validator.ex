@@ -40,7 +40,7 @@ defmodule NewspaperScraper.Boundary.ScraperValidator do
 
   @spec validate_page(page :: any()) :: :ok | any()
   defp validate_page(page) when is_integer(page) do
-    case check(page >= 0, {:error, "page must be greater or equal than 0"}) do
+    case check(page >= 0, {:error, "must be greater or equal than 0"}) do
       :ok -> :ok
       error -> error
     end
@@ -51,7 +51,7 @@ defmodule NewspaperScraper.Boundary.ScraperValidator do
   @spec validate_limit(limit :: any()) :: :ok | any()
   defp validate_limit(limit) when is_integer(limit) do
     with :ok <- check(limit <= @max_limit, {:error, "max. limit exceeded"}),
-         :ok <- check(limit > 0, {:error, "limit must be greater than 0"}),
+         :ok <- check(limit > 0, {:error, "must be greater than 0"}),
          do: :ok,
          else: (error -> error)
   end
