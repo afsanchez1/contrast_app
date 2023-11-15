@@ -43,7 +43,7 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
 
   describe "get_selectors/1" do
     test "returns selectors properly when function exists" do
-      functions = [
+      funcs = [
         :check_premium,
         :parse_art_header,
         :parse_art_authors,
@@ -52,9 +52,9 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
       ]
 
       Enum.each(
-        functions,
-        fn function ->
-          selectors = ElPaisScraper.get_selectors({function, nil})
+        funcs,
+        fn func ->
+          selectors = ElPaisScraper.get_selectors(func)
           assert length(selectors) !== 0
         end
       )
@@ -63,9 +63,9 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
     # ---------------------------------------------------------------------------------
 
     test "returns nil when function doesn't exist" do
-      function = :non_existing
+      func = :non_existing
 
-      assert ElPaisScraper.get_selectors({function, nil}) === nil
+      assert ElPaisScraper.get_selectors(func) === nil
     end
   end
 
@@ -304,7 +304,7 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
       html = ""
       url = "http://testurl.udc"
 
-      assert {:error, "body not found"} = ElPaisScraper.parse_article(html, url)
+      assert {:error, [_h | _t]} = ElPaisScraper.parse_article(html, url)
     end
 
     # ---------------------------------------------------------------------------------
@@ -317,7 +317,7 @@ defmodule NewspaperScraper.Core.ElPaisScraperTest do
       """
 
       url = "http://testurl.udc"
-      assert {:error, "body not found"} = ElPaisScraper.parse_article(html, url)
+      assert {:error, [_h | _t]} = ElPaisScraper.parse_article(html, url)
     end
   end
 end

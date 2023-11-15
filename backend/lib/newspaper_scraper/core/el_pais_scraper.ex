@@ -40,7 +40,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # -----------------------------------------------------------------------------------
 
   @impl Scraper
-  def get_selectors({fun, _arity}) do
+  def get_selectors(function) do
     selectors = %{
       check_premium: ["#ctn_freemium_article", "#ctn_premium_article"],
       parse_art_header: [".a_e_txt", ".articulo-titulares"],
@@ -49,7 +49,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
       parse_art_body: [".a_c", ".articulo-cuerpo"]
     }
 
-    selectors[fun]
+    selectors[function]
   end
 
   # -----------------------------------------------------------------------------------
@@ -158,7 +158,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   #  Checks if an article is premium
   @spec check_premium(html :: Scraper.html_tree()) :: true | false
   def check_premium(html) do
-    selectors = get_selectors(__ENV__.function)
+    selectors = get_selectors(:check_premium)
 
     case ParsingUtils.find_element(html, selectors) do
       {:error, :not_found} -> false
@@ -194,23 +194,54 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
+  # Tries to find elements and calls the parsing functions when found
+  @spec parse(map(), atom(), Scraper.html_tree()) :: map()
+  defp parse(parsed_art, fun, html) do
+    selectors = get_selectors(fun)
+
+    case ParsingUtils.find_element(html, selectors) do
+      {:error, :not_found} ->
+        Map.put(parsed_art, fun, {:error, "HTML not found"})
+
+      found_html ->
+        case fun do
+          :parse_art_header -> parse_art_header(parsed_art, found_html)
+          :parse_art_authors -> parse_art_authors(parsed_art, found_html)
+          :parse_art_date -> parse_art_date(parsed_art, found_html)
+          :parse_art_body -> parse_art_body(parsed_art, found_html)
+        end
+    end
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  # Checks for parsing errors
+  @spec fetch_parsed_art_errors(map()) :: list()
+  defp fetch_parsed_art_errors(parsed_art) do
+    for {k, v} <- parsed_art do
+      case v do
+        {:error, e} -> {k, e}
+        _ -> nil
+      end
+    end
+    |> Enum.filter(fn elem -> elem !== nil end)
+  end
+
+  # -----------------------------------------------------------------------------------
+
   # Converts parsed html to our defined Article struct
   @spec html_to_article(html :: Scraper.html_tree(), url :: String.t()) ::
           {:ok, Article.t()} | {:error, any()}
   defp html_to_article(html, url) do
     temp_art =
       %{}
-      |> parse_art_header(html)
-      |> parse_art_authors(html)
-      |> parse_art_date(html)
-      |> parse_art_body(html)
+      |> parse(:parse_art_header, html)
+      |> parse(:parse_art_authors, html)
+      |> parse(:parse_art_date, html)
+      |> parse(:parse_art_body, html)
 
-    case temp_art.body do
-      # If the article body couldn't be parsed, it doesn't make sense to send the rest of the info
-      %{error: e} ->
-        {:error, e}
-
-      _other ->
+    case fetch_parsed_art_errors(temp_art) do
+      [] ->
         {:ok,
          %Article{
            newspaper: @newspaper_name,
@@ -221,6 +252,9 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
            body: temp_art.body,
            url: url
          }}
+
+      errors ->
+        {:error, errors}
     end
   end
 
@@ -229,34 +263,24 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # Parses the article header (title and subtitle) and appends the result to the parsed_art map
   @spec parse_art_header(parsed_art :: map(), html :: Scraper.html_tree()) :: map()
   defp parse_art_header(parsed_art, html) do
-    selectors = get_selectors(__ENV__.function)
+    parsed_header =
+      Floki.traverse_and_update(html, fn
+        {"h1", _attrs, children} ->
+          {:headline, ParsingUtils.transform_text_children(children)}
 
-    case ParsingUtils.find_element(html, selectors) do
-      {:error, :not_found} ->
-        parsed_art
-        |> Map.put(:headline, %{error: "headline not found"})
-        |> Map.put(:subheadline, %{error: "subheadline not found"})
+        {"h2", _attrs, children} ->
+          {:subheadline, ParsingUtils.transform_text_children(children)}
 
-      header_html ->
-        parsed_header =
-          Floki.traverse_and_update(header_html, fn
-            {"h1", _attrs, children} ->
-              {:headline, ParsingUtils.transform_text_children(children)}
+        {_other, _attrs, children} ->
+          children
 
-            {"h2", _attrs, children} ->
-              {:subheadline, ParsingUtils.transform_text_children(children)}
+        _other ->
+          nil
+      end)
 
-            {_other, _attrs, children} ->
-              children
-
-            _other ->
-              nil
-          end)
-
-        parsed_art
-        |> Map.put(:headline, parsed_header[:headline])
-        |> Map.put(:subheadline, parsed_header[:subheadline])
-    end
+    parsed_art
+    |> Map.put(:headline, parsed_header[:headline])
+    |> Map.put(:subheadline, parsed_header[:subheadline])
   end
 
   # -----------------------------------------------------------------------------------
@@ -264,44 +288,36 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # Parses the article authors and appends the result to the parsed_art map
   @spec parse_art_authors(parsed_art :: map(), html :: Scraper.html_tree()) :: map()
   defp parse_art_authors(parsed_art, html) do
-    selectors = get_selectors(__ENV__.function)
+    parsed_authors =
+      Floki.traverse_and_update(html, fn
+        {"div", _attrs, children} ->
+          children
 
-    case ParsingUtils.find_element(html, selectors) do
-      {:error, :not_found} ->
-        Map.put(parsed_art, :authors, %{error: "authors not found"})
+        # When author has url
+        {"a", attrs, children} ->
+          transformed_attrs = ParsingUtils.transform_attributes(attrs)
+          url = transformed_attrs["href"]
 
-      authors_html ->
-        parsed_authors =
-          Floki.traverse_and_update(authors_html, fn
-            {"div", _attrs, children} ->
-              children
+          %Author{
+            name: ParsingUtils.transform_text_children(children),
+            url: build_author_url(url)
+          }
 
-            # When author has url
-            {"a", attrs, children} ->
-              transformed_attrs = ParsingUtils.transform_attributes(attrs)
-              url = transformed_attrs["href"]
+        {"span", [{"class", "autor-nombre"} | _r_attrs], children} ->
+          children
 
-              %Author{
-                name: ParsingUtils.transform_text_children(children),
-                url: build_author_url(url)
-              }
+        # When author doesn't have url
+        {"span", _attrs, children} ->
+          %Author{
+            name: ParsingUtils.transform_text_children(children),
+            url: nil
+          }
 
-            {"span", [{"class", "autor-nombre"} | _r_attrs], children} ->
-              children
+        _other ->
+          nil
+      end)
 
-            # When author doesn't have url
-            {"span", _attrs, children} ->
-              %Author{
-                name: ParsingUtils.transform_text_children(children),
-                url: nil
-              }
-
-            _other ->
-              nil
-          end)
-
-        Map.put(parsed_art, :authors, parsed_authors)
-    end
+    Map.put(parsed_art, :authors, parsed_authors)
   end
 
   # Builds the author url in case it comes incomplete
@@ -318,41 +334,32 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # Parses the article date and appends the result to the parsed_art map
   @spec parse_art_date(parsed_art :: map(), html :: Scraper.html_tree()) :: map()
   defp parse_art_date(parsed_art, html) do
-    selectors = get_selectors(__ENV__.function)
+    parsed_date_time =
+      Floki.traverse_and_update(html, fn
+        {"time", attrs, _children} ->
+          transformed_attrs = ParsingUtils.transform_attributes(attrs)
+          date_time = transformed_attrs["datetime"]
+          parse_article_date_time(date_time)
 
-    case ParsingUtils.find_element(html, selectors) do
-      {:error, :not_found} ->
-        Map.put(parsed_art, :date_time, %{error: "date_time not found"})
+        {_other, _attrs, children} ->
+          children
 
-      date_html ->
-        parsed_date_time =
-          Floki.traverse_and_update(date_html, fn
-            {"time", attrs, _children} ->
-              transformed_attrs = ParsingUtils.transform_attributes(attrs)
-              date_time = transformed_attrs["datetime"]
-              parse_article_date_time(date_time)
+        _other ->
+          nil
+      end)
 
-            {_other, _attrs, children} ->
-              children
-
-            _other ->
-              nil
-          end)
-
-        Map.put(parsed_art, :date_time, parsed_date_time[:date_time])
-    end
+    Map.put(parsed_art, :date_time, parsed_date_time[:date_time])
   end
 
   # Check HTML datetime attr is formatted as expected
   @spec parse_article_date_time(date_time :: String.t()) :: {:date_time, any()}
   defp parse_article_date_time(date_time) do
-
     case DateTime.from_iso8601(date_time) do
       {:ok, date_time, offset} ->
         {:date_time, DateTime.to_iso8601(date_time, :extended, offset)}
 
       {:error, e} ->
-        {:date_time, %{error: e}}
+        {:date_time, {:error, e}}
     end
   end
 
@@ -361,53 +368,45 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # Parses the article body, filters it and appends the result to the parsed_art map
   @spec parse_art_body(parsed_art :: map(), html :: Scraper.html_tree()) :: map()
   defp parse_art_body(parsed_art, html) do
-    selectors = get_selectors(__ENV__.function)
+    parsed_body =
+      Floki.traverse_and_update(html, fn
+        # Avoids picking more content than needed in live articles
+        {"div", [{"id", "les"}], _children} ->
+          nil
 
-    case ParsingUtils.find_element(html, selectors) do
-      {:error, :not_found} ->
-        Map.put(parsed_art, :body, %{error: "body not found"})
+        {"div", _attrs, children} ->
+          children
 
-      body_html ->
-        parsed_body =
-          Floki.traverse_and_update(body_html, fn
-            # Avoids picking more content than needed in live articles
-            {"div", [{"id", "les"}], _children} ->
-              nil
+        {"h2", _attrs, children} ->
+          %{h2: ParsingUtils.transform_text_children(children)}
 
-            {"div", _attrs, children} ->
-              children
+        {"h3", _attrs, children} ->
+          %{h3: ParsingUtils.transform_text_children(children)}
 
-            {"h2", _attrs, children} ->
-              %{h2: ParsingUtils.transform_text_children(children)}
+        {"a", _attrs, children} ->
+          children
 
-            {"h3", _attrs, children} ->
-              %{h3: ParsingUtils.transform_text_children(children)}
+        {"i", _attrs, children} ->
+          children
 
-            {"a", _attrs, children} ->
-              children
+        {"em", _attrs, children} ->
+          children
 
-            {"i", _attrs, children} ->
-              children
+        {"b", _attrs, children} ->
+          children
 
-            {"em", _attrs, children} ->
-              children
+        {"strong", _attrs, children} ->
+          children
 
-            {"b", _attrs, children} ->
-              children
+        {"p", _attrs, children} ->
+          %{p: ParsingUtils.transform_text_children(children)}
 
-            {"strong", _attrs, children} ->
-              children
+        _other ->
+          nil
+      end)
+      |> filter_body_content()
 
-            {"p", _attrs, children} ->
-              %{p: ParsingUtils.transform_text_children(children)}
-
-            _other ->
-              nil
-          end)
-          |> filter_body_content()
-
-        Map.put(parsed_art, :body, parsed_body)
-    end
+    Map.put(parsed_art, :body, parsed_body)
   end
 
   # -----------------------------------------------------------------------------------

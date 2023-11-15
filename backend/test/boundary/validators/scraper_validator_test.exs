@@ -87,7 +87,7 @@ defmodule Boundary.Validators.ScraperValidatorTest do
 
     test "should fail when page is negative" do
       fields = %{topic: "any", page: -1, limit: 2}
-      msg = "page must be greater or equal than 0"
+      msg = "must be greater or equal than 0"
 
       assert {:error, [page: p_err]} =
                ScraperValidator.search_articles_errors(fields)
