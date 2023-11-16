@@ -5,27 +5,36 @@ import handleResponse from '../utils/services/handleResponse'
 import handleError from '../utils/services/handleError'
 import axiosInst from './axiosInstance'
 import logger from '../utils/logs/logger'
+import { parseArticleSummaries, parseArticle } from '../utils/services/scraper/parsingUtils'
 
 export async function searchArticles(
     topic: string,
     page: number,
     limit: number
 ): Promise<ArticleSummary[] | RequestError> {
-    const req = `/search_articles?topic=${topic}&page=${page}&limit=${limit}`
+    const endPoint = '/search_articles'
+    const req = `${endPoint}?topic=${topic}&page=${page}&limit=${limit}`
     logger.info({ message: 'Fetching ' + req })
 
     return await axiosInst
-        .get(req)
-        .then(response => handleResponse(response)) // TODO Manage ArticleSummary creation
+        .get(endPoint, { params: { topic, page, limit } })
+        .then(response => {
+            const artSumms = handleResponse(response) as ArticleSummary[]
+            return parseArticleSummaries(artSumms)
+        })
         .catch(error => handleError(error))
 }
 
 export async function getArticle(url: string): Promise<Article | RequestError> {
-    const req = `/get_article?url=${url}`
+    const endPoint = '/get_article'
+    const req = `${endPoint}?url=${url}`
     logger.info({ message: 'Fetching ' + req })
 
     return await axiosInst
-        .get(req)
-        .then(response => handleResponse(response)) // TODO Manage Article creation
+        .get(endPoint, { params: { url } })
+        .then(response => {
+            const art = handleResponse(response)
+            return parseArticle(art)
+        })
         .catch(error => handleError(error))
 }

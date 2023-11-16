@@ -3,7 +3,7 @@ import type RequestError from '../../types/services/requestError'
 import logger from '../logs/logger'
 
 function handleError(error: AxiosError): RequestError {
-    logger.error(error.toJSON)
+    logger.error({ errorMessage: error.message })
     // The request was made and the server responded with an status code out of 2xx
     if (error.response != null) {
         const { status, data } = error.response
@@ -12,13 +12,23 @@ function handleError(error: AxiosError): RequestError {
             data,
             message: `Request failed with status: ${status}`,
         }
-        // Request was made but server did not respond
+        // Request was made but no response was received
     } else if (error.request != null) {
         return {
             message: 'No response received from the server',
         }
-        // Something failed setting up the request
-    } else {
+        // Timeout
+    } else if (error.code === 'ECONNABORTED' && error.message.includes('timeout')) {
+        return {
+            message: 'Request timed out',
+        }
+    } else if (error.code === 'ECONNABORTED') {
+        return {
+            message: 'Request aborted',
+        }
+    }
+    // Something failed setting up the request
+    else {
         return {
             message: 'Error setting up the request',
         }

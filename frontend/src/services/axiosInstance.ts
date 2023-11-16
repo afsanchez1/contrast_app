@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance } from 'axios'
-const scraperUrl = import.meta.env.BASE_URL
+const scraperUrl = process.env.BASE_URL
 
 const axiosInst: AxiosInstance = axios.create({
     baseURL: scraperUrl,
