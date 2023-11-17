@@ -1,8 +1,13 @@
 import type { AxiosError } from 'axios'
-import type RequestError from '../../types/services/requestError'
-import logger from '../logs/logger'
+import type { RequestError } from '../../types'
+import { logger } from '../logs'
 
-function handleError(error: AxiosError): RequestError {
+/**
+ * Handles failed requests
+ * @param {AxiosError} error - Error returned by axios lib when request fails
+ * @returns {RequestError}
+ */
+export function handleError(error: AxiosError): RequestError {
     logger.error({ errorMessage: error.message })
     // The request was made and the server responded with an status code out of 2xx
     if (error.response != null) {
@@ -34,5 +39,3 @@ function handleError(error: AxiosError): RequestError {
         }
     }
 }
-
-export default handleError

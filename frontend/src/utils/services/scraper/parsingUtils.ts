@@ -1,10 +1,19 @@
-import type Article from '../../../types/scraper/article'
-import type ArticleSummary from '../../../types/scraper/articleSummary'
+import type { Article, ArticleSummary } from '../../../types'
 
+/**
+ * A function for parsing well-formatted dates to locale date format
+ * @param {string} dateTime
+ * @returns {string}
+ */
 function parseDateTime(dateTime: string): string {
     return new Date(dateTime).toLocaleString()
 }
 
+/**
+ * Parses articleSummaries' date
+ * @param {ArticleSummary[]} artSumms
+ * @returns {ArticleSummary[]}
+ */
 export function parseArticleSummaries(artSumms: ArticleSummary[]): ArticleSummary[] {
     return artSumms.map<ArticleSummary>(artSumm => ({
         ...artSumm,
@@ -12,6 +21,11 @@ export function parseArticleSummaries(artSumms: ArticleSummary[]): ArticleSummar
     }))
 }
 
+/**
+ * Parses articles' date
+ * @param {Article} art
+ * @returns {Article}
+ */
 export function parseArticle(art: Article): Article {
     return {
         ...art,

@@ -1,8 +1,8 @@
 import { afterEach, beforeAll, describe, expect, test } from '@jest/globals'
 import MockAdapter from 'axios-mock-adapter'
-import { getArticle, searchArticles } from '../../src/services/scraper'
+import { getArticle, searchArticles } from '../../src/services/'
 import axiosInst from '../../src/services/axiosInstance'
-import ArticleSummary from '../../src/types/scraper/articleSummary'
+import type { ArticleSummary } from '../../src/types/'
 import articleSummsMock from './mocks/articleSummsMock'
 import articleMock from './mocks/articleMock'
 

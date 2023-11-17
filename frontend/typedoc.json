@@ -1,0 +1,6 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": ["src/services", "src/types", "src/utils"],
+    "entryPointStrategy": "resolve",
+    "out": "./docs"
+}

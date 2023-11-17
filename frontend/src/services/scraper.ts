@@ -1,12 +1,14 @@
-import type ArticleSummary from '../types/scraper/articleSummary'
-import type RequestError from '../types/services/requestError'
-import type Article from '../types/scraper/article'
-import handleResponse from '../utils/services/handleResponse'
-import handleError from '../utils/services/handleError'
+import type { RequestError, Article, ArticleSummary } from '../types'
 import axiosInst from './axiosInstance'
-import logger from '../utils/logs/logger'
-import { parseArticleSummaries, parseArticle } from '../utils/services/scraper/parsingUtils'
+import { handleError, handleResponse, parseArticleSummaries, parseArticle, logger } from '../utils'
 
+/**
+ * Makes a request to /search_articles backend route
+ * @param {string} topic - The topic of the articles
+ * @param {number} page - Page for pagination
+ * @param {number}limit - The number of results
+ * @returns {Promise<ArticleSummary[] | RequestError>} - Response data
+ */
 export async function searchArticles(
     topic: string,
     page: number,
@@ -25,6 +27,11 @@ export async function searchArticles(
         .catch(error => handleError(error))
 }
 
+/**
+ * Makes a request to /get_article backend route
+ * @param {string} url - URL of the article to scrape
+ * @returns {Promise<Article | RequestError>} - Response data
+ */
 export async function getArticle(url: string): Promise<Article | RequestError> {
     const endPoint = '/get_article'
     const req = `${endPoint}?url=${url}`
