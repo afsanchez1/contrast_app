@@ -1,1 +1,1 @@
-export * from './scraper'
+export { scraperApi } from './scraper'

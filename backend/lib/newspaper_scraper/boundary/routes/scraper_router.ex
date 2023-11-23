@@ -17,6 +17,8 @@ defmodule NewspaperScraper.Boundary.Routes.ScraperRouter do
     json_decoder: Jason
   )
 
+  plug(CORSPlug, origin: ["*"])
+
   plug(:dispatch)
 
   # ===================================================================================
