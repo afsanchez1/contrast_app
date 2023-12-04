@@ -6,14 +6,21 @@ import { ChakraProvider, ColorModeScript } from '@chakra-ui/react'
 import { store } from './app/store'
 // import App from './App.tsx'
 import theme from './theme.ts'
-import { HomePage, ErrorPage } from './pages'
-import { SearchResults } from './components'
+import { ErrorPage } from './pages'
+import { SearchArticles, SearchResults } from './components'
+import { Root } from './layouts/root.tsx'
 
 const router = createBrowserRouter([
     {
         path: '/',
-        element: <HomePage />,
+        element: <Root />,
         errorElement: <ErrorPage />,
+        children: [
+            {
+                path: '/',
+                element: <SearchArticles />,
+            },
+        ],
     },
     {
         path: '/search_results/:topic',

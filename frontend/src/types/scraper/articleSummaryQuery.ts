@@ -1,8 +1,8 @@
 /**
  * Represents the api's query arguments for searching articles
- * @interface ArticleSummaryQuery
+ * @interface SearchArticlesQuery
  */
-export interface ArticleSummaryQuery {
+export interface SearchArticlesQuery {
     /**
      * The topic of the articles
      * @type {string}

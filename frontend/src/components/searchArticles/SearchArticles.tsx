@@ -2,8 +2,6 @@ import React, { type FC, useState } from 'react'
 import {
     Flex,
     Box,
-    Heading,
-    Text,
     Input,
     FormControl,
     FormErrorMessage,
@@ -12,11 +10,16 @@ import {
     Alert,
     AlertIcon,
     AlertDescription,
+    VStack,
+    InputGroup,
+    InputLeftElement,
 } from '@chakra-ui/react'
+import { Logo } from '../../components'
 import { scraperApi } from '../../services/scraper'
 import { useNavigate } from 'react-router-dom'
 import { ErrorType } from '../../types'
 import { getError } from '../../utils'
+import { SearchIcon } from '@chakra-ui/icons'
 
 export const SearchArticles: FC = () => {
     const [topic, setTopic] = useState<string>('')
@@ -64,7 +67,7 @@ export const SearchArticles: FC = () => {
             {
                 topic,
                 page: 0,
-                limit: 5,
+                limit: 2,
             },
             false
         )
@@ -76,53 +79,55 @@ export const SearchArticles: FC = () => {
                     updateFormErrors(getError(ErrorType.FetchError))
                 }
             })
-            .catch(error => {
+            .catch((error: any) => {
                 console.log(error)
             })
     }
 
     return (
-        <Flex direction='column' align='center' justify='center' height='100vh'>
+        <Flex direction='column' align='center' justify='center' height='100vh' minWidth='20rem'>
             {/* Header */}
-            <Box as='header'>
-                <Heading
-                    as='h1'
-                    size='2xl'
-                    fontWeight='bold'
-                    mb={{ base: '1.5rem', md: '2rem', lg: '3rem' }}
-                >
-                    CON
-                    <Text as='span' bg='black' color='white'>
-                        TRAST
-                    </Text>
-                </Heading>
+            <Box mb={{ base: '1.75rem', md: '2rem', lg: '3rem' }}>
+                <Logo fontSize={{ base: '2.5rem', md: '3rem', lg: '3.5rem' }} />
             </Box>
 
-            <Flex direction='column' align='center' width='100%'>
-                {/* Search input section */}
-                <Box as='section'>
-                    <form onSubmit={handleSubmit}>
-                        <FormControl isInvalid={hasEmptyError || hasSearchError}>
-                            <Input
-                                placeholder='Busca un tema...'
-                                mr={{ base: '0.5rem', md: '1rem', lg: '1.25rem' }}
-                                size={{ base: 'sm', sm: 'sm', md: 'lg' }}
-                                mb={{ base: '0.15rem', md: '0.25rem', lg: '0.5rem' }}
-                                rounded='full'
-                                variant='filled'
-                                disabled={isLoading}
-                                value={topic}
-                                onInput={handleChange}
-                                _focus={{
-                                    borderColor: hasEmptyError ? 'red' : '',
-                                }}
-                            />
+            {/* Search input section */}
+            <Box as='section'>
+                <form onSubmit={handleSubmit}>
+                    <FormControl isInvalid={hasEmptyError || hasSearchError}>
+                        <VStack
+                            alignItems='center'
+                            maxWidth={{ base: '15rem', md: '20rem', lg: '25rem' }}
+                        >
+                            <InputGroup size={{ base: 'sm', md: 'md', lg: 'lg' }}>
+                                <InputLeftElement
+                                    pointerEvents='none'
+                                    alignContent='center'
+                                    justifyContent='center'
+                                >
+                                    <SearchIcon />
+                                </InputLeftElement>
+                                <Input
+                                    type='search'
+                                    placeholder='Busca un tema...'
+                                    mb={{ base: '0.15rem', md: '0.25rem', lg: '0.5rem' }}
+                                    rounded='full'
+                                    variant='filled'
+                                    disabled={isLoading}
+                                    value={topic}
+                                    onInput={handleChange}
+                                    _focus={{
+                                        borderColor: hasEmptyError ? 'red' : '',
+                                    }}
+                                />
+                            </InputGroup>
+                            {isLoading ? <Spinner /> : null}
                             <SlideFade in={hasEmptyError || hasSearchError}>
                                 {formErrors.map((error: string, index: number) => {
                                     return (
                                         <FormErrorMessage
                                             key={index}
-                                            size={{ base: 'sm', sm: 'sm', md: 'lg' }}
+                                            size={{ base: 'sm', md: 'md', lg: 'lg' }}
                                         >
                                             <Alert status='error' rounded='full'>
                                                 <AlertIcon />
@@ -132,13 +137,10 @@ export const SearchArticles: FC = () => {
                                     )
                                 })}
                             </SlideFade>
-                        </FormControl>
-                    </form>
-                </Box>
-                <Box alignContent='center' justifyItems='center'>
-                    {isLoading ? <Spinner mt='1rem' /> : null}
-                </Box>
-            </Flex>
+                        </VStack>
+                    </FormControl>
+                </form>
+            </Box>
         </Flex>
     )
 }

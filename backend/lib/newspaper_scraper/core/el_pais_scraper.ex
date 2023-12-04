@@ -56,15 +56,11 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   @impl Scraper
   def search_articles(topic, page, limit) do
-    query =
-      """
-         {\"q\":\"#{topic}\",
-         \"page\":#{page + 1},
-         \"limit\":#{limit},
-         \"language\":\"es\"}
-      """
+    {:ok, query} =
+      Jason.encode(%{q: topic, page: page + 1, limit: limit, language: "es"})
 
-    url = Tesla.build_url(@api_url, query: query)
+    url = Tesla.build_url(@api_url, query: query, _website: "el-pais")
+
     req = Tesla.get(@client, url)
 
     case req do
