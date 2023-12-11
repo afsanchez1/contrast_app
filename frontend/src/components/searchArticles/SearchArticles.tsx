@@ -1,4 +1,5 @@
 import React, { type FC, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
     Flex,
     Box,
@@ -22,13 +23,13 @@ import { getError } from '../../utils'
 import { SearchIcon } from '@chakra-ui/icons'
 
 export const SearchArticles: FC = () => {
+    const { t } = useTranslation()
     const [topic, setTopic] = useState<string>('')
     const [hasEmptyError, setHasEmptyError] = useState<boolean>(false)
     const [formErrors, setFormErrors] = useState<string[]>([])
     const [hasSearchError, sethasSearchError] = useState<boolean>(false)
 
     const [searchArticles, { isLoading }] = scraperApi.endpoints.searchArticles.useLazyQuery({})
-
     const navigate = useNavigate()
 
     const updateFormErrors = (error: string): void => {
@@ -56,21 +57,23 @@ export const SearchArticles: FC = () => {
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
         event.preventDefault()
 
+        // If the topic is empty set errors and do nothing
         if (topic.trim() === '') {
             setHasEmptyError(true)
             updateFormErrors(getError(ErrorType.EmptyTopicError))
             return
         }
+
+        // When topic is not empty, clean errors and make the request
         setHasEmptyError(false)
 
-        searchArticles(
-            {
-                topic,
-                page: 0,
-                limit: 2,
-            },
-            false
-        )
+        const queryParams = {
+            topic,
+            page: 0,
+            limit: 4,
+        }
+
+        searchArticles(queryParams, false)
             .then(value => {
                 if (value.isSuccess) navigate(`search_results/${topic}`)
                 else if (value.isError) {
@@ -109,7 +112,7 @@ export const SearchArticles: FC = () => {
                                 </InputLeftElement>
                                 <Input
                                     type='search'
-                                    placeholder='Busca un tema...'
+                                    placeholder={t('search-a-topic')}
                                     mb={{ base: '0.15rem', md: '0.25rem', lg: '0.5rem' }}
                                     rounded='full'
                                     variant='filled'
@@ -131,7 +134,7 @@ export const SearchArticles: FC = () => {
                                         >
                                             <Alert status='error' rounded='full'>
                                                 <AlertIcon />
-                                                <AlertDescription>{error}</AlertDescription>
+                                                <AlertDescription>{t(error)}</AlertDescription>
                                             </Alert>
                                         </FormErrorMessage>
                                     )

@@ -3,12 +3,12 @@ import { ErrorType } from '../../types'
 export const getError = (error: ErrorType): string => {
     switch (error) {
         case ErrorType.EmptyTopicError:
-            return 'Por favor, introduce un tema'
+            return 'empty-topic-error'
 
         case ErrorType.FetchError:
-            return 'Ha ocurrido un error, inténtelo más tarde'
+            return 'fetch-error'
 
         default:
-            return 'Error desconocido'
+            return 'unknown-error'
     }
 }

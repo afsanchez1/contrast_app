@@ -5,7 +5,7 @@ import type { Article, ArticleSummary } from '../../../types'
  * @param {string} dateTime
  * @returns {string}
  */
-function parseDateTime(dateTime: string): string {
+export function parseDateTime(dateTime: string): string {
     return new Date(dateTime).toLocaleString()
 }
 

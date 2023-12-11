@@ -1,1 +1,1 @@
-export { parseArticleSummaries, parseArticle } from './parsingUtils'
+export { parseArticleSummaries, parseArticle, parseDateTime } from './parsingUtils'
