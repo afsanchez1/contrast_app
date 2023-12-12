@@ -9,7 +9,7 @@ import i18n from './i18n'
 import theme from './theme.ts'
 import { ErrorPage } from './pages'
 import { SearchArticles, SearchResults } from './components'
-import { Root } from './layouts/root.tsx'
+import { Root, Results } from './layouts'
 
 const router = createBrowserRouter([
     {
@@ -21,6 +21,13 @@ const router = createBrowserRouter([
                 path: '/',
                 element: <SearchArticles />,
             },
+        ],
+    },
+    {
+        path: '/search_results/:topic',
+        element: <Results />,
+        errorElement: <ErrorPage />,
+        children: [
             {
                 path: '/search_results/:topic',
                 element: <SearchResults />,

@@ -3,14 +3,18 @@ import type { FC } from 'react'
 import { Outlet } from 'react-router-dom'
 import { SideBar, NavBar, CollapsedSideBar, Footer } from '../components'
 
-export type toggleSideBarFunction = () => void
 export const Root: FC = () => {
     const { isOpen, onToggle } = useDisclosure()
 
     return (
-        <Grid templateColumns='repeat(6, 1fr)' templateRows='10% 1fr 10%'>
+        <Grid
+            templateColumns='repeat(6 1fr)'
+            templateRows='10% 0% 80% 10%'
+            height='100vh'
+            alignItems='center'
+        >
             {/* NavBar */}
-            <GridItem colSpan={6} rowSpan={1}>
+            <GridItem>
                 <NavBar hasLogo={false} hasSideBarButton={true} toggleSideBar={onToggle}></NavBar>
             </GridItem>
 
@@ -22,12 +26,12 @@ export const Root: FC = () => {
             </GridItem>
 
             {/* Main Content */}
-            <GridItem colSpan={6} rowSpan={2}>
+            <GridItem>
                 <Outlet />
             </GridItem>
 
             {/* Footer */}
-            <GridItem textAlign='center' colSpan={6} rowSpan={1}>
+            <GridItem textAlign='center'>
                 <Footer />
             </GridItem>
         </Grid>

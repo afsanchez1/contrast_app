@@ -1,5 +1,5 @@
 import { Flex, IconButton, Slide, Spacer } from '@chakra-ui/react'
-import type { toggleSideBarFunction } from '../../layouts/root'
+import type { toggleSideBarFunction } from '../../layouts'
 import type { FC, ReactNode } from 'react'
 import { SmallCloseIcon } from '@chakra-ui/icons'
 interface CollapsedSideBarProps {

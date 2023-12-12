@@ -1,8 +1,17 @@
-import { Flex, Button, Spacer, HStack, useColorMode, IconButton } from '@chakra-ui/react'
+import {
+    Flex,
+    Button,
+    Spacer,
+    HStack,
+    useColorMode,
+    IconButton,
+    Link as ChakraLink,
+} from '@chakra-ui/react'
 import { SunIcon, MoonIcon, HamburgerIcon } from '@chakra-ui/icons'
 import { Logo } from '.'
 import type { FC } from 'react'
-import type { toggleSideBarFunction } from '../../layouts/root'
+import type { toggleSideBarFunction } from '../../layouts'
+import { Link as ReactRouterLink } from 'react-router-dom'
 
 interface NavBarProps {
     hasLogo: boolean
@@ -26,7 +35,13 @@ export const NavBar: FC<NavBarProps> = ({
                 />
             ) : null}
             <Spacer />
-            {hasLogo ? <Logo fontSize={{ base: '2rem' }} /> : null}
+            {hasLogo ? (
+                <>
+                    <ChakraLink as={ReactRouterLink} to='/' _hover={{ textDecoration: 'none' }}>
+                        <Logo fontSize={{ base: '2rem' }} />
+                    </ChakraLink>
+                </>
+            ) : null}
             <Spacer />
             <HStack spacing='20px'>
                 <Button onClick={toggleColorMode}>

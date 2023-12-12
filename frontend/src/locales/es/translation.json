@@ -5,5 +5,6 @@
     "empty-topic-error": "Por favor, introduce un tema",
     "fetch-error": "Ha ocurrido un error, inténtelo más tarde",
     "unknown-error": "Algo ha ido mal",
-    "results-for": "Mostrando resultados para"
+    "results-for": "Mostrando resultados para",
+    "show-more": "Mostrar más"
 }

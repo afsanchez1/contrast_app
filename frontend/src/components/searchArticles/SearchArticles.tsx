@@ -77,7 +77,6 @@ export const SearchArticles: FC = () => {
             .then(value => {
                 if (value.isSuccess) navigate(`search_results/${topic}`)
                 else if (value.isError) {
-                    console.log(value.error)
                     sethasSearchError(true)
                     updateFormErrors(getError(ErrorType.FetchError))
                 }
@@ -88,7 +87,7 @@ export const SearchArticles: FC = () => {
     }
 
     return (
-        <Flex direction='column' align='center' justify='center' height='100vh' minWidth='20rem'>
+        <Flex direction='column' align='center' justify='center' minWidth='20rem'>
             {/* Header */}
             <Box mb={{ base: '1.75rem', md: '2rem', lg: '3rem' }}>
                 <Logo fontSize={{ base: '2.5rem', md: '3rem', lg: '3.5rem' }} />
