@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import { ChakraProvider, ColorModeScript } from '@chakra-ui/react'
-import { store } from './app/store'
+import { setupStore } from './app/store'
 import { I18nextProvider } from 'react-i18next'
 import i18n from './i18n'
 import theme from './theme.ts'
@@ -11,6 +11,7 @@ import { ErrorPage } from './pages'
 import { SearchArticles, SearchResults } from './components'
 import { Root, Results } from './layouts'
 
+const store = setupStore()
 const router = createBrowserRouter([
     {
         path: '/',

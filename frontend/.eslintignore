@@ -1,11 +1,11 @@
 # Vite configuration file
 vite.config.ts
+vitest.config.ts
 
-# Jest configuration file
-jest.config.ts
-
+#Jest
+jest.config.js
 # Tests
 /tests
 
-# Babel configuration file
-babel.config.js
+# tsconfig file
+tsconfig.json
