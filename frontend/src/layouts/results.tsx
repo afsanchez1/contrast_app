@@ -24,13 +24,6 @@ export const Results: FC = () => {
                     ></NavBar>
                 </GridItem>
 
-                {/* Sidebar */}
-                <GridItem as='aside'>
-                    <CollapsedSideBar isSidebarOpen={isOpen} toggleSideBar={onToggle}>
-                        <SideBar />
-                    </CollapsedSideBar>
-                </GridItem>
-
                 {/* Main Content */}
                 <GridItem>
                     <Outlet />
@@ -41,6 +34,9 @@ export const Results: FC = () => {
                     <Footer />
                 </GridItem>
             </Grid>
+            <CollapsedSideBar isSidebarOpen={isOpen} toggleSideBar={onToggle}>
+                <SideBar />
+            </CollapsedSideBar>
         </>
     )
 }

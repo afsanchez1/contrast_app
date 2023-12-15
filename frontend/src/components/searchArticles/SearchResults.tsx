@@ -14,10 +14,6 @@ import {
     Spinner,
     Text,
     VStack,
-    Alert,
-    AlertIcon,
-    AlertTitle,
-    IconButton,
 } from '@chakra-ui/react'
 import { type FC, useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
@@ -28,9 +24,11 @@ import {
     type SearchArticlesErrorResult,
     type SearchArticlesSuccessResult,
 } from '../../types'
-import { ChevronDownIcon, ExternalLinkIcon, RepeatIcon } from '@chakra-ui/icons'
+import { ChevronDownIcon, ExternalLinkIcon } from '@chakra-ui/icons'
 import { useTranslation } from 'react-i18next'
 import { getError, parseDateTime } from '../../utils'
+import { ErrorPanel } from './ErrorPanel'
+import { ScraperErrorAlert } from './ScraperErrorAlert'
 
 export const SearchResults: FC = () => {
     const { topic } = useParams()
@@ -39,8 +37,7 @@ export const SearchResults: FC = () => {
     const [articleSumms, setArticleSumms] = useState<SearchArticlesSuccessResult[]>([])
     const [page, setPage] = useState<number>(0)
     const [scraperErrors, setScraperErrors] = useState<SearchArticlesErrorResult[]>([])
-    const [hasSearchError, sethasSearchError] = useState<boolean>(false)
-    const [searchErrorMessage, setSearchErrorMessage] = useState<string>('')
+    const [errorMessage, setErrorMessage] = useState<string>('')
     const { t } = useTranslation()
 
     const setData = (data: SearchResult): void => {
@@ -72,10 +69,8 @@ export const SearchResults: FC = () => {
                 .then(value => {
                     if (value.isSuccess) {
                         setData(value.data)
-                        sethasSearchError(false)
                     } else if (value.isError) {
-                        sethasSearchError(true)
-                        setSearchErrorMessage(getError(ErrorType.FetchError))
+                        setErrorMessage(getError(ErrorType.FetchError))
                     }
                     setMoreIsLoading(prevState => !prevState)
                 })
@@ -91,13 +86,27 @@ export const SearchResults: FC = () => {
         setPage(prevPage => prevPage + 1)
     }
 
+    // For managing requests
     useEffect(() => {
         handleSearchArticles()
     }, [searchArticles, page])
 
+    // For managing error setup
+    useEffect(() => {
+        if (articleSumms.length === 0) {
+            setErrorMessage(t('empty-result-error') + ': ' + topic)
+        } else {
+            setErrorMessage('')
+        }
+        return () => {
+            setErrorMessage('')
+            setScraperErrors([])
+        }
+    }, [articleSumms, setErrorMessage, setScraperErrors])
+
     return (
         <VStack margin='2rem' spacing='1.75rem'>
-            {hasSearchError ? null : (
+            {errorMessage.length > 0 ? null : (
                 <Flex
                     direction={{ base: 'column', sm: 'column', md: 'row' }}
                     align='center'
@@ -117,31 +126,11 @@ export const SearchResults: FC = () => {
                 <Center h='100vh'>
                     <Spinner size='xl' />
                 </Center>
-            ) : hasSearchError ? (
-                <>
-                    <VStack>
-                        <Alert
-                            status='error'
-                            variant='subtle'
-                            flexDirection='column'
-                            textAlign='center'
-                            rounded='2xl'
-                        >
-                            <AlertIcon boxSize='4rem' mr={0} />
-                            <AlertTitle mt={4} mb={1} fontSize='lg'>
-                                {t(searchErrorMessage)}
-                            </AlertTitle>
-                            <IconButton
-                                aria-label='refresh'
-                                icon={<RepeatIcon />}
-                                variant='ghost'
-                                onClick={handleSearchArticles}
-                            />
-                        </Alert>
-                    </VStack>
-                </>
+            ) : errorMessage.length > 0 ? (
+                <ErrorPanel errorMessage={errorMessage} refetchFunction={handleSearchArticles} />
             ) : (
                 <>
+                    <ScraperErrorAlert scraperErrors={scraperErrors} />
                     <SimpleGrid columns={{ sm: 1, lg: 2 }} spacing='2rem'>
                         {articleSumms.map(articleResult => {
                             return articleResult.results.map((articleSumm, index) => {
