@@ -26,29 +26,20 @@ export const SearchArticles: FC = () => {
     const { t } = useTranslation()
     const [topic, setTopic] = useState<string>('')
     const [hasEmptyError, setHasEmptyError] = useState<boolean>(false)
-    const [formErrors, setFormErrors] = useState<string[]>([])
+    const [formError, setFormError] = useState<string>()
     const [hasSearchError, sethasSearchError] = useState<boolean>(false)
 
     const [searchArticles, { isLoading }] = scraperApi.endpoints.searchArticles.useLazyQuery({})
     const navigate = useNavigate()
-
-    const updateFormErrors = (error: string): void => {
-        if (!formErrors.includes(error)) setFormErrors([...formErrors, error])
-    }
-
-    const cleanFormErrors = (): void => {
-        setFormErrors([])
-    }
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         const value = event.target.value
 
         if (value === '') {
             setHasEmptyError(true)
-            updateFormErrors(getError(ErrorType.EmptyTopicError))
+            setFormError(getError(ErrorType.EmptyTopicError))
         } else {
             setHasEmptyError(false)
-            cleanFormErrors()
         }
 
         setTopic(value)
@@ -60,7 +51,7 @@ export const SearchArticles: FC = () => {
         // If the topic is empty set errors and do nothing
         if (topic.trim() === '') {
             setHasEmptyError(true)
-            updateFormErrors(getError(ErrorType.EmptyTopicError))
+            setFormError(getError(ErrorType.EmptyTopicError))
             return
         }
 
@@ -78,7 +69,7 @@ export const SearchArticles: FC = () => {
                 if (value.isSuccess) navigate(`search_results/${topic}`)
                 else if (value.isError) {
                     sethasSearchError(true)
-                    updateFormErrors(getError(ErrorType.FetchError))
+                    setFormError(getError(ErrorType.FetchError))
                 }
             })
             .catch((error: any) => {
@@ -124,20 +115,13 @@ export const SearchArticles: FC = () => {
                                 />
                             </InputGroup>
                             {isLoading ? <Spinner /> : null}
-                            <SlideFade in={hasEmptyError || hasSearchError}>
-                                {formErrors.map((error: string, index: number) => {
-                                    return (
-                                        <FormErrorMessage
-                                            key={index}
-                                            size={{ base: 'sm', md: 'md', lg: 'lg' }}
-                                        >
-                                            <Alert status='error' rounded='full'>
-                                                <AlertIcon />
-                                                <AlertDescription>{t(error)}</AlertDescription>
-                                            </Alert>
-                                        </FormErrorMessage>
-                                    )
-                                })}
+                            <SlideFade in={formError != null ? formError.length > 0 : false}>
+                                <FormErrorMessage size={{ base: 'sm', md: 'md', lg: 'lg' }}>
+                                    <Alert status='error' rounded='full'>
+                                        <AlertIcon />
+                                        <AlertDescription>{t(formError ?? '')}</AlertDescription>
+                                    </Alert>
+                                </FormErrorMessage>
                             </SlideFade>
                         </VStack>
                     </FormControl>
