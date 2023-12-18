@@ -14,8 +14,8 @@ const resources = {
     },
 }
 
-await i18n
-    .use(initReactI18next)
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+i18n.use(initReactI18next)
     .use(LanguageDetector)
     .init({
         resources,

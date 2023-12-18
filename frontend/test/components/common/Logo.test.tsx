@@ -3,15 +3,14 @@
  */
 import { screen } from '@testing-library/react'
 import { renderWithProviders } from '../../../src/utils'
-import { Footer } from '../../../src/components'
+import { Logo } from '../../../src/components'
 import '@testing-library/jest-dom'
 
 describe('Footer component', () => {
     test('Shows the expected information', () => {
-        renderWithProviders(<Footer />)
+        renderWithProviders(<Logo fontSize={{ base: '2rem' }} />)
 
-        expect(
-            screen.getByText(/Adolfo Fanjul Sánchez - Universidade Da Coruña/)
-        ).toBeInTheDocument()
+        expect(screen.getByText(/CON/)).toBeInTheDocument()
+        expect(screen.getByText(/TRAST/)).toBeInTheDocument()
     })
 })
