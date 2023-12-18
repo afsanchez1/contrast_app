@@ -2,6 +2,12 @@ import React, { type PropsWithChildren } from 'react'
 import { render } from '@testing-library/react'
 import type { RenderOptions } from '@testing-library/react'
 import { Provider } from 'react-redux'
+import { ChakraProvider, ColorModeScript } from '@chakra-ui/react'
+import { I18nextProvider } from 'react-i18next'
+import i18n from '../../i18n'
+import theme from '../../theme.ts'
+// import { RouterProvider } from 'react-router-dom'
+// import { router } from '../../main.tsx'
 
 import { setupStore, type AppStore, type RootState } from '../../app/store'
 
@@ -22,7 +28,14 @@ export function renderWithProviders(
 ) {
     // eslint-disable-next-line @typescript-eslint/ban-types
     function Wrapper({ children }: PropsWithChildren<{}>): JSX.Element {
-        return <Provider store={store}>{children}</Provider>
+        return (
+            <Provider store={store}>
+                <ChakraProvider>
+                    <ColorModeScript initialColorMode={theme.config.initialColorMode} />
+                    <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
+                </ChakraProvider>
+            </Provider>
+        )
     }
 
     // Return an object with the store and all of RTL's query functions

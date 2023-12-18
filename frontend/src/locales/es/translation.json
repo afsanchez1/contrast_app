@@ -10,5 +10,7 @@
     "empty-result-error": "No se han encontrado resultados para",
     "error-notification": "Algo ha ido mal",
     "warning": "Atención",
-    "no-results-scraper-error": "No se han podido encontrar resultados de los siguientes periódicos"
+    "no-results-scraper-error": "No se han podido encontrar resultados de los siguientes periódicos",
+    "try-again": "Intentar de nuevo",
+    "search-another-topic": "Buscar otro tema"
 }

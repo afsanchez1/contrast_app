@@ -12,7 +12,7 @@ import { SearchArticles, SearchResults } from './components'
 import { Root, Results } from './layouts'
 
 const store = setupStore()
-const router = createBrowserRouter([
+export const router = createBrowserRouter([
     {
         path: '/',
         element: <Root />,
@@ -44,7 +44,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <ChakraProvider>
                 <ColorModeScript initialColorMode={theme.config.initialColorMode} />
                 <I18nextProvider i18n={i18n}>
-                    <RouterProvider router={router}></RouterProvider>
+                    <RouterProvider router={router} />
                 </I18nextProvider>
             </ChakraProvider>
         </Provider>

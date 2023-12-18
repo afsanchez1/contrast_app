@@ -16,7 +16,7 @@ export const Results: FC = () => {
                 alignItems='center'
             >
                 {/* NavBar */}
-                <GridItem>
+                <GridItem rowSpan={1}>
                     <NavBar
                         hasLogo={true}
                         hasSideBarButton={true}
@@ -25,12 +25,12 @@ export const Results: FC = () => {
                 </GridItem>
 
                 {/* Main Content */}
-                <GridItem>
+                <GridItem rowSpan={10}>
                     <Outlet />
                 </GridItem>
 
                 {/* Footer */}
-                <GridItem textAlign='center'>
+                <GridItem rowSpan={1} textAlign='center'>
                     <Footer />
                 </GridItem>
             </Grid>

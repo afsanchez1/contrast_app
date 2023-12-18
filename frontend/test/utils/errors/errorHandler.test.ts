@@ -1,5 +1,5 @@
-import { getError } from '../../src/utils'
-import { ErrorType } from '../../src/types'
+import { getError } from '../../../src/utils'
+import { ErrorType } from '../../../src/types'
 
 describe('errorHandler test', () => {
     test('Works as expected', () => {
