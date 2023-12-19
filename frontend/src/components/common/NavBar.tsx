@@ -6,32 +6,31 @@ import {
     useColorMode,
     IconButton,
     Link as ChakraLink,
+    useDisclosure,
 } from '@chakra-ui/react'
 import { SunIcon, MoonIcon, HamburgerIcon } from '@chakra-ui/icons'
-import { Logo } from '.'
+import { CollapsedSideBar, Logo, SideBar } from '.'
 import type { FC } from 'react'
-import type { toggleSideBarFunction } from '../../layouts'
 import { Link as ReactRouterLink } from 'react-router-dom'
 
 interface NavBarProps {
     hasLogo: boolean
     hasSideBarButton: boolean
-    toggleSideBar: toggleSideBarFunction
 }
-export const NavBar: FC<NavBarProps> = ({
-    hasLogo,
-    hasSideBarButton,
-    toggleSideBar,
-}: NavBarProps) => {
+export const NavBar: FC<NavBarProps> = ({ hasLogo, hasSideBarButton }: NavBarProps) => {
     const { colorMode, toggleColorMode } = useColorMode()
+    const { isOpen, onToggle } = useDisclosure()
 
     return (
         <Flex as='nav' p='10px' alignItems='center'>
+            <CollapsedSideBar isSidebarOpen={isOpen} toggleSideBar={onToggle}>
+                <SideBar />
+            </CollapsedSideBar>
             {hasSideBarButton ? (
                 <IconButton
                     aria-label='Toggle SideBar'
                     icon={<HamburgerIcon />}
-                    onClick={toggleSideBar}
+                    onClick={onToggle}
                 />
             ) : null}
             <Spacer />

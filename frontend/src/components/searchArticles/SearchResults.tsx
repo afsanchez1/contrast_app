@@ -70,7 +70,7 @@ export const SearchResults: FC = () => {
                     if (value.isSuccess) {
                         setData(value.data)
                     } else if (value.isError) {
-                        setErrorMessage(getError(ErrorType.FetchError))
+                        setErrorMessage(t(getError(ErrorType.FetchError)))
                     }
                     setMoreIsLoading(prevState => !prevState)
                 })

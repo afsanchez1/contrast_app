@@ -6,7 +6,7 @@ import { renderWithProviders } from '../../../src/utils'
 import { Logo } from '../../../src/components'
 import '@testing-library/jest-dom'
 
-describe('Footer component', () => {
+describe('Logo component', () => {
     test('Shows the expected information', () => {
         renderWithProviders(<Logo fontSize={{ base: '2rem' }} />)
 

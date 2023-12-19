@@ -1,12 +1,10 @@
-import { Grid, GridItem, useDisclosure } from '@chakra-ui/react'
+import { Grid, GridItem } from '@chakra-ui/react'
 import type { FC } from 'react'
 import { Outlet } from 'react-router-dom'
-import { SideBar, NavBar, CollapsedSideBar, Footer } from '../components'
+import { NavBar, Footer } from '../components'
 
 export type toggleSideBarFunction = () => void
 export const Results: FC = () => {
-    const { isOpen, onToggle } = useDisclosure()
-
     return (
         <>
             <Grid
@@ -17,11 +15,7 @@ export const Results: FC = () => {
             >
                 {/* NavBar */}
                 <GridItem rowSpan={1}>
-                    <NavBar
-                        hasLogo={true}
-                        hasSideBarButton={true}
-                        toggleSideBar={onToggle}
-                    ></NavBar>
+                    <NavBar hasLogo={true} hasSideBarButton={true} />
                 </GridItem>
 
                 {/* Main Content */}
@@ -34,9 +28,6 @@ export const Results: FC = () => {
                     <Footer />
                 </GridItem>
             </Grid>
-            <CollapsedSideBar isSidebarOpen={isOpen} toggleSideBar={onToggle}>
-                <SideBar />
-            </CollapsedSideBar>
         </>
     )
 }
