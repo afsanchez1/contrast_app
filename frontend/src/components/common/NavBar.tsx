@@ -26,6 +26,7 @@ export const NavBar: FC<NavBarProps> = ({ hasLogo, hasSideBarButton }: NavBarPro
             </CollapsedSideBar>
             {hasSideBarButton ? (
                 <IconButton
+                    data-testid='side-bar-button'
                     aria-label='Toggle SideBar'
                     icon={<HamburgerIcon />}
                     onClick={onToggle}
@@ -35,7 +36,7 @@ export const NavBar: FC<NavBarProps> = ({ hasLogo, hasSideBarButton }: NavBarPro
             {hasLogo ? <Logo fontSize={{ base: '2rem' }} /> : null}
             <Spacer />
             <HStack spacing='20px'>
-                <Button onClick={toggleColorMode}>
+                <Button data-testid='theme-mode-button' onClick={toggleColorMode}>
                     {colorMode === 'light' ? <SunIcon /> : <MoonIcon />}
                 </Button>
             </HStack>

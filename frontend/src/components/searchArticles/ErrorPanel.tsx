@@ -41,10 +41,18 @@ export const ErrorPanel: FC<ErrorPanelProps> = ({ errorMessage, refetchFunction 
                     <AlertDescription>{errorMessage}</AlertDescription>
                 </Alert>
                 <HStack alignContent='center' justifyContent='center' spacing={3} mt='1rem'>
-                    <Button leftIcon={<RepeatIcon />} onClick={refetchFunction}>
+                    <Button
+                        data-testid='refetch-button'
+                        leftIcon={<RepeatIcon />}
+                        onClick={refetchFunction}
+                    >
                         {t('try-again')}
                     </Button>
-                    <Button leftIcon={<SearchIcon />} onClick={handleNavigate}>
+                    <Button
+                        data-testid='search-another-topic-button'
+                        leftIcon={<SearchIcon />}
+                        onClick={handleNavigate}
+                    >
                         {t('search-another-topic')}
                     </Button>
                 </HStack>
