@@ -1,1 +1,1 @@
-export { renderWithProviders } from './testUtils'
+export { renderWithProviders, buildSingleRouterWrapper } from './testUtils'

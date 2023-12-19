@@ -12,7 +12,7 @@ import { SearchArticles, SearchResults } from './components'
 import { Root, Results } from './layouts'
 
 const store = setupStore()
-export const router = createBrowserRouter([
+const router = createBrowserRouter([
     {
         path: '/',
         element: <Root />,

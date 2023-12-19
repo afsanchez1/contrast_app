@@ -2,5 +2,6 @@
     "preset": "ts-jest",
     "testEnvironment": "node",
     "collectCoverage": true,
-    "coverageReporters": ["lcov", "text", "html"]
+    "coverageReporters": ["lcov", "text", "html"],
+    "setupFilesAfterEnv": ["@testing-library/jest-dom", "./test/test.setup.ts"]
 }

@@ -1,4 +1,4 @@
-import React, { type PropsWithChildren } from 'react'
+import React, { type ReactElement, type PropsWithChildren } from 'react'
 import { render } from '@testing-library/react'
 import type { RenderOptions } from '@testing-library/react'
 import { Provider } from 'react-redux'
@@ -6,10 +6,8 @@ import { ChakraProvider, ColorModeScript } from '@chakra-ui/react'
 import { I18nextProvider } from 'react-i18next'
 import i18n from '../../i18n'
 import theme from '../../theme.ts'
-// import { RouterProvider } from 'react-router-dom'
-// import { router } from '../../main.tsx'
-
 import { setupStore, type AppStore, type RootState } from '../../app/store'
+import { MemoryRouter } from 'react-router-dom'
 
 interface ExtendedRenderOptions extends Omit<RenderOptions, 'queries'> {
     preloadedState?: Partial<RootState>
@@ -40,4 +38,8 @@ export function renderWithProviders(
 
     // Return an object with the store and all of RTL's query functions
     return { store, ...render(ui, { wrapper: Wrapper, ...renderOptions }) }
+}
+
+export function buildSingleRouterWrapper(children: ReactElement<any, any>): JSX.Element {
+    return <MemoryRouter initialEntries={['/']}>{children}</MemoryRouter>
 }

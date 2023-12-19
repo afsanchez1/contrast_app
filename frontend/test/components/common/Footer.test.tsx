@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import 'whatwg-fetch'
 import { screen } from '@testing-library/react'
 import { renderWithProviders } from '../../../src/utils'
 import { Footer } from '../../../src/components'
