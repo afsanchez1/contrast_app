@@ -1,4 +1,4 @@
-import { Flex, IconButton, Slide, Spacer } from '@chakra-ui/react'
+import { Flex, IconButton, Slide, Spacer, useColorMode } from '@chakra-ui/react'
 import type { toggleSideBarFunction } from '../../layouts'
 import type { FC, ReactNode } from 'react'
 import { SmallCloseIcon } from '@chakra-ui/icons'
@@ -13,12 +13,13 @@ export const CollapsedSideBar: FC<CollapsedSideBarProps> = ({
     toggleSideBar,
     children,
 }) => {
+    const { colorMode } = useColorMode()
     return (
         <Slide direction='left' in={isSidebarOpen} style={{ zIndex: 10 }}>
             <Flex
                 direction='column'
-                backgroundColor='gray.400'
-                width={{ base: '100%', sm: '60%', md: '50%', lg: '30%' }}
+                backgroundColor={colorMode === 'light' ? 'gray.300' : 'gray.700'}
+                width={{ base: '100%', sm: '70%', md: '50%', lg: '30%' }}
                 height='100%'
             >
                 <Flex alignItems='center' p={3}>

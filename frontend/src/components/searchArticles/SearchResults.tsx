@@ -14,6 +14,7 @@ import {
     Spinner,
     Text,
     VStack,
+    useColorMode,
 } from '@chakra-ui/react'
 import { type FC, useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
@@ -39,6 +40,7 @@ export const SearchResults: FC = () => {
     const [scraperErrors, setScraperErrors] = useState<SearchArticlesErrorResult[]>([])
     const [errorMessage, setErrorMessage] = useState<string>('')
     const { t } = useTranslation()
+    const { colorMode } = useColorMode()
 
     const setData = (data: SearchResult): void => {
         // Filter the errors and set them
@@ -72,17 +74,17 @@ export const SearchResults: FC = () => {
                     } else if (value.isError) {
                         setErrorMessage(t(getError(ErrorType.FetchError)))
                     }
-                    setMoreIsLoading(prevState => !prevState)
+                    setMoreIsLoading(false)
                 })
                 .catch((error: any) => {
                     console.log(error)
-                    setMoreIsLoading(prevState => !prevState)
+                    setMoreIsLoading(false)
                 })
         }
     }
 
     const handleShowMore = (): void => {
-        setMoreIsLoading(prevState => !prevState)
+        setMoreIsLoading(true)
         setPage(prevPage => prevPage + 1)
     }
 
@@ -135,7 +137,13 @@ export const SearchResults: FC = () => {
                         {articleSumms.map(articleResult => {
                             return articleResult.results.map((articleSumm, index) => {
                                 return (
-                                    <Card key={index}>
+                                    <Card
+                                        key={index}
+                                        boxShadow='lg'
+                                        bgColor={
+                                            colorMode === 'light' ? 'gray.50' : 'blackAlpha.400'
+                                        }
+                                    >
                                         <CardHeader>
                                             <Link href={articleSumm.url}>
                                                 <HStack spacing='0.5rem'>
