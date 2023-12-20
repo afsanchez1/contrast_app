@@ -52,6 +52,7 @@ export const ScraperErrorAlert: FC<ScraperErrorAlertProps> = ({ scraperErrors })
                 </VStack>
                 <Spacer />
                 <CloseButton
+                    data-testid='scraper-alert-close-button'
                     alignSelf='flex-start'
                     position='relative'
                     right={-1}
