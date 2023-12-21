@@ -66,14 +66,15 @@ export const SearchArticles: FC = () => {
 
         searchArticles(queryParams, false)
             .then(value => {
-                if (value.isSuccess) navigate(`search_results/${topic}`)
-                else if (value.isError) {
+                if (value.isSuccess) {
+                    navigate(`search_results/${topic}`)
+                } else if (value.isError) {
                     sethasSearchError(true)
                     setFormError(getError(ErrorType.FetchError))
                 }
             })
             .catch((error: any) => {
-                console.log(error)
+                console.error(error)
             })
     }
 
@@ -102,6 +103,7 @@ export const SearchArticles: FC = () => {
                                 </InputLeftElement>
                                 <Input
                                     type='search'
+                                    aria-label='search-input'
                                     placeholder={t('search-a-topic')}
                                     mb={{ base: '0.15rem', md: '0.25rem', lg: '0.5rem' }}
                                     rounded='full'

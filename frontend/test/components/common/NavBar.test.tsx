@@ -14,8 +14,7 @@ describe('NavBar component', () => {
         renderWithProviders(
             buildSingleRouterWrapper(<NavBar hasLogo={true} hasSideBarButton={false} />)
         )
-        expect(screen.getByText(/CON/)).toBeInTheDocument()
-        expect(screen.getByText(/TRAST/)).toBeInTheDocument()
+        expect(screen.getByTestId('contrast-logo')).toBeInTheDocument()
         expect(screen.queryByTestId('side-bar-button')).toBeNull()
     })
 
@@ -24,8 +23,7 @@ describe('NavBar component', () => {
             buildSingleRouterWrapper(<NavBar hasLogo={false} hasSideBarButton={true} />)
         )
 
-        expect(screen.queryByText(/CON/)).toBeNull()
-        expect(screen.queryByText(/TRAST/)).toBeNull()
+        expect(screen.queryByTestId('contrast-logo')).toBeNull()
         expect(screen.getByTestId('side-bar-button')).toBeInTheDocument()
     })
 
@@ -33,8 +31,7 @@ describe('NavBar component', () => {
         renderWithProviders(
             buildSingleRouterWrapper(<NavBar hasLogo={false} hasSideBarButton={false} />)
         )
-        expect(screen.queryByText(/CON/)).toBeNull()
-        expect(screen.queryByText(/TRAST/)).toBeNull()
+        expect(screen.queryByTestId('contrast-logo')).toBeNull()
         expect(screen.queryByTestId('side-bar-button')).toBeNull()
     })
 

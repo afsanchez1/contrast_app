@@ -18,7 +18,7 @@ export const Logo: FC<LogoProps> = ({ fontSize }: LogoProps) => {
 
     return (
         <ChakraLink as={ReactRouterLink} to='/' _hover={{ textDecoration: 'none' }}>
-            <Box as='header'>
+            <Box as='header' data-testid='contrast-logo'>
                 <Heading
                     as='h1'
                     fontSize={fontSize}
