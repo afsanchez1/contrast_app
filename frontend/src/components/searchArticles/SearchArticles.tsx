@@ -116,7 +116,7 @@ export const SearchArticles: FC = () => {
                                     }}
                                 />
                             </InputGroup>
-                            {isLoading ? <Spinner /> : null}
+                            {isLoading ? <Spinner data-testid='search-spinner' /> : null}
                             <SlideFade in={formError != null ? formError.length > 0 : false}>
                                 <FormErrorMessage size={{ base: 'sm', md: 'md', lg: 'lg' }}>
                                     <Alert status='error' rounded='full'>

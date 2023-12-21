@@ -91,7 +91,7 @@ export const SearchResults: FC = () => {
     // For managing requests
     useEffect(() => {
         handleSearchArticles()
-    }, [searchArticles, page])
+    }, [page])
 
     // For managing error setup
     useEffect(() => {
@@ -126,7 +126,7 @@ export const SearchResults: FC = () => {
 
             {isLoading ? (
                 <Center h='100vh'>
-                    <Spinner size='xl' />
+                    <Spinner data-testid='search-results-spinner' size='xl' />
                 </Center>
             ) : errorMessage.length > 0 ? (
                 <ErrorPanel errorMessage={errorMessage} refetchFunction={handleSearchArticles} />

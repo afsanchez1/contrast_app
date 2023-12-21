@@ -37,8 +37,8 @@ function searchArticles(limit: number): SearchResult {
 }
 
 export const testTopic = 'testTopic'
-
-const baseServer = nock(baseUrl).get('/search_articles').query({
+const path = '/search_articles'
+const baseServer = nock(baseUrl).get(path).query({
     topic: testTopic,
     page: 0,
     limit: 4,
@@ -50,11 +50,15 @@ const headers = {
 }
 
 export const setupSuccess = (): void => {
-    baseServer.reply(200, searchArticles(2), headers)
-}
-
-export const setupPartialError = (): void => {
-    baseServer.reply(200, [...searchArticles(2), errorResult], headers)
+    baseServer
+        .reply(200, searchArticles(2), headers)
+        .get(path)
+        .query({
+            topic: testTopic,
+            page: 1,
+            limit: 4,
+        })
+        .reply(200, searchArticles(3), headers)
 }
 
 export const setupTotalError = (): void => {
@@ -62,7 +66,7 @@ export const setupTotalError = (): void => {
 }
 
 export const setupDelayed = (): void => {
-    baseServer.delay(1500).reply(200, searchArticles(2), headers)
+    baseServer.delay(200).reply(200, searchArticles(2), headers)
 }
 
 export const setupNetworkError = (): void => {

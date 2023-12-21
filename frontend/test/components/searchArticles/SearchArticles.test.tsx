@@ -152,3 +152,26 @@ describe('Successful search', () => {
         })
     })
 })
+
+describe('Loading search results', () => {
+    test('Displays spinner', async () => {
+        renderWithProviders(buildSingleRouterWrapper(<SearchArticles />))
+
+        const inputValue = testTopic
+        const input = screen.getByLabelText('search-input')
+
+        userEvent.type(input, inputValue)
+
+        await waitFor(() => {
+            expect(input).toHaveValue(inputValue)
+        })
+
+        // User clicks the input and submits
+        userEvent.click(input)
+        userEvent.keyboard('[Enter]')
+
+        await waitFor(() => {
+            expect(screen.getByTestId('search-spinner')).toBeInTheDocument()
+        })
+    })
+})
