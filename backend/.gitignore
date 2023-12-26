@@ -28,5 +28,5 @@ newspaper_scraper-*.tar
 # HTMLs from resources
 /resources/test/el_pais/*.html
 
-# Code documentation
-/doc
+# Crash logs
+erl_crash.dump

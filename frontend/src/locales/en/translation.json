@@ -1,0 +1,16 @@
+{
+    "menu": "Menu",
+    "search-articles": "Search articles",
+    "search-a-topic": "Search a topic...",
+    "empty-topic-error": "Please, introduce a topic",
+    "fetch-error": "An error ocurred, try again later",
+    "unknown-error": "Something went wrong",
+    "results-for": "Showing results for",
+    "show-more": "Show more",
+    "empty-result-error": "No results found for",
+    "error-notification": "An error ocurred",
+    "warning": "Warning",
+    "no-results-scraper-error": "Could not find results for the next newspapers",
+    "try-again": "Try again",
+    "search-another-topic": "Search another topic"
+}

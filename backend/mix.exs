@@ -29,6 +29,7 @@ defmodule NewspaperScraper.MixProject do
       {:jason, "~> 1.4.1"},
       {:gen_stage, "~> 1.2"},
       {:plug_cowboy, "~> 2.6"},
+      {:cors_plug, "~> 3.0"},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.30.9", only: :dev, runtime: false}

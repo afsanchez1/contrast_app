@@ -1,0 +1,16 @@
+{
+    "menu": "Menú",
+    "search-articles": "Buscar artículos",
+    "search-a-topic": "Busca un tema...",
+    "empty-topic-error": "Por favor, introduce un tema",
+    "fetch-error": "Ha ocurrido un error, inténtelo más tarde",
+    "unknown-error": "Algo ha ido mal",
+    "results-for": "Mostrando resultados para",
+    "show-more": "Mostrar más",
+    "empty-result-error": "No se han encontrado resultados para",
+    "error-notification": "Algo ha ido mal",
+    "warning": "Atención",
+    "no-results-scraper-error": "No se han podido encontrar resultados de los siguientes periódicos",
+    "try-again": "Intentar de nuevo",
+    "search-another-topic": "Buscar otro tema"
+}
