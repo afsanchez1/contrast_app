@@ -15,15 +15,32 @@ import {
 } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
 
+/**
+ * A function for transforming the scraper name
+ * @param {string} scraperName
+ * @returns {string}
+ */
 function getNewspaperName(scraperName: string): string {
     if (scraperName === 'el-pais') return 'El País'
     return 'Unknown newspaper'
 }
 
-interface ScraperErrorAlertProps {
+/**
+ * Props for ScraperErrorAlert
+ */
+export interface ScraperErrorAlertProps {
+    /**
+     * A list of possible scraper errors
+     */
     scraperErrors: SearchArticlesErrorResult[]
 }
 
+/**
+ * ScraperErrorAlert is a custom React component for displaying minor search errors
+ * such as a failure in just one of the scrapers but no errors in the rest
+ * @param {ScraperErrorAlertProps}
+ * @returns {JSX.Element}
+ */
 export const ScraperErrorAlert: FC<ScraperErrorAlertProps> = ({ scraperErrors }) => {
     const { isOpen: isVisible, onClose } = useDisclosure({ defaultIsOpen: true })
 

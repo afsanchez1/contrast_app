@@ -3,7 +3,10 @@ import type { FC } from 'react'
 import { Outlet } from 'react-router-dom'
 import { NavBar, Footer } from '../components'
 
-export type toggleSideBarFunction = () => void
+/**
+ * Results is a custom React component for creating the search result displaying layout of the app
+ * @returns {JSX.Element}
+ */
 export const Results: FC = () => {
     return (
         <>

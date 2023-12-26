@@ -22,6 +22,10 @@ import { ErrorType } from '../../types'
 import { getError } from '../../utils'
 import { SearchIcon } from '@chakra-ui/icons'
 
+/**
+ * SearchArticles is a custom React component for searching articles of any topic
+ * @returns {JSX.Element}
+ */
 export const SearchArticles: FC = () => {
     const { t } = useTranslation()
     const [topic, setTopic] = useState<string>('')

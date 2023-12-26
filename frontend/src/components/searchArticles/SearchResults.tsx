@@ -31,6 +31,10 @@ import { getError, parseDateTime } from '../../utils'
 import { ErrorPanel } from './ErrorPanel'
 import { ScraperErrorAlert } from './ScraperErrorAlert'
 
+/**
+ * SearchResults is a custom React component for displaying search results
+ * @returns {JSX.Element}
+ */
 export const SearchResults: FC = () => {
     const { topic } = useParams()
     const [searchArticles, { isLoading }] = scraperApi.endpoints.searchArticles.useLazyQuery({})

@@ -12,11 +12,25 @@ import type { FC } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
-interface ErrorPanelProps {
+/**
+ * Props for ErrorPanel
+ */
+export interface ErrorPanelProps {
+    /**
+     * An error message
+     */
     errorMessage: string
+    /**
+     * A refetch function
+     */
     refetchFunction: () => void
 }
 
+/**
+ * ErrorPanel is a custom React component for displaying search errors and refetching results
+ * @param {ErrorPanelProps}
+ * @returns {JSX.Element}
+ */
 export const ErrorPanel: FC<ErrorPanelProps> = ({ errorMessage, refetchFunction }) => {
     const { t } = useTranslation()
     const navigate = useNavigate()

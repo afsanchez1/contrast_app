@@ -1,13 +1,30 @@
 import { Flex, IconButton, Slide, Spacer, useColorMode } from '@chakra-ui/react'
-import type { toggleSideBarFunction } from '../../layouts'
 import type { FC, ReactNode } from 'react'
 import { SmallCloseIcon } from '@chakra-ui/icons'
-interface CollapsedSideBarProps {
+
+/**
+ * Props for CollapsedSideBar
+ */
+export interface CollapsedSideBarProps {
+    /**
+     * The boolean for controlling if the sidebar is opened
+     */
     isSidebarOpen: boolean
-    toggleSideBar: toggleSideBarFunction
+    /**
+     * The function for opening the sidebar
+     */
+    toggleSideBar: () => void
+    /**
+     * The children of the component
+     */
     children: ReactNode
 }
 
+/**
+ * CollapsedSideBar is a custom React component that enables a sidebar to be collapsable
+ * @param {CollapsedSideBarProps}
+ * @returns {JSX.Element}
+ */
 export const CollapsedSideBar: FC<CollapsedSideBarProps> = ({
     isSidebarOpen,
     toggleSideBar,

@@ -1,6 +1,10 @@
 import { Text } from '@chakra-ui/react'
 import type { FC } from 'react'
 
+/**
+ * Footer is a custom React component that displays information about the author of this project
+ * @returns {JSX.Element}
+ */
 export const Footer: FC = () => {
     return (
         <Text

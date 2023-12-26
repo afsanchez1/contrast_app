@@ -11,11 +11,25 @@ import { SunIcon, MoonIcon, HamburgerIcon } from '@chakra-ui/icons'
 import { CollapsedSideBar, Logo, SideBar } from '.'
 import type { FC } from 'react'
 
-interface NavBarProps {
+/**
+ * Props for NavBar
+ */
+export interface NavBarProps {
+    /**
+     * A boolean for controlling logo displaying
+     */
     hasLogo: boolean
+    /**
+     * A boolean for controlling toggle sidebar button displaying
+     */
     hasSideBarButton: boolean
 }
-export const NavBar: FC<NavBarProps> = ({ hasLogo, hasSideBarButton }: NavBarProps) => {
+/**
+ * NavBar is a custom React component for the navigation bar of the app
+ * @param {NavBarProps}
+ * @returns {JSX.Element}
+ */
+export const NavBar: FC<NavBarProps> = ({ hasLogo, hasSideBarButton }) => {
     const { colorMode, toggleColorMode } = useColorMode()
     const { isOpen, onToggle } = useDisclosure()
 

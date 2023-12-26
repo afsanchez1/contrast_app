@@ -10,10 +10,24 @@ import {
 } from '@chakra-ui/react'
 import { Link as ReactRouterLink } from 'react-router-dom'
 
-interface LogoProps extends HeadingProps {
+/**
+ * Props for Logo
+ */
+export interface LogoProps extends HeadingProps {
+    /**
+     * A responsive object from the ChakraUI library that enables the fontsize
+     * to change based on screen size
+     * @example {base: '1rem', sm: '1.25rem', md: '1.5rem'}
+     */
     fontSize: ResponsiveObject<string | number>
 }
-export const Logo: FC<LogoProps> = ({ fontSize }: LogoProps) => {
+
+/**
+ * Logo is a custom React component created to represent the app logo
+ * @param {LogoProps}
+ * @returns {JSX.Element}
+ */
+export const Logo: FC<LogoProps> = ({ fontSize }) => {
     const { colorMode } = useColorMode()
 
     return (

@@ -3,6 +3,10 @@ import { Divider, Heading, List, ListItem, Flex, Link as ChakraLink } from '@cha
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
+/**
+ * SideBar is a custom React component for the inner content of the CollapsedSideBar
+ * @returns {JSX.Element}
+ */
 export const SideBar: FC = () => {
     const { t } = useTranslation()
 
