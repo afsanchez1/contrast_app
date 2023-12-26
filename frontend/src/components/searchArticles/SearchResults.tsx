@@ -50,7 +50,7 @@ export const SearchResults: FC = () => {
 
         setScraperErrors([...scraperErrors, ...errorResults])
 
-        // Filter the successful responses and set it
+        // Filter the successful responses and set them
         const successResults = data.filter(searchResult => {
             return 'scraper' in searchResult
         }) as SearchArticlesSuccessResult[]
@@ -113,12 +113,13 @@ export const SearchResults: FC = () => {
                     direction={{ base: 'column', sm: 'column', md: 'row' }}
                     align='center'
                     justify='center'
+                    textAlign='center'
                 >
-                    <Heading as='h1' fontSize='1.75rem'>
+                    <Heading as='h1' fontSize={{ base: '1.5rem', md: '1.75rem' }}>
                         {t('results-for') + ': '}
                     </Heading>
                     <Spacer ml='1rem' />
-                    <Text as='i' fontSize='1.75rem'>
+                    <Text as='i' fontSize={{ base: '1.5rem', md: '1.75rem' }}>
                         {topic}
                     </Text>
                 </Flex>

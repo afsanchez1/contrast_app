@@ -37,7 +37,11 @@ export const NavBar: FC<NavBarProps> = ({ hasLogo, hasSideBarButton }: NavBarPro
             <Spacer />
             <HStack spacing='20px'>
                 <Button data-testid='theme-mode-button' onClick={toggleColorMode}>
-                    {colorMode === 'light' ? <SunIcon /> : <MoonIcon />}
+                    {colorMode === 'light' ? (
+                        <SunIcon data-testid='sun-icon' />
+                    ) : (
+                        <MoonIcon data-testid='moon-icon' />
+                    )}
                 </Button>
             </HStack>
         </Flex>
