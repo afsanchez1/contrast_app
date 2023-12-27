@@ -1,7 +1,7 @@
 defmodule NewspaperScraper.Utils.Core.ParsingUtils do
   alias NewspaperScraper.Model.Article
   alias NewspaperScraper.Core.ScraperParser
-  alias NewspaperScraper.Core.Scraper
+  alias NewspaperScraper.Core.ScraperParser
 
   @moduledoc """
   Parsing utilities for the scrapers
@@ -10,7 +10,7 @@ defmodule NewspaperScraper.Utils.Core.ParsingUtils do
   @doc """
   Tries to find an element using a selector
   """
-  @spec find_element(Scraper.html_tree(), list()) :: list() | {:error, :not_found}
+  @spec find_element(ScraperParser.html_tree(), list()) :: list() | {:error, :not_found}
   def find_element(_html, []) do
     {:error, :not_found}
   end
@@ -76,7 +76,7 @@ defmodule NewspaperScraper.Utils.Core.ParsingUtils do
   @doc """
   Converts parsed html to our defined Article struct
   """
-  @spec html_to_article(html :: Scraper.html_tree(), url :: String.t(), scraper :: module()) ::
+  @spec html_to_article(html :: ScraperParser.html_tree(), url :: String.t(), scraper :: module()) ::
           {:ok, Article.t()} | {:error, any()}
   def html_to_article(html, url, scraper) do
     temp_art =

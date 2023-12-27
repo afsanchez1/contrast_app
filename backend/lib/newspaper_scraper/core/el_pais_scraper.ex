@@ -157,7 +157,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # -----------------------------------------------------------------------------------
 
   #  Checks if an article is premium
-  @spec check_premium(html :: Scraper.html_tree()) :: true | false
+  @spec check_premium(html :: ScraperParser.html_tree()) :: true | false
   def check_premium(html) do
     selectors = get_selectors(:check_premium)
 
