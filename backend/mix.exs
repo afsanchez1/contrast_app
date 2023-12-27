@@ -32,7 +32,8 @@ defmodule NewspaperScraper.MixProject do
       {:cors_plug, "~> 3.0"},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.30.9", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.30.9", only: :dev, runtime: false},
+      {:codepagex, "~> 0.1.6"}
     ]
   end
 

@@ -10,7 +10,8 @@ defmodule NewspaperScraper.Utils.Core.ParsingUtils do
   @doc """
   Tries to find an element using a selector
   """
-  @spec find_element(ScraperParser.html_tree(), list()) :: list() | {:error, :not_found}
+  @spec find_element(ScraperParser.html_tree(), list()) ::
+          {:ok, ScraperParser.html_tree()} | {:error, :not_found}
   def find_element(_html, []) do
     {:error, :not_found}
   end
@@ -18,7 +19,7 @@ defmodule NewspaperScraper.Utils.Core.ParsingUtils do
   def find_element(html, [selector | t]) do
     case Floki.find(html, selector) do
       [] -> find_element(html, t)
-      found -> found
+      found -> {:ok, found}
     end
   end
 
@@ -102,5 +103,21 @@ defmodule NewspaperScraper.Utils.Core.ParsingUtils do
       errors ->
         {:error, errors}
     end
+  end
+
+  @doc """
+  Returns a normalized name string
+
+  ## Examples
+
+      iex> normalize_name("JOHN DOE")
+      "John Doe"
+  """
+  @spec normalize_name(String.t()) :: String.t()
+  def normalize_name(name) do
+    name
+    |> String.split(" ", trim: true)
+    |> Enum.map(&String.capitalize(&1))
+    |> Enum.join(" ")
   end
 end

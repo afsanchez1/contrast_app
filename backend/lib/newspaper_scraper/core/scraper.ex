@@ -24,12 +24,12 @@ defmodule NewspaperScraper.Core.Scraper do
   Searches articles based on a topic
   """
   @callback search_articles(topic :: String.t(), page :: integer(), limit :: integer()) ::
-              {:ok, list(map())} | {:error, any()}
+              {:ok, any()} | {:error, any()}
 
   @doc """
   Parses search results
   """
-  @callback parse_search_results(articles :: list(map())) ::
+  @callback parse_search_results(articles :: any()) ::
               {:ok, list(ArticleSummary.t())} | {:error, any()}
 
   @doc """

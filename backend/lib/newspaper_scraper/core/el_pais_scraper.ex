@@ -30,7 +30,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   def get_scraper_name, do: @scraper_name
 
   @impl Scraper
-  def get_newspaper_name, do: "El País"
+  def get_newspaper_name, do: @newspaper_name
 
   # -----------------------------------------------------------------------------------
 
@@ -163,7 +163,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
     case ParsingUtils.find_element(html, selectors) do
       {:error, :not_found} -> false
-      _other -> true
+      {:ok, _found} -> true
     end
   end
 
