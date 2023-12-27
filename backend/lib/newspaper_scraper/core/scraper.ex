@@ -5,23 +5,20 @@ defmodule NewspaperScraper.Core.Scraper do
   alias NewspaperScraper.Model.ArticleSummary
   alias NewspaperScraper.Model.Article
 
-  @type selector :: Floki.css_selector()
-  @type html_tree :: Floki.html_tree()
-
   @doc """
   Returns the name of the scraper
   """
   @callback get_scraper_name() :: String.t()
 
   @doc """
+  Returns the name of the newspaper
+  """
+  @callback get_newspaper_name() :: String.t()
+
+  @doc """
   Checks if the url belongs to the scraper
   """
   @callback scraper_check(url :: String.t()) :: :ok | {:error, any()}
-
-  @doc """
-  Provides the selectors needed for a specific function
-  """
-  @callback get_selectors(function :: atom()) :: list(selector()) | nil
 
   @doc """
   Searches articles based on a topic
