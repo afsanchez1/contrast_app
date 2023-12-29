@@ -36,11 +36,11 @@ defmodule NewspaperScraper.Core.Scraper do
   Requests the article HTML
   """
   @callback get_article(url :: String.t()) ::
-              {:ok, {html_doc :: binary(), url :: String.t()}} | {:error, any()}
+              {:ok, {html_doc :: String.t(), url :: String.t()}} | {:error, any()}
 
   @doc """
   Parses the article HTML
   """
-  @callback parse_article(article :: binary(), url :: String.t()) ::
+  @callback parse_article(article :: String.t(), url :: String.t()) ::
               {:ok, Article.t()} | {:error, any()}
 end

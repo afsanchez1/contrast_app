@@ -47,11 +47,11 @@ defmodule Core.ElMundoScraperTest do
   # -----------------------------------------------------------------------------------
 
   # TODO implement function and tests
-  describe "get_selectors/1" do
-    test "finds all selectors" do
-      assert :ok === :error
-    end
-  end
+  # describe "get_selectors/1" do
+  #  test "finds all selectors" do
+  #    assert :ok === :error
+  #  end
+  # end
 
   # -----------------------------------------------------------------------------------
 end

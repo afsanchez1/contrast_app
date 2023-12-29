@@ -1,11 +1,11 @@
 defmodule NewspaperScraper.Utils.Core.ParsingUtils do
-  alias NewspaperScraper.Model.Article
-  alias NewspaperScraper.Core.ScraperParser
-  alias NewspaperScraper.Core.ScraperParser
-
   @moduledoc """
   Parsing utilities for the scrapers
   """
+
+  alias NewspaperScraper.Model.Article
+  alias NewspaperScraper.Core.ScraperParser
+  alias NewspaperScraper.Core.ScraperParser
 
   @doc """
   Tries to find an element using a selector
@@ -44,13 +44,14 @@ defmodule NewspaperScraper.Utils.Core.ParsingUtils do
   """
   @spec parse(map(), atom(), ScraperParser.html_tree(), scraper :: module()) :: map()
   def parse(parsed_art, fun, html, scraper) do
-    selectors = scraper.get_selectors(fun)
+    selectors =
+      scraper.get_selectors(fun)
 
     case find_element(html, selectors) do
       {:error, :not_found} ->
         Map.put(parsed_art, fun, {:error, "HTML not found"})
 
-      found_html ->
+      {:ok, found_html} ->
         case fun do
           :parse_art_header -> scraper.parse_art_header(parsed_art, found_html)
           :parse_art_authors -> scraper.parse_art_authors(parsed_art, found_html)
@@ -117,7 +118,33 @@ defmodule NewspaperScraper.Utils.Core.ParsingUtils do
   def normalize_name(name) do
     name
     |> String.split(" ", trim: true)
-    |> Enum.map(&String.capitalize(&1))
-    |> Enum.join(" ")
+    |> Enum.map_join(" ", &String.capitalize(&1))
+  end
+
+  @doc """
+  Checks by url if an article is premium
+  """
+  @spec search_check_premium(url :: String.t(), scraper :: module()) :: true | false
+  def search_check_premium(url, scraper) do
+    with {:ok, {body, _url}} <- scraper.get_article(url),
+         {:ok, html} <- Floki.parse_document(body) do
+      check_premium(html, scraper)
+    else
+      # If we cannot determine if the article is premium, we assume it is (for security reasons)
+      _e -> true
+    end
+  end
+
+  @doc """
+  Checks if an article is premium
+  """
+  @spec check_premium(html :: ScraperParser.html_tree(), scraper :: module()) :: true | false
+  def check_premium(html, scraper) do
+    selectors = scraper.get_selectors(:check_premium)
+
+    case find_element(html, selectors) do
+      {:error, :not_found} -> false
+      {:ok, _found} -> true
+    end
   end
 end

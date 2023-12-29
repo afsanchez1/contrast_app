@@ -5,6 +5,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   alias NewspaperScraper.Core.ElPaisScraper
   alias NewspaperScraper.Core.ScraperParser
   alias NewspaperScraper.Core.Scraper
+  alias NewspaperScraper.Core.ScraperCommImpl
   alias NewspaperScraper.Utils.Core.ParsingUtils
   alias NewspaperScraper.Model.ArticleSummary
   alias NewspaperScraper.Model.Author
@@ -36,10 +37,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   @impl Scraper
   def scraper_check(url) do
-    case String.contains?(url, "elpais.com") do
-      true -> :ok
-      false -> {:error, "invalid url"}
-    end
+    ScraperCommImpl.aux_scraper_check(url, "elpais.com")
   end
 
   # -----------------------------------------------------------------------------------
@@ -91,7 +89,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
         fn article ->
           date_time = parse_search_date_time(article["updatedTs"])
           authors = parse_search_authors(article["authors"])
-          is_premium = search_check_premium(article["url"])
+          is_premium = ParsingUtils.search_check_premium(article["url"], ElPaisScraper)
 
           %ArticleSummary{
             newspaper: @newspaper_name,
@@ -140,55 +138,18 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
     )
   end
 
-  # -----------------------------------------------------------------------------------
-
-  # Checks if the articles found are premium
-  @spec search_check_premium(url :: String.t()) :: true | false
-  defp search_check_premium(url) do
-    with {:ok, {body, _url}} <- get_article(url),
-         {:ok, html} <- Floki.parse_document(body) do
-      check_premium(html)
-    else
-      # If we cannot determine if the article is premium, we assume it is (for security reasons)
-      _e -> true
-    end
-  end
-
-  # -----------------------------------------------------------------------------------
-
-  #  Checks if an article is premium
-  @spec check_premium(html :: ScraperParser.html_tree()) :: true | false
-  def check_premium(html) do
-    selectors = get_selectors(:check_premium)
-
-    case ParsingUtils.find_element(html, selectors) do
-      {:error, :not_found} -> false
-      {:ok, _found} -> true
-    end
-  end
-
   # ===================================================================================
 
   @impl Scraper
   def get_article(url) do
-    case Tesla.get(@client, url) do
-      {:ok, res} -> {:ok, {res.body, url}}
-      {:error, err} -> {:error, err}
-    end
+    ScraperCommImpl.aux_get_article(@client, url)
   end
 
   # -----------------------------------------------------------------------------------
 
   @impl Scraper
   def parse_article(html_doc, url) do
-    with {:ok, html} <- Floki.parse_document(html_doc),
-         false <- check_premium(html),
-         {:ok, parsed_html} <- ParsingUtils.html_to_article(html, url, ElPaisScraper) do
-      {:ok, parsed_html}
-    else
-      {:error, e} -> {:error, e}
-      true -> {:error, "forbidden content"}
-    end
+    ScraperCommImpl.aux_parse_article(html_doc, url, ElPaisScraper)
   end
 
   # -----------------------------------------------------------------------------------
@@ -256,6 +217,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   defp build_author_url(url) do
     case String.contains?(url, @base_url) do
       true -> url
+      # TODO check if this is correct (maybe bug)
       false -> "https://" <> @base_url <> url
     end
   end

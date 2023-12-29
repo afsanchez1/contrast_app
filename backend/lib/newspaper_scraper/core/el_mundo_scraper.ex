@@ -2,9 +2,11 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
   @moduledoc """
   This module contains all the logic needed for scraping https://www.elmundo.es/
   """
+  alias NewspaperScraper.Core.ElMundoScraper
   alias NewspaperScraper.Core.ScraperParser
   alias NewspaperScraper.Core.Scraper
   alias NewspaperScraper.Utils.Core.ParsingUtils
+  alias NewspaperScraper.Core.ScraperCommImpl
   alias NewspaperScraper.Model.ArticleSummary
   alias NewspaperScraper.Model.Author
 
@@ -23,8 +25,7 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
      [
        {"user-agent",
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"},
-       {"accept", "text/html"},
-       {"accept-encoding", "gzip"}
+       {"accept", "text/html"}
      ]},
     Tesla.Middleware.DecompressResponse
   ]
@@ -43,10 +44,7 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
 
   @impl Scraper
   def scraper_check(url) do
-    case String.contains?(url, "elmundo.es") do
-      true -> :ok
-      false -> {:error, "invalid url"}
-    end
+    ScraperCommImpl.aux_scraper_check(url, "elmundo.es")
   end
 
   # -----------------------------------------------------------------------------------
@@ -55,9 +53,9 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
   def get_selectors(function) do
     selectors = %{
       parse_search_results: [".lista_resultados"],
-      check_premium: [],
-      parse_art_header: [],
-      parse_art_authors: [],
+      check_premium: [".ue-c-article__premium-tag"],
+      parse_art_header: [".ue-c-article"],
+      parse_art_authors: [".ue-c-article__byline-name"],
       parse_art_date: [],
       parse_art_body: []
     }
@@ -72,9 +70,11 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
     req_page =
       cond do
         page === 0 -> 1
-        true -> page + limit
+        page === 1 -> limit + page
+        true -> 1 + limit * (page - 1)
       end
 
+    #  We have to transform it to latin1 encoding for elmundo server to understand
     {:ok, parsed_topic} = Codepagex.from_string(topic, :iso_8859_1)
 
     request = [
@@ -89,10 +89,12 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
       w: 80,
       #  Order by date = 1, order by coincidence = 0
       s: 1,
-      no_acd: 1
+      no_acd: 1,
+      b_avanzada: "elmundoes"
     ]
 
-    url = Tesla.build_url(@api_url, request)
+    url =
+      Tesla.build_url(@api_url, request)
 
     case Tesla.get(@client, url) do
       # If no errors, transform the body into a string
@@ -129,69 +131,71 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
           ]
           | {:error, any()}
   defp parse_search_results_html(html) do
-    Floki.traverse_and_update(html, fn
-      {"div", _attrs, children} ->
-        children
+    try do
+      Floki.traverse_and_update(html, fn
+        {"div", _attrs, children} ->
+          children
 
-      {"ul", _attrs, children} ->
-        children
+        {"ul", _attrs, children} ->
+          children
 
-      {"li", _attrs, []} ->
-        nil
+        {"li", _attrs, []} ->
+          nil
 
-      {"li", _attrs, [{:date, date_str} | t]} ->
-        [{:date, date_str} | t]
+        {"li", _attrs, [{:date, date_str} | t]} ->
+          [{:date, date_str} | t]
 
-      {"li", [], children} ->
-        {:art_summ, children}
+        {"li", [], children} ->
+          {:art_summ, children}
 
-      {"h3", _attrs, children} ->
-        children
+        {"h3", _attrs, children} ->
+          children
 
-      {"a", [{"href", url}], [title | _t]} ->
-        [{:url, url}, {:title, title}]
+        {"a", [{"href", url}], children} ->
+          [{:url, url}, {:title, ParsingUtils.transform_text_children(children)}]
 
-      {"p", [], [excerpt]} ->
-        {:excerpt, excerpt}
+        {"p", [], children} ->
+          {:excerpt, ParsingUtils.transform_text_children(children)}
 
-      {"p", [], children} ->
-        {:excerpt, ParsingUtils.transform_text_children(children)}
+        {"p", _attrs, _children} ->
+          nil
 
-      {"p", _attrs, _children} ->
-        nil
+        # TODO: Quitar esto
+        {"span", [{"class", "fecha"}], [date]} ->
+          {:date, date}
 
-      # TODO: Quitar esto
-      {"span", [{"class", "fecha"}], [date]} ->
-        {:date, date}
+        {"span", [{"class", "firma"}], children} ->
+          children
 
-      {"span", [{"class", "firma"}], children} ->
-        children
+        {"strong", [{"class", "autor"}], [author_name]} ->
+          {:author,
+           [
+             %Author{
+               name: ParsingUtils.normalize_name(author_name),
+               url: nil
+             }
+           ]}
 
-      {"strong", [{"class", "autor"}], [author_name]} ->
-        {:author,
-         [
-           %Author{
-             name: ParsingUtils.normalize_name(author_name),
-             url: nil
-           }
-         ]}
+        {"strong", [], [children]} ->
+          children
 
-      {"strong", [], [children]} ->
-        children
+        {"strong", _attrs, _children} ->
+          nil
 
-      {"strong", _attrs, _children} ->
-        nil
+        {:comment, _comment} ->
+          nil
 
-      {:comment, _comment} ->
-        nil
-
-      other ->
-        other
-    end)
-    |> build_article_summs()
+        other ->
+          other
+      end)
+      |> build_article_summs()
+    rescue
+      _e ->
+        {:error, "parsing error"}
+    end
   end
 
-  # A function for building a proper Article Summary list
+  # A function for building the Article Summary list
   @spec build_article_summs(raw_art_summs :: list()) :: [
           ArticleSummary.t()
         ]
@@ -200,22 +204,130 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
       contents_map =
         Map.new(contents)
 
+      url = contents_map[:url]
+
       %ArticleSummary{
         newspaper: get_newspaper_name(),
         # TODO: Pick it from article
-        authors: contents_map.author,
-        title: contents_map.title,
-        excerpt: contents_map.excerpt,
+        authors: contents_map[:author],
+        title: contents_map[:title],
+        excerpt: contents_map[:excerpt],
         # TODO: Pick it from article
-        date_time: contents_map.date,
-        url: contents_map.url,
+        date_time: contents_map[:date],
+        url: url,
         # TODO: Pick it from article
-        is_premium: false
+        is_premium: ParsingUtils.search_check_premium(url, ElMundoScraper)
       }
     end)
   end
-end
 
-# alias NewspaperScraper.Core.ElMundoScraper
-# {:ok, res} = ElMundoScraper.search_articles("cambio climático", 0, 5)
-# ElMundoScraper.parse_search_results(res)
+  # ===================================================================================
+
+  @impl Scraper
+  def get_article(url) do
+    case Tesla.get(@client, url) do
+      {:ok, res} -> {:ok, {transform_body_into_html(res.body), url}}
+      {:error, err} -> {:error, err}
+    end
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  @impl Scraper
+  def parse_article(html_doc, url) do
+    ScraperCommImpl.aux_parse_article(html_doc, url, ElMundoScraper)
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  @spec find_and_parse_text(
+          html :: Floki.html_tree(),
+          selectors :: list(Floki.css_selector())
+        ) :: content :: String.t()
+  defp find_and_parse_text(html, selectors) do
+    case ParsingUtils.find_element(html, selectors) do
+      {:error, _e} -> nil
+      {:ok, found_html} -> ParsingUtils.transform_text_children(found_html)
+    end
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  @impl ScraperParser
+  def parse_art_header(parsed_art, html) do
+    parsed_header =
+      [
+        {:headline, find_and_parse_text(html, [".ue-c-article__headline"])},
+        {:subheadline,
+         find_and_parse_text(html, [
+           ".ue-c-article__standfirst",
+           ".ue-c-article__card-body"
+         ])}
+      ]
+
+    parsed_art
+    |> Map.put(:headline, parsed_header[:headline])
+    |> Map.put(:subheadline, parsed_header[:subheadline])
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  defp build_url_authors(children) do
+    Enum.map(
+      children,
+      fn {"a", attrs, children} ->
+        transformed_attrs = ParsingUtils.transform_attributes(attrs)
+        url = transformed_attrs["href"]
+
+        name =
+          ParsingUtils.transform_text_children(children)
+          |> ParsingUtils.normalize_name()
+
+        %Author{
+          name: name,
+          url: url
+        }
+
+        fn -> nil end
+      end
+    )
+  end
+
+  @impl ScraperParser
+  def parse_art_authors(parsed_art, html) do
+    parsed_authors =
+      Floki.traverse_and_update(html, fn
+        {"div", _attrs, children} ->
+          [h | _t] = children
+
+          if is_binary(h) do
+            Enum.map(children, fn child ->
+              %Author{
+                name: ParsingUtils.normalize_name(child),
+                url: nil
+              }
+            end)
+          else
+            children
+          end
+
+        {"a", attrs, children} ->
+          transformed_attrs = ParsingUtils.transform_attributes(attrs)
+          url = transformed_attrs["href"]
+
+          name =
+            ParsingUtils.transform_text_children(children)
+            |> ParsingUtils.normalize_name()
+
+          %Author{
+            name: name,
+            url: url
+          }
+
+        other ->
+          other
+      end)
+
+    Map.put(parsed_art, :authors, parsed_authors)
+  end
+end
