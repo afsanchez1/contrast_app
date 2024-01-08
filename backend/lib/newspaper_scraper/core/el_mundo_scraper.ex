@@ -57,7 +57,7 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
       parse_art_header: [".ue-c-article"],
       parse_art_authors: [".ue-c-article__byline-name"],
       parse_art_date: [".ue-c-article__publishdate"],
-      parse_art_body: []
+      parse_art_body: [".ue-l-article__body"]
     }
 
     selectors[function]
@@ -315,5 +315,71 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
   @impl ScraperParser
   def parse_art_date(parsed_art, html) do
     ScraperCommImpl.comm_parse_art_date(parsed_art, html)
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  @impl ScraperParser
+  def parse_art_body(parsed_art, html) do
+    parsed_body =
+      Floki.traverse_and_update(html, fn
+        {"div", _attrs, children} ->
+          children
+
+        {"dl", _attrs, children} ->
+          children
+
+        {"dt", _attrs, children} ->
+          %{p: ParsingUtils.transform_text_children(children)}
+
+        {"dd", _attrs, children} ->
+          %{p: ParsingUtils.transform_text_children(children)}
+
+        {"h2", _attrs, children} ->
+          %{h2: ParsingUtils.transform_text_children(children)}
+
+        {"h3", _attrs, children} ->
+          %{h3: ParsingUtils.transform_text_children(children)}
+
+        {"a", _attrs, children} ->
+          children
+
+        {"i", _attrs, children} ->
+          children
+
+        {"em", _attrs, children} ->
+          children
+
+        {"b", _attrs, children} ->
+          children
+
+        {"strong", _attrs, children} ->
+          children
+
+        {"p", _attrs, children} ->
+          %{p: ParsingUtils.transform_text_children(children)}
+
+        _other ->
+          nil
+      end)
+      |> filter_body_content()
+
+    Map.put(parsed_art, :body, parsed_body)
+  end
+
+  # Filters unwanted content out from the parsed body
+  @spec filter_body_content(body :: list()) :: list()
+  defp filter_body_content(body) do
+    Enum.filter(body, fn
+      content when is_map(content) ->
+        case Map.values(content) do
+          [""] -> false
+          [nil] -> false
+          _other -> true
+        end
+
+      text ->
+        not is_binary(text)
+    end)
   end
 end

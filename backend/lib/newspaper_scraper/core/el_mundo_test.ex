@@ -56,6 +56,7 @@ defmodule ElMundoTest do
         |> ParsingUtils.parse(:parse_art_header, html, ElMundoScraper)
         |> ParsingUtils.parse(:parse_art_authors, html, ElMundoScraper)
         |> ParsingUtils.parse(:parse_art_date, html, ElMundoScraper)
+        |> ParsingUtils.parse(:parse_art_body, html, ElMundoScraper)
     end
   end
 end
