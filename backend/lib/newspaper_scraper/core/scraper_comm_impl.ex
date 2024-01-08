@@ -4,6 +4,7 @@ defmodule NewspaperScraper.Core.ScraperCommImpl do
   """
   alias NewspaperScraper.Utils.Core.ParsingUtils
   alias NewspaperScraper.Core.ScraperParser
+  alias NewspaperScraper.Model.Article
 
   @doc """
   Common implementation for Scraper.scraper_check function

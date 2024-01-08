@@ -74,32 +74,39 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
         true -> 1 + limit * (page - 1)
       end
 
-    #  We have to transform it to latin1 encoding for elmundo server to understand
-    {:ok, parsed_topic} = Codepagex.from_string(topic, :iso_8859_1)
+    try do
+      #  We have to transform it to latin1 encoding for elmundo server to understand
+      {:ok, parsed_topic} = Codepagex.from_string(topic, :iso_8859_1)
 
-    request = [
-      q: parsed_topic,
-      t: 1,
-      # Index
-      i: req_page,
-      n: limit,
-      fd: 0,
-      td: 0,
-      #  Coincidence ratio
-      w: 80,
-      #  Order by date = 1, order by coincidence = 0
-      s: 1,
-      no_acd: 1,
-      b_avanzada: "elmundoes"
-    ]
+      request = [
+        q: parsed_topic,
+        t: 1,
+        # Index
+        i: req_page,
+        n: limit,
+        fd: 0,
+        td: 0,
+        #  Coincidence ratio
+        w: 80,
+        #  Order by date = 1, order by coincidence = 0
+        s: 1,
+        no_acd: 1,
+        b_avanzada: "elmundoes"
+      ]
 
-    url =
-      Tesla.build_url(@api_url, request)
+      url =
+        Tesla.build_url(@api_url, request)
 
-    case Tesla.get(@client, url) do
-      # If no errors, transform the body into a string
-      {:ok, res} -> {:ok, transform_body_into_html(res.body)}
-      {:error, err} -> {:error, err}
+      case Tesla.get(@client, url) do
+        # If no errors, transform the body into a string
+        {:ok, res} ->
+          {:ok, transform_body_into_html(res.body)}
+
+        {:error, err} ->
+          {:error, err}
+      end
+    rescue
+      err -> {:error, err}
     end
   end
 

@@ -1,4 +1,5 @@
 defmodule NewspaperScraper.Tools.ManualScraperResultChecker do
+  # credo:disable-for-this-file
   @moduledoc """
   This module implements tools for testing scraper results manually.
 
