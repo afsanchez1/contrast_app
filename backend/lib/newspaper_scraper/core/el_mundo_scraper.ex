@@ -277,18 +277,7 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
     parsed_authors =
       Floki.traverse_and_update(html, fn
         {"div", _attrs, children} ->
-          [h | _t] = children
-
-          if is_binary(h) do
-            Enum.map(children, fn child ->
-              %Author{
-                name: ParsingUtils.normalize_name(child),
-                url: nil
-              }
-            end)
-          else
-            children
-          end
+          build_no_url_author(children)
 
         {"a", attrs, children} ->
           transformed_attrs = ParsingUtils.transform_attributes(attrs)
@@ -308,6 +297,21 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
       end)
 
     Map.put(parsed_art, :authors, parsed_authors)
+  end
+
+  defp build_no_url_author(children) do
+    [h | _t] = children
+
+    if is_binary(h) do
+      Enum.map(children, fn child ->
+        %Author{
+          name: ParsingUtils.normalize_name(child),
+          url: nil
+        }
+      end)
+    else
+      children
+    end
   end
 
   # -----------------------------------------------------------------------------------

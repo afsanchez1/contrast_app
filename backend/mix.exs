@@ -52,6 +52,7 @@ defmodule NewspaperScraper.MixProject do
         NewspaperScraper.Model.Article,
         NewspaperScraper.Model.ArticleSummary,
         NewspaperScraper.Model.Author,
+        NewspaperScraper.Tools.ManualScraperResultChecker,
         Jason.Encoder.NewspaperScraper.Model.Article,
         Jason.Encoder.NewspaperScraper.Model.ArticleSummary,
         Jason.Encoder.NewspaperScraper.Model.Author
