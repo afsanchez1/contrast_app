@@ -16,9 +16,9 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
   @scraper_name "el-mundo"
   @newspaper_name "El Mundo"
 
-  # @base_url Application.compile_env(:newspaper_scraper, :el_mundo_base_url)
   @api_url Application.compile_env(:newspaper_scraper, :el_mundo_api_url)
 
+  # Add the user-agent header to avoid server rejection
   @middleware [
     Tesla.Middleware.FollowRedirects,
     {Tesla.Middleware.Headers,
@@ -167,21 +167,14 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
         {"p", _attrs, _children} ->
           nil
 
-        # TODO: Quitar esto
-        {"span", [{"class", "fecha"}], [date]} ->
-          {:date, date}
+        {"span", [{"class", "fecha"}], [_date]} ->
+          nil
 
         {"span", [{"class", "firma"}], children} ->
           children
 
-        {"strong", [{"class", "autor"}], [author_name]} ->
-          {:author,
-           [
-             %Author{
-               name: ParsingUtils.normalize_name(author_name),
-               url: nil
-             }
-           ]}
+        {"strong", [{"class", "autor"}], [_author_name]} ->
+          nil
 
         {"strong", [], [children]} ->
           children
@@ -212,20 +205,32 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
         Map.new(contents)
 
       url = contents_map[:url]
+      art_contents_map = get_contents_from_art(url)
 
       %ArticleSummary{
         newspaper: get_newspaper_name(),
-        # TODO: Pick it from article
-        authors: contents_map[:author],
+        authors: art_contents_map[:authors],
         title: contents_map[:title],
         excerpt: contents_map[:excerpt],
-        # TODO: Pick it from article
-        date_time: contents_map[:date],
+        date_time: art_contents_map[:date_time],
         url: url,
-        # TODO: Pick it from article
         is_premium: ParsingUtils.search_check_premium(url, ElMundoScraper)
       }
     end)
+  end
+
+  # This function parses an article to gather info to improve search results, as the search HTML document
+  # does not include it or is incomplete
+  defp get_contents_from_art(url) do
+    with {:ok, {html_doc, _url}} <- get_article(url),
+         {:ok, html} <- Floki.parse_document(html_doc) do
+      %{}
+      |> ParsingUtils.parse(:parse_art_authors, html, ElMundoScraper)
+      |> ParsingUtils.parse(:parse_art_date, html, ElMundoScraper)
+    else
+      {:error, e} -> {:error, e}
+      e -> {:error, e}
+    end
   end
 
   # ===================================================================================
