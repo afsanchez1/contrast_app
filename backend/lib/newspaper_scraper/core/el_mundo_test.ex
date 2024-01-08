@@ -5,16 +5,14 @@ defmodule ElMundoTest do
   def test do
     {:ok, html} =
       [
-        "feminismo",
-        "rubiales",
+        "palestina",
         "cataluña",
         "política España",
         "Pedro Sánchez",
-        "extrema derecha",
+        "ucrania",
         "economía",
         "milei",
         "nuevas tecnologías",
-        "educación social",
         "biotecnología",
         "robotización"
       ]
@@ -57,8 +55,7 @@ defmodule ElMundoTest do
         %{}
         |> ParsingUtils.parse(:parse_art_header, html, ElMundoScraper)
         |> ParsingUtils.parse(:parse_art_authors, html, ElMundoScraper)
+        |> ParsingUtils.parse(:parse_art_date, html, ElMundoScraper)
     end
   end
 end
-
-ElMundoTest.test()

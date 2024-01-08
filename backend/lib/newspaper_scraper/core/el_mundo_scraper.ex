@@ -16,7 +16,7 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
   @scraper_name "el-mundo"
   @newspaper_name "El Mundo"
 
-  @base_url Application.compile_env(:newspaper_scraper, :el_mundo_base_url)
+  # @base_url Application.compile_env(:newspaper_scraper, :el_mundo_base_url)
   @api_url Application.compile_env(:newspaper_scraper, :el_mundo_api_url)
 
   @middleware [
@@ -44,7 +44,7 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
 
   @impl Scraper
   def scraper_check(url) do
-    ScraperCommImpl.aux_scraper_check(url, "elmundo.es")
+    ScraperCommImpl.comm_scraper_check(url, "elmundo.es")
   end
 
   # -----------------------------------------------------------------------------------
@@ -56,7 +56,7 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
       check_premium: [".ue-c-article__premium-tag"],
       parse_art_header: [".ue-c-article"],
       parse_art_authors: [".ue-c-article__byline-name"],
-      parse_art_date: [],
+      parse_art_date: [".ue-c-article__publishdate"],
       parse_art_body: []
     }
 
@@ -235,7 +235,7 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
 
   @impl Scraper
   def parse_article(html_doc, url) do
-    ScraperCommImpl.aux_parse_article(html_doc, url, ElMundoScraper)
+    ScraperCommImpl.comm_parse_article(html_doc, url, ElMundoScraper)
   end
 
   # -----------------------------------------------------------------------------------
@@ -271,27 +271,6 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
   end
 
   # -----------------------------------------------------------------------------------
-
-  defp build_url_authors(children) do
-    Enum.map(
-      children,
-      fn {"a", attrs, children} ->
-        transformed_attrs = ParsingUtils.transform_attributes(attrs)
-        url = transformed_attrs["href"]
-
-        name =
-          ParsingUtils.transform_text_children(children)
-          |> ParsingUtils.normalize_name()
-
-        %Author{
-          name: name,
-          url: url
-        }
-
-        fn -> nil end
-      end
-    )
-  end
 
   @impl ScraperParser
   def parse_art_authors(parsed_art, html) do
@@ -329,5 +308,12 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
       end)
 
     Map.put(parsed_art, :authors, parsed_authors)
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  @impl ScraperParser
+  def parse_art_date(parsed_art, html) do
+    ScraperCommImpl.comm_parse_art_date(parsed_art, html)
   end
 end

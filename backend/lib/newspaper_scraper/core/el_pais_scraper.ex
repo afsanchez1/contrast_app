@@ -37,7 +37,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   @impl Scraper
   def scraper_check(url) do
-    ScraperCommImpl.aux_scraper_check(url, "elpais.com")
+    ScraperCommImpl.comm_scraper_check(url, "elpais.com")
   end
 
   # -----------------------------------------------------------------------------------
@@ -142,14 +142,14 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   @impl Scraper
   def get_article(url) do
-    ScraperCommImpl.aux_get_article(@client, url)
+    ScraperCommImpl.comm_get_article(@client, url)
   end
 
   # -----------------------------------------------------------------------------------
 
   @impl Scraper
   def parse_article(html_doc, url) do
-    ScraperCommImpl.aux_parse_article(html_doc, url, ElPaisScraper)
+    ScraperCommImpl.comm_parse_article(html_doc, url, ElPaisScraper)
   end
 
   # -----------------------------------------------------------------------------------
@@ -226,33 +226,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   @impl ScraperParser
   def parse_art_date(parsed_art, html) do
-    parsed_date_time =
-      Floki.traverse_and_update(html, fn
-        {"time", attrs, _children} ->
-          transformed_attrs = ParsingUtils.transform_attributes(attrs)
-          date_time = transformed_attrs["datetime"]
-          parse_article_date_time(date_time)
-
-        {_other, _attrs, children} ->
-          children
-
-        _other ->
-          nil
-      end)
-
-    Map.put(parsed_art, :date_time, parsed_date_time[:date_time])
-  end
-
-  # Check HTML datetime attr is formatted as expected
-  @spec parse_article_date_time(date_time :: String.t()) :: {:date_time, any()}
-  defp parse_article_date_time(date_time) do
-    case DateTime.from_iso8601(date_time) do
-      {:ok, date_time, offset} ->
-        {:date_time, DateTime.to_iso8601(date_time, :extended, offset)}
-
-      {:error, e} ->
-        {:date_time, {:error, e}}
-    end
+    ScraperCommImpl.comm_parse_art_date(parsed_art, html)
   end
 
   # -----------------------------------------------------------------------------------

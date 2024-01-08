@@ -147,4 +147,18 @@ defmodule NewspaperScraper.Utils.Core.ParsingUtils do
       {:ok, _found} -> true
     end
   end
+
+  @doc """
+  Checks if HTML datetime attr is formatted as expected
+  """
+  @spec parse_article_date_time(date_time :: String.t()) :: {:date_time, any()}
+  def parse_article_date_time(date_time) do
+    case DateTime.from_iso8601(date_time) do
+      {:ok, date_time, offset} ->
+        {:date_time, DateTime.to_iso8601(date_time, :extended, offset)}
+
+      {:error, e} ->
+        {:date_time, {:error, e}}
+    end
+  end
 end
