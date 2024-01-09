@@ -2,9 +2,9 @@ defmodule NewspaperScraper.Mocks.ElMundoMockServer do
   @moduledoc """
   This module mocks https://www.elmundo.es/ behaviour
   """
-  alias NewspaperScraper.Core.ElMundoScraper
-  alias NewspaperScraper.Utils.Test.TestUtils
-  alias NewspaperScraper.Utils.Core.ParsingUtils
+  # alias NewspaperScraper.Core.ElMundoScraper
+  # alias NewspaperScraper.Utils.Test.TestUtils
+  # alias NewspaperScraper.Utils.Core.ParsingUtils
   require Logger
   use Plug.Router
 
@@ -41,11 +41,13 @@ defmodule NewspaperScraper.Mocks.ElMundoMockServer do
       "API_server_error" ->
         send_resp(conn, 500, "internal server error")
 
-      "uncomplete_resp" ->
-        send_resp(conn, 404, "not found")
+      "incomplete_resp" ->
+        conn = put_resp_content_type(conn, "text/html")
+        send_file(conn, 200, @responses_path <> "/incomplete.html")
 
       _ ->
-        send_resp(conn, 404, "not found")
+        conn = put_resp_content_type(conn, "text/html")
+        send_file(conn, 200, @responses_path <> "/nuevas_tecnologias.html")
     end
   end
 end

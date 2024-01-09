@@ -32,6 +32,8 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
 
   @client Tesla.client(@middleware)
 
+  def get_client, do: @client
+
   # ===================================================================================
 
   @impl Scraper
@@ -75,7 +77,7 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
       end
 
     try do
-      #  We have to transform it to latin1 encoding for elmundo server to understand
+      #  Transform it to latin1 encoding for elmundo server to understand
       {:ok, parsed_topic} = Codepagex.from_string(topic, :iso_8859_1)
 
       request = [
@@ -104,7 +106,8 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
         {:error, err} ->
           {:error, err}
       end
-      |> dbg()
+
+      # |> IO.inspect(printable_limit: :infinity)
     rescue
       err -> {:error, err}
     end
@@ -119,7 +122,7 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
 
   # Response comes in binary, so we transform it to a string
   @spec transform_body_into_html(body :: binary()) :: String.t()
-  defp transform_body_into_html(body) do
+  def transform_body_into_html(body) do
     body
     |> :binary.bin_to_list()
     |> List.to_string()

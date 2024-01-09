@@ -2,7 +2,7 @@ defmodule Core.ElMundoScraperTest do
   alias NewspaperScraper.Core.ElMundoScraper
   use ExUnit.Case, async: true
 
-  # @server_url Application.compile_env(:newspaper_scraper, :el_mundo_base_url)
+  # @server_url Application.compile_env(:newspaper_scraper, :el_mundo_base_url) TODO delete this
   @search_url Application.compile_env(:newspaper_scraper, :el_mundo_api_url)
   # ===================================================================================
 
@@ -72,12 +72,18 @@ defmodule Core.ElMundoScraperTest do
   # -----------------------------------------------------------------------------------
 
   describe "search_articles/3" do
-    test "returns error when server responds with 404" do
+    test "returns error when resource not found" do
       assert {:error, _e} = ElMundoScraper.search_articles("API_not_found", 0, 4)
     end
 
     test "returns error when server is not avaliable" do
-      assert {:error, _e} = ElMundoScraper.search_articles("API_server_error", 0, 4)
+      assert {:error, _e} = ElMundoScraper.search_articles("API_server_error", 1, 4)
+    end
+
+    test "returns ok when request is successful" do
+      assert {:ok, _resp} = ElMundoScraper.search_articles("testTopic", 2, 5)
     end
   end
+
+  # -----------------------------------------------------------------------------------
 end
