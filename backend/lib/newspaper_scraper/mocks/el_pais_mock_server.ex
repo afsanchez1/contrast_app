@@ -1,4 +1,4 @@
-defmodule NewspaperScraper.Client.ElPaisMockServer do
+defmodule NewspaperScraper.Mocks.ElPaisMockServer do
   @moduledoc """
   This module mocks https://elpais.com behaviour
   """
@@ -30,7 +30,7 @@ defmodule NewspaperScraper.Client.ElPaisMockServer do
   # ===================================================================================
 
   def init(_opts) do
-    Logger.info("Server running on: #{@server_url}")
+    Logger.info("ElPaisMockServer running on: #{@server_url}")
 
     try do
       resources = TestUtils.read_and_parse_JSON!(@responses_path, keys: :atoms)

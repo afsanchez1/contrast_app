@@ -98,15 +98,22 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
         Tesla.build_url(@api_url, request)
 
       case Tesla.get(@client, url) do
-        # If no errors, transform the body into a string
         {:ok, res} ->
-          {:ok, transform_body_into_html(res.body)}
+          handle_response(res)
 
         {:error, err} ->
           {:error, err}
       end
+      |> dbg()
     rescue
       err -> {:error, err}
+    end
+  end
+
+  defp handle_response(res) do
+    case res.status do
+      200 -> {:ok, transform_body_into_html(res.body)}
+      _ -> {:error, res.body}
     end
   end
 

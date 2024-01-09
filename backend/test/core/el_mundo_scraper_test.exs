@@ -2,6 +2,8 @@ defmodule Core.ElMundoScraperTest do
   alias NewspaperScraper.Core.ElMundoScraper
   use ExUnit.Case, async: true
 
+  # @server_url Application.compile_env(:newspaper_scraper, :el_mundo_base_url)
+  @search_url Application.compile_env(:newspaper_scraper, :el_mundo_api_url)
   # ===================================================================================
 
   describe "get names" do
@@ -46,12 +48,36 @@ defmodule Core.ElMundoScraperTest do
 
   # -----------------------------------------------------------------------------------
 
-  # TODO implement function and tests
-  # describe "get_selectors/1" do
-  #  test "finds all selectors" do
-  #    assert :ok === :error
-  #  end
-  # end
+  describe "get_selectors/1" do
+    test "finds all selectors" do
+      functions = [
+        parse_search_results: [".lista_resultados"],
+        check_premium: [".ue-c-article__premium-tag"],
+        parse_art_header: [".ue-c-article"],
+        parse_art_authors: [".ue-c-article__byline-name"],
+        parse_art_date: [".ue-c-article__publishdate"],
+        parse_art_body: [".ue-l-article__body"]
+      ]
+
+      Enum.map(functions, fn {fun, selectors} ->
+        assert selectors === ElMundoScraper.get_selectors(fun)
+      end)
+    end
+
+    test "returns nil when function not defined" do
+      assert nil === ElMundoScraper.get_selectors(:non_existing_fun)
+    end
+  end
 
   # -----------------------------------------------------------------------------------
+
+  describe "search_articles/3" do
+    test "returns error when server responds with 404" do
+      assert {:error, _e} = ElMundoScraper.search_articles("API_not_found", 0, 4)
+    end
+
+    test "returns error when server is not avaliable" do
+      assert {:error, _e} = ElMundoScraper.search_articles("API_server_error", 0, 4)
+    end
+  end
 end
