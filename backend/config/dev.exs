@@ -9,5 +9,6 @@ config :newspaper_scraper,
   el_mundo_base_url: "https://www.elmundo.es/",
   el_mundo_api_url: "https://ariadna.elmundo.es/buscador/archivo.html",
   scrapers: [
-    ElPaisScraper
+    ElPaisScraper,
+    ElMundoScraper
   ]

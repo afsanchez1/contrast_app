@@ -4,7 +4,7 @@ defmodule NewspaperScraper.Boundary.ScraperValidator do
   """
   import NewspaperScraper.Boundary.Validator
 
-  @max_limit 5
+  @max_limit 10
   @scrapers Application.compile_env(:newspaper_scraper, :scrapers)
 
   def max_limit, do: @max_limit

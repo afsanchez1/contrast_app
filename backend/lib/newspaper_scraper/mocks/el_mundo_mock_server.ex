@@ -50,4 +50,21 @@ defmodule NewspaperScraper.Mocks.ElMundoMockServer do
         send_file(conn, 200, @responses_path <> "/nuevas_tecnologias.html")
     end
   end
+
+  get "/get_article" do
+    query_params =
+      fetch_query_params(conn).query_params
+
+    url = query_params["url"]
+
+    case url do
+      "normal_art" ->
+        conn = put_resp_content_type(conn, "text/html")
+        send_file(conn, 200, @articles_path <> "/normal_art.html")
+
+      "interview_art" ->
+        conn = put_resp_content_type(conn, "text/html")
+        send_file(conn, 200, @articles_path <> "/interview_art.html")
+    end
+  end
 end

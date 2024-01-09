@@ -47,7 +47,7 @@ defmodule Boundary.Routes.ScraperRouterTest do
     test "returns validation errors properly" do
       topic = "empty_resp"
       page = "abc34"
-      limit = 10
+      limit = 11
 
       build_conn = conn(:get, "/search_articles?topic=#{topic}&page=#{page}&limit=#{limit}")
       conn = ScraperRouter.call(build_conn, @opts)
@@ -100,14 +100,13 @@ defmodule Boundary.Routes.ScraperRouterTest do
 
   # ===================================================================================
 
-    describe "unknown route" do
-      test "returns not found" do
-        build_conn = conn(:get, "/non_existing_route")
-        conn = ScraperRouter.call(build_conn, @opts)
+  describe "unknown route" do
+    test "returns not found" do
+      build_conn = conn(:get, "/non_existing_route")
+      conn = ScraperRouter.call(build_conn, @opts)
 
-
-        exptd_error = "not found"
-        assert exptd_error === conn.resp_body
-      end
+      exptd_error = "not found"
+      assert exptd_error === conn.resp_body
     end
+  end
 end

@@ -32,6 +32,8 @@ defmodule NewspaperScraper.Tools.ManualScraperResultChecker do
       |> Tuple.to_list()
       |> Enum.at(1)
       |> scraper.parse_search_results()
+      |> Tuple.to_list()
+      |> Enum.at(1)
       |> Enum.random()
       |> Map.get(:url)
       |> dbg()

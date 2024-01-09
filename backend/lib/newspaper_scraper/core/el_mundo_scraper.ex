@@ -106,8 +106,6 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
         {:error, err} ->
           {:error, err}
       end
-
-      # |> IO.inspect(printable_limit: :infinity)
     rescue
       err -> {:error, err}
     end
@@ -132,12 +130,12 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
   # -----------------------------------------------------------------------------------
 
   @impl Scraper
-  def parse_search_results(articles) do
+  def parse_search_results(search_result) do
     selectors = get_selectors(:parse_search_results)
 
-    with {:ok, html} <- Floki.parse_document(articles),
+    with {:ok, html} <- Floki.parse_document(search_result),
          {:ok, found_html} <- ParsingUtils.find_element(html, selectors),
-         do: parse_search_results_html(found_html),
+         do: {:ok, parse_search_results_html(found_html)},
          else: (error -> error)
   end
 
@@ -248,8 +246,11 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
   @impl Scraper
   def get_article(url) do
     case Tesla.get(@client, url) do
-      {:ok, res} -> {:ok, {transform_body_into_html(res.body), url}}
-      {:error, err} -> {:error, err}
+      {:ok, res} ->
+        {:ok, {transform_body_into_html(res.body), url}}
+
+      {:error, err} ->
+        {:error, err}
     end
   end
 

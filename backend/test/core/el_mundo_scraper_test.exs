@@ -1,9 +1,11 @@
 defmodule Core.ElMundoScraperTest do
+  alias NewspaperScraper.Model.Author
+  alias NewspaperScraper.Model.ArticleSummary
   alias NewspaperScraper.Core.ElMundoScraper
   use ExUnit.Case, async: true
 
-  # @server_url Application.compile_env(:newspaper_scraper, :el_mundo_base_url) TODO delete this
   @search_url Application.compile_env(:newspaper_scraper, :el_mundo_api_url)
+
   # ===================================================================================
 
   describe "get names" do
@@ -86,4 +88,60 @@ defmodule Core.ElMundoScraperTest do
   end
 
   # -----------------------------------------------------------------------------------
+
+  describe "parse_search_results/1" do
+    test "returns error when is not possible to parse" do
+      {:ok, res} = Tesla.get(@search_url <> "?q=incomplete_resp")
+      html_doc = res.body
+
+      {:error, _e} = ElMundoScraper.parse_search_results(html_doc)
+    end
+
+    test "parses results as expected" do
+      {:ok, res} = Tesla.get(@search_url <> "?q=testTopic")
+      html_doc = res.body
+
+      {:ok, res} =
+        ElMundoScraper.parse_search_results(html_doc)
+
+      newspaper = "El Mundo"
+
+      exptd_art_summ1 = %ArticleSummary{
+        newspaper: newspaper,
+        authors: [
+          %Author{
+            name: "Michela Roveli",
+            url: nil
+          }
+        ],
+        title:
+          "IA generativa, computación cuántica, realidad mixta y otras tendencias tecnológicas que llegarán en 2024",
+        excerpt:
+          "El desarrollo de la Inteligencia artificial, la nueva carrera espacial o la búsqueda de energías más sostenibles marcarán los avances tecnológicos de 2024",
+        date_time: "2023-12-31T10:14:45Z",
+        url:
+          "https://www.elmundo.es/tecnologia/creadores/2023/12/31/65913999e85ecef7108b45c8.html",
+        is_premium: false
+      }
+
+      art_summ0 = Enum.at(res, 0)
+      art_summ3 = Enum.at(res, 3)
+
+      assert exptd_art_summ1 === art_summ0
+      assert nil === art_summ3.authors
+    end
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  # TODO discover what is happening here
+  describe "parse_article" do
+    test "works as expected" do
+      {:ok, normal_art_doc} = File.read("./priv/test/el_mundo/articles/normal_art.html")
+      {:ok, interview_art_doc} = File.read("./priv/test/el_mundo/articles/interview_art.html")
+
+      {:ok, _res} = ElMundoScraper.parse_article(normal_art_doc, "test_url1")
+      {:ok, _res} = ElMundoScraper.parse_article(interview_art_doc, "test_url2")
+    end
+  end
 end
