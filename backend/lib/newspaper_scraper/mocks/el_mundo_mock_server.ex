@@ -27,7 +27,7 @@ defmodule NewspaperScraper.Mocks.ElMundoMockServer do
   end
 
   # -----------------------------------------------------------------------------------
-  # TODO implement utils for mock servers (read file, write file, download resource)
+
   get "/search_articles" do
     query_params =
       fetch_query_params(conn).query_params

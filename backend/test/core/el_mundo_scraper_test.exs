@@ -134,7 +134,6 @@ defmodule Core.ElMundoScraperTest do
 
   # -----------------------------------------------------------------------------------
 
-  # TODO discover what is happening here
   describe "parse_article" do
     test "works as expected" do
       {:ok, normal_art_doc} = File.read("./priv/test/el_mundo/articles/normal_art.html")

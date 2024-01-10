@@ -42,7 +42,8 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperParsingHandler do
           {:parsed_art_summs, parsed: list(map()) | {:error, any()}, client: pid()}
           | {:parsed_art, parsed: {:ok, Article.t()} | {:error, any()}, client: pid()}
   def parse_responses({:parse_search_results, res: res, client: client}) do
-    parsed_art_summs = Enum.map(res, &parse_search_results/1)
+    parsed_art_summs =
+      Enum.map(res, &parse_search_results/1)
 
     {:parsed_art_summs, parsed: parsed_art_summs, client: client}
   end

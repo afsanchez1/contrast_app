@@ -32,8 +32,6 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
 
   @client Tesla.client(@middleware)
 
-  def get_client, do: @client
-
   # ===================================================================================
 
   @impl Scraper
@@ -120,7 +118,7 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
 
   # Response comes in binary, so we transform it to a string
   @spec transform_body_into_html(body :: binary()) :: String.t()
-  def transform_body_into_html(body) do
+  defp transform_body_into_html(body) do
     body
     |> :binary.bin_to_list()
     |> List.to_string()
