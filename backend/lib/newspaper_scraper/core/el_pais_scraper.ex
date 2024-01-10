@@ -2,13 +2,16 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   @moduledoc """
   This module contains all the logic needed for scraping https://elpais.com
   """
+  alias NewspaperScraper.Core.ElPaisScraper
+  alias NewspaperScraper.Core.ScraperParser
   alias NewspaperScraper.Core.Scraper
+  alias NewspaperScraper.Core.ScraperCommImpl
   alias NewspaperScraper.Utils.Core.ParsingUtils
   alias NewspaperScraper.Model.ArticleSummary
-  alias NewspaperScraper.Model.Article
   alias NewspaperScraper.Model.Author
 
   @behaviour Scraper
+  @behaviour ScraperParser
 
   @scraper_name "el-pais"
   @newspaper_name "El País"
@@ -27,19 +30,19 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   @impl Scraper
   def get_scraper_name, do: @scraper_name
 
+  @impl Scraper
+  def get_newspaper_name, do: @newspaper_name
+
   # -----------------------------------------------------------------------------------
 
   @impl Scraper
   def scraper_check(url) do
-    case String.contains?(url, "elpais.com") do
-      true -> :ok
-      false -> {:error, "invalid url"}
-    end
+    ScraperCommImpl.comm_scraper_check(url, "elpais.com")
   end
 
   # -----------------------------------------------------------------------------------
 
-  @impl Scraper
+  @impl ScraperParser
   def get_selectors(function) do
     selectors = %{
       check_premium: ["#ctn_freemium_article", "#ctn_premium_article"],
@@ -86,7 +89,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
         fn article ->
           date_time = parse_search_date_time(article["updatedTs"])
           authors = parse_search_authors(article["authors"])
-          is_premium = search_check_premium(article["url"])
+          is_premium = ParsingUtils.search_check_premium(article["url"], ElPaisScraper)
 
           %ArticleSummary{
             newspaper: @newspaper_name,
@@ -135,130 +138,24 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
     )
   end
 
-  # -----------------------------------------------------------------------------------
-
-  # Checks if the articles found are premium
-  @spec search_check_premium(url :: String.t()) :: true | false
-  defp search_check_premium(url) do
-    with {:ok, {body, _url}} <- get_article(url),
-         {:ok, html} <- parse_document(body) do
-      check_premium(html)
-    else
-      # If we cannot determine if the article is premium, we assume it is (for security reasons)
-      _e -> true
-    end
-  end
-
-  # -----------------------------------------------------------------------------------
-
-  #  Checks if an article is premium
-  @spec check_premium(html :: Scraper.html_tree()) :: true | false
-  def check_premium(html) do
-    selectors = get_selectors(:check_premium)
-
-    case ParsingUtils.find_element(html, selectors) do
-      {:error, :not_found} -> false
-      _other -> true
-    end
-  end
-
   # ===================================================================================
 
   @impl Scraper
   def get_article(url) do
-    case Tesla.get(@client, url) do
-      {:ok, res} -> {:ok, {res.body, url}}
-      {:error, err} -> {:error, err}
-    end
+    ScraperCommImpl.comm_get_article(@client, url)
   end
 
   # -----------------------------------------------------------------------------------
 
   @impl Scraper
   def parse_article(html_doc, url) do
-    with {:ok, html} <- parse_document(html_doc),
-         false <- check_premium(html),
-         {:ok, parsed_html} <- html_to_article(html, url) do
-      {:ok, parsed_html}
-    else
-      {:error, e} -> {:error, e}
-      true -> {:error, "forbidden content"}
-    end
-  end
-
-  defp parse_document(html_doc), do: Floki.parse_document(html_doc)
-
-  # -----------------------------------------------------------------------------------
-
-  # Tries to find elements and calls the parsing functions when found
-  @spec parse(map(), atom(), Scraper.html_tree()) :: map()
-  defp parse(parsed_art, fun, html) do
-    selectors = get_selectors(fun)
-
-    case ParsingUtils.find_element(html, selectors) do
-      {:error, :not_found} ->
-        Map.put(parsed_art, fun, {:error, "HTML not found"})
-
-      found_html ->
-        case fun do
-          :parse_art_header -> parse_art_header(parsed_art, found_html)
-          :parse_art_authors -> parse_art_authors(parsed_art, found_html)
-          :parse_art_date -> parse_art_date(parsed_art, found_html)
-          :parse_art_body -> parse_art_body(parsed_art, found_html)
-        end
-    end
+    ScraperCommImpl.comm_parse_article(html_doc, url, ElPaisScraper)
   end
 
   # -----------------------------------------------------------------------------------
 
-  # Checks for parsing errors
-  @spec fetch_parsed_art_errors(map()) :: list()
-  defp fetch_parsed_art_errors(parsed_art) do
-    for {k, v} <- parsed_art do
-      case v do
-        {:error, e} -> {k, e}
-        _ -> nil
-      end
-    end
-    |> Enum.filter(fn elem -> elem !== nil end)
-  end
-
-  # -----------------------------------------------------------------------------------
-
-  # Converts parsed html to our defined Article struct
-  @spec html_to_article(html :: Scraper.html_tree(), url :: String.t()) ::
-          {:ok, Article.t()} | {:error, any()}
-  defp html_to_article(html, url) do
-    temp_art =
-      %{}
-      |> parse(:parse_art_header, html)
-      |> parse(:parse_art_authors, html)
-      |> parse(:parse_art_date, html)
-      |> parse(:parse_art_body, html)
-
-    case fetch_parsed_art_errors(temp_art) do
-      [] ->
-        {:ok,
-         %Article{
-           newspaper: @newspaper_name,
-           headline: temp_art.headline,
-           subheadline: temp_art.subheadline,
-           authors: temp_art.authors,
-           last_date_time: temp_art.date_time,
-           body: temp_art.body,
-           url: url
-         }}
-
-      errors ->
-        {:error, errors}
-    end
-  end
-
-  # -----------------------------------------------------------------------------------
-
-  # Parses the article header (title and subtitle) and appends the result to the parsed_art map
-  @spec parse_art_header(parsed_art :: map(), html :: Scraper.html_tree()) :: map()
-  defp parse_art_header(parsed_art, html) do
+  @impl ScraperParser
+  def parse_art_header(parsed_art, html) do
     parsed_header =
       Floki.traverse_and_update(html, fn
         {"h1", _attrs, children} ->
@@ -281,9 +178,8 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   # -----------------------------------------------------------------------------------
 
-  # Parses the article authors and appends the result to the parsed_art map
-  @spec parse_art_authors(parsed_art :: map(), html :: Scraper.html_tree()) :: map()
-  defp parse_art_authors(parsed_art, html) do
+  @impl ScraperParser
+  def parse_art_authors(parsed_art, html) do
     parsed_authors =
       Floki.traverse_and_update(html, fn
         {"div", _attrs, children} ->
@@ -321,49 +217,22 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   defp build_author_url(url) do
     case String.contains?(url, @base_url) do
       true -> url
+      # TODO check if this is correct (maybe bug)
       false -> "https://" <> @base_url <> url
     end
   end
 
   # -----------------------------------------------------------------------------------
 
-  # Parses the article date and appends the result to the parsed_art map
-  @spec parse_art_date(parsed_art :: map(), html :: Scraper.html_tree()) :: map()
-  defp parse_art_date(parsed_art, html) do
-    parsed_date_time =
-      Floki.traverse_and_update(html, fn
-        {"time", attrs, _children} ->
-          transformed_attrs = ParsingUtils.transform_attributes(attrs)
-          date_time = transformed_attrs["datetime"]
-          parse_article_date_time(date_time)
-
-        {_other, _attrs, children} ->
-          children
-
-        _other ->
-          nil
-      end)
-
-    Map.put(parsed_art, :date_time, parsed_date_time[:date_time])
-  end
-
-  # Check HTML datetime attr is formatted as expected
-  @spec parse_article_date_time(date_time :: String.t()) :: {:date_time, any()}
-  defp parse_article_date_time(date_time) do
-    case DateTime.from_iso8601(date_time) do
-      {:ok, date_time, offset} ->
-        {:date_time, DateTime.to_iso8601(date_time, :extended, offset)}
-
-      {:error, e} ->
-        {:date_time, {:error, e}}
-    end
+  @impl ScraperParser
+  def parse_art_date(parsed_art, html) do
+    ScraperCommImpl.comm_parse_art_date(parsed_art, html)
   end
 
   # -----------------------------------------------------------------------------------
 
-  # Parses the article body, filters it and appends the result to the parsed_art map
-  @spec parse_art_body(parsed_art :: map(), html :: Scraper.html_tree()) :: map()
-  defp parse_art_body(parsed_art, html) do
+  @impl ScraperParser
+  def parse_art_body(parsed_art, html) do
     parsed_body =
       Floki.traverse_and_update(html, fn
         # Avoids picking more content than needed in live articles
@@ -421,7 +290,8 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
         not (String.contains?(text, "Sigue toda la información de Cinco Días") or
                String.contains?(text, "nuestra newsletter semanal") or
                String.contains?(text, "EL PAÍS") or
-               String.contains?(text, "Publicaciones nuevas"))
+               String.contains?(text, "Publicaciones nuevas") or
+               String.contains?(text, "seguir"))
 
       text ->
         not is_binary(text)

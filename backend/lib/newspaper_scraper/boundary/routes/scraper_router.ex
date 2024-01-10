@@ -2,6 +2,7 @@ defmodule NewspaperScraper.Boundary.Routes.ScraperRouter do
   @moduledoc """
   This module implements the routing for scraping functionalities
   """
+  require Logger
   alias NewspaperScraper.Utils.Routes.RouterUtils
   alias NewspaperScraper.Boundary.ScraperAPI
 
@@ -57,6 +58,8 @@ defmodule NewspaperScraper.Boundary.Routes.ScraperRouter do
       |> RouterUtils.transform_query_params()
       |> transform_search_articles_query_params()
 
+    Logger.log(:info, query_params)
+
     with parsed_art_summs when is_list(parsed_art_summs) <-
            ScraperAPI.search_articles(query_params),
          transformed <- Enum.map(parsed_art_summs, &RouterUtils.transform_error/1),
@@ -74,6 +77,8 @@ defmodule NewspaperScraper.Boundary.Routes.ScraperRouter do
     query_params =
       fetch_query_params(conn).query_params
       |> RouterUtils.transform_query_params()
+
+    Logger.log(:info, query_params)
 
     with {:ok, parsed_art} <- ScraperAPI.get_article(query_params),
          {:ok, res} <- Jason.encode(parsed_art) do

@@ -21,6 +21,20 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
     GenStage.start_link(__MODULE__, :ok, opts)
   end
 
+  # Returns a list with the limit distribution for each scraper
+  defp get_limit_distribution(num_scrapers, limit) do
+    base_limit = div(limit, num_scrapers)
+    remainder = rem(limit, num_scrapers)
+
+    Enum.map(1..num_scrapers, fn i ->
+      if i <= remainder do
+        base_limit + 1
+      else
+        base_limit
+      end
+    end)
+  end
+
   @doc """
   Handles both types of possible requests to the scrapers
   """
@@ -34,13 +48,15 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
     topic = req.topic
     page = req.page
     limit = req.limit
-    scrapers = @scrapers
+    scrapers_len = length(@scrapers)
+    scrapers_with_index = Enum.zip(0..scrapers_len, @scrapers)
+    limit_dist = get_limit_distribution(scrapers_len, limit)
 
     res =
       Enum.map(
-        scrapers,
-        fn scraper ->
-          case scraper.search_articles(topic, page, limit) do
+        scrapers_with_index,
+        fn {index, scraper} ->
+          case scraper.search_articles(topic, page, Enum.at(limit_dist, index)) do
             {:ok, raw_art_summs} -> {:ok, scraper: scraper, raw_art_summs: raw_art_summs}
             error -> StageUtils.build_error(scraper, error)
           end
@@ -97,7 +113,7 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
         end
       )
 
-    next_events = Task.await_many(tasks)
+    next_events = Task.await_many(tasks, 20_000)
 
     {:noreply, next_events, state}
   end

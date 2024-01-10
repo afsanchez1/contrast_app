@@ -32,7 +32,8 @@ defmodule NewspaperScraper.MixProject do
       {:cors_plug, "~> 3.0"},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.30.9", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.30.9", only: :dev, runtime: false},
+      {:codepagex, "~> 0.1.6"}
     ]
   end
 
@@ -46,11 +47,13 @@ defmodule NewspaperScraper.MixProject do
     [
       ignore_modules: [
         NewspaperScraper.Application,
-        NewspaperScraper.Client.ElPaisMockServer,
+        NewspaperScraper.Mocks.ElPaisMockServer,
+        NewspaperScraper.Mocks.ElMundoMockServer,
         NewspaperScraper.Core.Scraper,
         NewspaperScraper.Model.Article,
         NewspaperScraper.Model.ArticleSummary,
         NewspaperScraper.Model.Author,
+        NewspaperScraper.Tools.ManualScraperResultChecker,
         Jason.Encoder.NewspaperScraper.Model.Article,
         Jason.Encoder.NewspaperScraper.Model.ArticleSummary,
         Jason.Encoder.NewspaperScraper.Model.Author

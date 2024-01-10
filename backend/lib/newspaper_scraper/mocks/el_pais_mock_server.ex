@@ -1,4 +1,4 @@
-defmodule NewspaperScraper.Client.ElPaisMockServer do
+defmodule NewspaperScraper.Mocks.ElPaisMockServer do
   @moduledoc """
   This module mocks https://elpais.com behaviour
   """
@@ -10,7 +10,8 @@ defmodule NewspaperScraper.Client.ElPaisMockServer do
   use Agent
 
   @server_url Application.compile_env(:newspaper_scraper, :el_pais_base_url)
-  @responses_path Application.compile_env(:newspaper_scraper, :el_pais_search_responses_path) || "/non_existing_path"
+  @responses_path Application.compile_env(:newspaper_scraper, :el_pais_search_responses_path) ||
+                    "/non_existing_path"
   @resources_path Application.compile_env(:newspaper_scraper, :el_pais_resources_path)
   @agent_name :el_pais_agent
 
@@ -29,7 +30,7 @@ defmodule NewspaperScraper.Client.ElPaisMockServer do
   # ===================================================================================
 
   def init(_opts) do
-    Logger.info("Server running on: #{@server_url}")
+    Logger.info("ElPaisMockServer running on: #{@server_url}")
 
     try do
       resources = TestUtils.read_and_parse_JSON!(@responses_path, keys: :atoms)
@@ -112,7 +113,7 @@ defmodule NewspaperScraper.Client.ElPaisMockServer do
            else: (error -> error)
 
     to_convert_html =
-      case ElPaisScraper.check_premium(html) do
+      case ParsingUtils.check_premium(html, ElPaisScraper) do
         true -> filter_out_premium_content(html)
         false -> html
       end

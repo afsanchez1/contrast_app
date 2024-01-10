@@ -4,7 +4,8 @@ defmodule NewspaperScraper.Application do
   @moduledoc false
   alias NewspaperScraper.Boundary.Routes.ScraperRouter
   alias NewspaperScraper.Boundary.ScraperManager
-  alias NewspaperScraper.Client.ElPaisMockServer
+  alias NewspaperScraper.Mocks.ElPaisMockServer
+  alias NewspaperScraper.Mocks.ElMundoMockServer
 
   require Logger
 
@@ -21,7 +22,8 @@ defmodule NewspaperScraper.Application do
 
         [env: :test] ->
           [
-            {Plug.Cowboy, scheme: :http, plug: ElPaisMockServer, options: [port: 8081]}
+            {Plug.Cowboy, scheme: :http, plug: ElPaisMockServer, options: [port: 8081]},
+            {Plug.Cowboy, scheme: :http, plug: ElMundoMockServer, options: [port: 8082]}
           ]
 
         [env: :dev] ->
