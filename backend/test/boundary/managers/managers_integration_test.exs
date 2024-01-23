@@ -1,5 +1,7 @@
 defmodule Boundary.Managers.ManagersIntegrationTest do
+  alias NewspaperScraper.Model.AppError
   alias NewspaperScraper.Boundary.ScraperManager
+
   use ExUnit.Case, async: true
 
   import ExUnit.CaptureLog
@@ -66,7 +68,12 @@ defmodule Boundary.Managers.ManagersIntegrationTest do
       assert is_list(res)
       first_elem = Enum.at(res, 0)
 
-      assert {:error, _} = first_elem
+      first_elem_err = %{
+        scraper: "el-pais",
+        results: %NewspaperScraper.Model.AppError{error: "not found"}
+      }
+
+      assert first_elem_err = first_elem
       assert :ok === clean_manager_supervision_tree()
     end
 
@@ -80,7 +87,12 @@ defmodule Boundary.Managers.ManagersIntegrationTest do
       assert is_list(res)
       first_elem = Enum.at(res, 0)
 
-      assert {:error, _} = first_elem
+      first_elem_err = %{
+        scraper: "el-pais",
+        results: %AppError{error: "no articles found to parse"}
+      }
+
+      assert first_elem_err = first_elem
       assert :ok === clean_manager_supervision_tree()
     end
   end

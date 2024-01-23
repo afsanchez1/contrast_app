@@ -1,5 +1,4 @@
 import type { FC } from 'react'
-import type { SearchArticlesErrorResult } from '../../types'
 import {
     Alert,
     AlertDescription,
@@ -14,6 +13,7 @@ import {
     ListItem,
 } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
+import { type SearchArticlesErrorResult } from '../../types/scraper/searchArticlesResults'
 
 /**
  * A function for transforming the scraper name
@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next'
  */
 function getNewspaperName(scraperName: string): string {
     if (scraperName === 'el-pais') return 'El País'
+    else if (scraperName === 'el-mundo') return 'El Mundo'
     return 'Unknown newspaper'
 }
 
@@ -58,9 +59,7 @@ export const ScraperErrorAlert: FC<ScraperErrorAlertProps> = ({ scraperErrors })
                             {scraperErrors.map((scraperError, index) => {
                                 return (
                                     <ListItem key={index} textAlign='left'>
-                                        <Text>
-                                            {getNewspaperName(Object.keys(scraperError.error)[0])}
-                                        </Text>
+                                        <Text>{getNewspaperName(scraperError.scraper)}</Text>
                                     </ListItem>
                                 )
                             })}

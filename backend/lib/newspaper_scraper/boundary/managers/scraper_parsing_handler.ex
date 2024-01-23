@@ -2,8 +2,8 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperParsingHandler do
   @moduledoc """
   This module contains the logic for parsing results from requests
   """
+  alias NewspaperScraper.Model.AppError
   alias NewspaperScraper.Model.Article
-  alias NewspaperScraper.Utils.Managers.StageUtils
   require Logger
 
   @doc """
@@ -67,14 +67,24 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperParsingHandler do
   # Auxiliar function for parsing search results
   defp parse_search_results(res) do
     case res do
-      {:ok, scraper: scraper, raw_art_summs: raw_art_summs} ->
+      {:ok, scraper: scraper, results: raw_art_summs} ->
         case scraper.parse_search_results(raw_art_summs) do
-          {:ok, parsed_art} -> %{scraper: scraper.get_scraper_name(), results: parsed_art}
-          error -> StageUtils.build_error(scraper, error)
+          {:ok, parsed_art} ->
+            %{scraper: scraper.get_scraper_name(), results: parsed_art}
+
+          {:error, error} ->
+            %{scraper: scraper.get_scraper_name(), results: build_search_error({:error, error})}
         end
 
-      {:error, e} ->
-        {:error, e}
+      {:error, scraper: scraper, results: error} ->
+        %{scraper: scraper.get_scraper_name(), results: build_search_error(error)}
     end
+  end
+
+  # Auxiliar function for builing errors
+  defp build_search_error({:error, error}) do
+    %AppError{
+      error: error
+    }
   end
 end

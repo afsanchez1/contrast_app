@@ -3,7 +3,6 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
   This module contains the logic to handle requests for all the scrapers
   """
   alias NewspaperScraper.Boundary.Managers.ScraperEventManager
-  alias NewspaperScraper.Utils.Managers.StageUtils
 
   use GenStage
 
@@ -57,8 +56,8 @@ defmodule NewspaperScraper.Boundary.Managers.ScraperRequestHandler do
         scrapers_with_index,
         fn {index, scraper} ->
           case scraper.search_articles(topic, page, Enum.at(limit_dist, index)) do
-            {:ok, raw_art_summs} -> {:ok, scraper: scraper, raw_art_summs: raw_art_summs}
-            error -> StageUtils.build_error(scraper, error)
+            {:ok, raw_art_summs} -> {:ok, scraper: scraper, results: raw_art_summs}
+            {:error, error} -> {:error, scraper: scraper, results: {:error, error}}
           end
         end
       )

@@ -49,14 +49,14 @@ export const SearchResults: FC = () => {
     const setData = (data: SearchResult): void => {
         // Filter the errors and set them
         const errorResults = data.filter(searchResult => {
-            return 'error' in searchResult
+            return 'error' in searchResult.results
         }) as SearchArticlesErrorResult[]
 
         setScraperErrors([...scraperErrors, ...errorResults])
 
         // Filter the successful responses and set them
         const successResults = data.filter(searchResult => {
-            return 'scraper' in searchResult
+            return Array.isArray(searchResult.results)
         }) as SearchArticlesSuccessResult[]
 
         setArticleSumms([...articleSumms, ...successResults])
@@ -170,20 +170,22 @@ export const SearchResults: FC = () => {
                                         </CardBody>
                                         <CardFooter>
                                             <VStack spacing='0.5rem' align='left'>
-                                                {articleSumm.authors.map((author, index) => {
-                                                    return (
-                                                        <Link
-                                                            key={index}
-                                                            href={author.url}
-                                                            isExternal={true}
-                                                        >
-                                                            <HStack spacing='0.5rem'>
-                                                                <Text>{author.name}</Text>
-                                                                <ExternalLinkIcon />
-                                                            </HStack>
-                                                        </Link>
-                                                    )
-                                                })}
+                                                {articleSumm.authors != null
+                                                    ? articleSumm.authors.map((author, index) => {
+                                                          return (
+                                                              <Link
+                                                                  key={index}
+                                                                  href={author.url}
+                                                                  isExternal={true}
+                                                              >
+                                                                  <HStack spacing='0.5rem'>
+                                                                      <Text>{author.name}</Text>
+                                                                      <ExternalLinkIcon />
+                                                                  </HStack>
+                                                              </Link>
+                                                          )
+                                                      })
+                                                    : null}
                                                 <Text>
                                                     {articleSumm.newspaper +
                                                         ' - ' +
