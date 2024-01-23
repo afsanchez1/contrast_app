@@ -106,9 +106,8 @@ export const SearchResults: FC = () => {
         }
         return () => {
             setErrorMessage('')
-            setScraperErrors([])
         }
-    }, [articleSumms, setErrorMessage, setScraperErrors])
+    }, [articleSumms, setErrorMessage])
 
     return (
         <VStack margin='2rem' spacing='1.75rem'>

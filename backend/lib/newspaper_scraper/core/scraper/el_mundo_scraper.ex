@@ -133,7 +133,8 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
 
     with {:ok, html} <- Floki.parse_document(search_result),
          {:ok, found_html} <- ParsingUtils.find_element(html, selectors),
-         do: {:ok, parse_search_results_html(found_html)},
+         results when is_list(results) <- parse_search_results_html(found_html),
+         do: {:ok, results},
          else: (error -> error)
   end
 
