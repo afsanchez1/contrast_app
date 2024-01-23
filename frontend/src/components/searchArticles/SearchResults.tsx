@@ -46,15 +46,27 @@ export const SearchResults: FC = () => {
     const { t } = useTranslation()
     const { colorMode } = useColorMode()
 
+    // Checks if the scraper name is already in the scraperErrors
+    const containsName = (
+        scraperErrors: SearchArticlesErrorResult[],
+        scraperError: SearchArticlesErrorResult
+    ): boolean => {
+        return scraperErrors.reduce<boolean>((acc, curr) => {
+            return acc || curr.scraper === scraperError.scraper
+        }, false)
+    }
     const setData = (data: SearchResult): void => {
-        // Filter the errors and set them
+        // Filter the errors, checks no duplicates and sets them
         const errorResults = data.filter(searchResult => {
-            return 'error' in searchResult.results
+            return scraperErrors.length === 0
+                ? 'error' in searchResult.results
+                : 'error' in searchResult.results &&
+                      !containsName(scraperErrors, searchResult as SearchArticlesErrorResult)
         }) as SearchArticlesErrorResult[]
 
         setScraperErrors([...scraperErrors, ...errorResults])
 
-        // Filter the successful responses and set them
+        // Filter the successful responses and sets them
         const successResults = data.filter(searchResult => {
             return Array.isArray(searchResult.results)
         }) as SearchArticlesSuccessResult[]
@@ -106,9 +118,8 @@ export const SearchResults: FC = () => {
         }
         return () => {
             setErrorMessage('')
-            setScraperErrors([])
         }
-    }, [articleSumms, setErrorMessage, setScraperErrors])
+    }, [articleSumms, setErrorMessage])
 
     return (
         <VStack margin='2rem' spacing='1.75rem'>
