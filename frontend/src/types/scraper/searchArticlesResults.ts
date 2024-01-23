@@ -1,6 +1,13 @@
 import type { ArticleSummary } from '.'
 
 /**
+ * Represents a SearchArticles query error result
+ * @type SearchError
+ * @example { error: 'parsing error' }
+ */
+export type SearchError = Record<string, string>
+
+/**
  * Represents a SearchArticles query successful result
  * @interface SearchArticlesSuccessResult
  */
@@ -20,14 +27,18 @@ export interface SearchArticlesSuccessResult {
 /**
  * Represents a SearchArticles query error result
  * @interface SearchArticlesErrorResult
- * @example { error: { 'el-pais': 'Parsing error' } }
  */
 export interface SearchArticlesErrorResult {
     /**
-     * Error result
-     * @type {Record<string, string>}
+     * Name of the scraper
+     * @type {string}
      */
-    error: Record<string, string>
+    scraper: string
+    /**
+     * Search results
+     * @type {SearchError}
+     */
+    results: SearchError
 }
 
 /**

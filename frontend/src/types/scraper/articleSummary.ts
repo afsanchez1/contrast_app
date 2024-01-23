@@ -14,7 +14,7 @@ export interface ArticleSummary {
      * The article's authors
      * @type {Author[]}
      */
-    authors: Author[]
+    authors?: Author[]
     /**
      * The article's title
      * @type {string}

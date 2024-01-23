@@ -11,8 +11,9 @@ import i18n from '../../../src/i18n'
 const errorMessage = 'This is a test error'
 const testErrors = [
     {
-        error: {
-            'el-pais': errorMessage,
+        scraper: 'el-pais',
+        results: {
+            error: errorMessage,
         },
     },
 ]
