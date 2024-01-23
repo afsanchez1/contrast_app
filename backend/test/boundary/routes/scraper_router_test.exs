@@ -39,7 +39,13 @@ defmodule Boundary.Routes.ScraperRouterTest do
       assert {:ok, parsed_err} = Jason.decode(conn.resp_body)
       assert is_list(parsed_err)
       first_elem = Enum.at(parsed_err, 0)
-      assert %{"error" => %{"el-pais" => "no articles found to parse"}} === first_elem
+
+      first_elem_err = %{
+        "results" => %{"error" => "no articles found to parse"},
+        "scraper" => "el-pais"
+      }
+
+      assert first_elem_err === first_elem
     end
 
     # -----------------------------------------------------------------------------------

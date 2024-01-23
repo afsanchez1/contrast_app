@@ -83,29 +83,33 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   @impl Scraper
   def parse_search_results(articles) do
-    parsed_arts =
-      Enum.map(
-        articles,
-        fn article ->
-          date_time = parse_search_date_time(article["updatedTs"])
-          authors = parse_search_authors(article["authors"])
-          is_premium = ParsingUtils.search_check_premium(article["url"], ElPaisScraper)
+    try do
+      parsed_arts =
+        Enum.map(
+          articles,
+          fn article ->
+            date_time = parse_search_date_time(article["updatedTs"])
+            authors = parse_search_authors(article["authors"])
+            is_premium = ParsingUtils.search_check_premium(article["url"], ElPaisScraper)
 
-          %ArticleSummary{
-            newspaper: @newspaper_name,
-            authors: authors,
-            title: article["title"],
-            excerpt: article["excerpt"],
-            date_time: date_time,
-            url: article["url"],
-            is_premium: is_premium
-          }
-        end
-      )
+            %ArticleSummary{
+              newspaper: @newspaper_name,
+              authors: authors,
+              title: article["title"],
+              excerpt: article["excerpt"],
+              date_time: date_time,
+              url: article["url"],
+              is_premium: is_premium
+            }
+          end
+        )
 
-    case parsed_arts do
-      [] -> {:error, "no articles found to parse"}
-      [_ | _] -> {:ok, parsed_arts}
+      case parsed_arts do
+        [] -> {:error, "no articles found to parse"}
+        [_ | _] -> {:ok, parsed_arts}
+      end
+    rescue
+      _e -> {:error, "parsing error"}
     end
   end
 
