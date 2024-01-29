@@ -55,7 +55,7 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
       parse_search_results: [".lista_resultados"],
       check_premium: [".ue-c-article__premium-tag"],
       parse_art_header: [".ue-c-article"],
-      parse_art_authors: [".ue-c-article__byline-name"],
+      parse_art_authors: [".ue-c-article__author-name", ".ue-c-article__byline-name"],
       parse_art_date: [".ue-c-article__publishdate"],
       parse_art_body: [".ue-l-article__body"]
     }
@@ -116,7 +116,7 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
     end
   end
 
-  # Response comes in binary, so we transform it to a string
+  # Response comes in binary, so we transform it into a string
   @spec transform_body_into_html(body :: binary()) :: String.t()
   defp transform_body_into_html(body) do
     body
@@ -212,7 +212,10 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
         Map.new(contents)
 
       url = contents_map[:url]
-      art_contents_map = get_contents_from_art(url)
+
+      art_contents_map =
+        get_contents_from_art(url)
+        |> dbg()
 
       %ArticleSummary{
         newspaper: get_newspaper_name(),
@@ -298,8 +301,12 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
   def parse_art_authors(parsed_art, html) do
     parsed_authors =
       Floki.traverse_and_update(html, fn
-        {"div", _attrs, children} ->
-          build_no_url_author(children)
+        {"div", _attrs, [h | t]} ->
+          if is_binary(h) do
+            build_no_url_author(h)
+          else
+            [h | t]
+          end
 
         {"a", attrs, children} ->
           transformed_attrs = ParsingUtils.transform_attributes(attrs)
@@ -314,26 +321,21 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
             url: url
           }
 
+        {"span", _attrs, _children} ->
+          nil
+
         other ->
-          other
+          build_no_url_author(other)
       end)
 
     Map.put(parsed_art, :authors, parsed_authors)
   end
 
-  defp build_no_url_author(children) do
-    [h | _t] = children
-
-    if is_binary(h) do
-      Enum.map(children, fn child ->
-        %Author{
-          name: ParsingUtils.normalize_name(child),
-          url: nil
-        }
-      end)
-    else
-      children
-    end
+  defp build_no_url_author(auth_name) do
+    %Author{
+      name: ParsingUtils.normalize_name(auth_name),
+      url: nil
+    }
   end
 
   # -----------------------------------------------------------------------------------
