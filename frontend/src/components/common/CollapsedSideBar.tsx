@@ -32,7 +32,7 @@ export const CollapsedSideBar: FC<CollapsedSideBarProps> = ({
 }) => {
     const { colorMode } = useColorMode()
     return (
-        <Slide direction='left' in={isSidebarOpen} style={{ zIndex: 10 }}>
+        <Slide direction='left' in={isSidebarOpen} style={{ zIndex: 2 }}>
             <Flex
                 direction='column'
                 backgroundColor={colorMode === 'light' ? 'gray.300' : 'gray.700'}

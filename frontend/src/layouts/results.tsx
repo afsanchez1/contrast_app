@@ -11,13 +11,13 @@ export const Results: FC = () => {
     return (
         <>
             <Grid
-                templateColumns='repeat(6 1fr) '
+                templateColumns='repeat(6 1fr)'
                 templateRows='repeat(6 1fr)'
                 height='100vh'
                 alignItems='center'
             >
                 {/* NavBar */}
-                <GridItem rowSpan={1}>
+                <GridItem rowSpan={1} mb='3rem'>
                     <NavBar hasLogo={true} hasSideBarButton={true} />
                 </GridItem>
 
