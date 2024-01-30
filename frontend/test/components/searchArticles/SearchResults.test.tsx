@@ -72,12 +72,12 @@ describe('SearchResults component parts', () => {
         renderWithProviders(<RouterProvider router={router} />)
 
         const pattern = new RegExp(`${i18n.t('results-for')}`)
-        await waitFor(() => {
+        await waitFor(async () => {
             expect(screen.getByText(pattern)).toBeInTheDocument()
             const showMoreButton = screen.getByText(i18n.t('show-more'))
             expect(showMoreButton).toBeInTheDocument()
 
-            userEvent.click(showMoreButton)
+            await userEvent.click(showMoreButton)
             expect(screen.getByText(/Test title2/)).toBeInTheDocument()
         })
     })

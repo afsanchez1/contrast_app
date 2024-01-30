@@ -6,7 +6,6 @@ import {
     CardBody,
     CardFooter,
     CardHeader,
-    Center,
     HStack,
     Heading,
     Link,
@@ -141,9 +140,7 @@ export const SearchResults: FC = () => {
             )}
 
             {isLoading ? (
-                <Center h='100vh'>
-                    <Spinner data-testid='search-results-spinner' size='xl' />
-                </Center>
+                <Spinner data-testid='search-results-spinner' size='xl' />
             ) : errorMessage.length > 0 ? (
                 <ErrorPanel errorMessage={errorMessage} refetchFunction={handleSearchArticles} />
             ) : (
@@ -183,7 +180,7 @@ export const SearchResults: FC = () => {
                                             <VStack spacing='0.5rem' align='left'>
                                                 {articleSumm.authors != null
                                                     ? articleSumm.authors.map((author, index) => {
-                                                          return (
+                                                          return author.url != null ? (
                                                               <Link
                                                                   key={index}
                                                                   href={author.url}
@@ -194,6 +191,8 @@ export const SearchResults: FC = () => {
                                                                       <ExternalLinkIcon />
                                                                   </HStack>
                                                               </Link>
+                                                          ) : (
+                                                              <Text>{author.name}</Text>
                                                           )
                                                       })
                                                     : null}

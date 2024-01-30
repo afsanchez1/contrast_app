@@ -68,11 +68,7 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
   @impl Scraper
   def search_articles(topic, page, limit) do
     req_page =
-      cond do
-        page === 0 -> 1
-        page === 1 -> limit + page
-        true -> 1 + limit * (page - 1)
-      end
+      page * limit + 1
 
     try do
       #  Transform it to latin1 encoding for elmundo server to understand
@@ -215,7 +211,6 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
 
       art_contents_map =
         get_contents_from_art(url)
-        |> dbg()
 
       %ArticleSummary{
         newspaper: get_newspaper_name(),

@@ -73,7 +73,7 @@ defmodule Boundary.Managers.ManagersIntegrationTest do
         results: %NewspaperScraper.Model.AppError{error: "not found"}
       }
 
-      assert first_elem_err = first_elem
+      assert first_elem_err === first_elem
       assert :ok === clean_manager_supervision_tree()
     end
 
@@ -92,7 +92,7 @@ defmodule Boundary.Managers.ManagersIntegrationTest do
         results: %AppError{error: "no articles found to parse"}
       }
 
-      assert first_elem_err = first_elem
+      assert first_elem_err === first_elem
       assert :ok === clean_manager_supervision_tree()
     end
   end
