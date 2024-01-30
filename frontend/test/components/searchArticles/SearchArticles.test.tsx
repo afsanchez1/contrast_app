@@ -30,7 +30,7 @@ describe('SearchArticles component parts', () => {
         const inputValue = 'test input'
         const input = screen.getByLabelText('search-input')
 
-        userEvent.type(input, inputValue)
+        await userEvent.type(input, inputValue)
 
         await waitFor(() => {
             expect(input).toHaveValue(inputValue)
@@ -43,13 +43,13 @@ describe('SearchArticles component parts', () => {
         const inputValue = 'test input'
         const input = screen.getByLabelText('search-input')
 
-        userEvent.type(input, inputValue)
+        await userEvent.type(input, inputValue)
 
         await waitFor(() => {
             expect(input).toHaveValue(inputValue)
         })
 
-        userEvent.clear(input)
+        await userEvent.clear(input)
 
         await waitFor(() => {
             expect(input).toHaveValue('')
@@ -69,15 +69,15 @@ describe('Submitting errors', () => {
         const inputValue = testTopic
         const input = screen.getByLabelText('search-input')
 
-        userEvent.type(input, inputValue)
+        await userEvent.type(input, inputValue)
 
         await waitFor(() => {
             expect(input).toHaveValue(inputValue)
         })
 
         // User clicks the input and submits
-        userEvent.click(input)
-        userEvent.keyboard('[Enter]')
+        await userEvent.click(input)
+        await userEvent.keyboard('[Enter]')
 
         await waitFor(() => {
             expect(screen.getByText(i18n.t('fetch-error'))).toBeInTheDocument()
@@ -90,15 +90,15 @@ describe('Submitting errors', () => {
         const inputValue = '   '
         const input = screen.getByLabelText('search-input')
 
-        userEvent.type(input, inputValue)
+        await userEvent.type(input, inputValue)
 
         await waitFor(() => {
             expect(input).toHaveValue(inputValue)
         })
 
         // User clicks the input and submits
-        userEvent.click(input)
-        userEvent.keyboard('[Enter]')
+        await userEvent.click(input)
+        await userEvent.keyboard('[Enter]')
 
         await waitFor(() => {
             expect(screen.getByText(i18n.t('empty-topic-error'))).toBeInTheDocument()
@@ -137,15 +137,15 @@ describe('Successful search', () => {
         const inputValue = testTopic
         const input = screen.getByLabelText('search-input')
 
-        userEvent.type(input, inputValue)
+        await userEvent.type(input, inputValue)
 
         await waitFor(() => {
             expect(input).toHaveValue(inputValue)
         })
 
         // User clicks the input and submits
-        userEvent.click(input)
-        userEvent.keyboard('[Enter]')
+        await userEvent.click(input)
+        await userEvent.keyboard('[Enter]')
 
         await waitFor(() => {
             expect(screen.queryByText('testDiv')).toBeInTheDocument()
@@ -160,15 +160,15 @@ describe('Loading search results', () => {
         const inputValue = testTopic
         const input = screen.getByLabelText('search-input')
 
-        userEvent.type(input, inputValue)
+        await userEvent.type(input, inputValue)
 
         await waitFor(() => {
             expect(input).toHaveValue(inputValue)
         })
 
         // User clicks the input and submits
-        userEvent.click(input)
-        userEvent.keyboard('[Enter]')
+        await userEvent.click(input)
+        await userEvent.keyboard('[Enter]')
 
         await waitFor(() => {
             expect(screen.getByTestId('search-spinner')).toBeInTheDocument()

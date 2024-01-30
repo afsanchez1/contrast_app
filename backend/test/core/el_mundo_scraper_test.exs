@@ -56,7 +56,7 @@ defmodule Core.ElMundoScraperTest do
         parse_search_results: [".lista_resultados"],
         check_premium: [".ue-c-article__premium-tag"],
         parse_art_header: [".ue-c-article"],
-        parse_art_authors: [".ue-c-article__byline-name"],
+        parse_art_authors: [".ue-c-article__author-name", ".ue-c-article__byline-name"],
         parse_art_date: [".ue-c-article__publishdate"],
         parse_art_body: [".ue-l-article__body"]
       ]
