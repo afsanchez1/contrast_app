@@ -10,6 +10,7 @@ import {
 import { SunIcon, MoonIcon, HamburgerIcon } from '@chakra-ui/icons'
 import { CollapsedSideBar, Logo, SideBar } from '.'
 import type { FC } from 'react'
+import { CartDisplayer } from '../articleCart'
 
 /**
  * Props for NavBar
@@ -55,12 +56,13 @@ export const NavBar: FC<NavBarProps> = ({ hasLogo, hasSideBarButton }) => {
                         aria-label='Toggle SideBar'
                         icon={<HamburgerIcon />}
                         onClick={onToggle}
-                    />
+                    ></IconButton>
                 ) : null}
                 <Spacer />
                 {hasLogo ? <Logo fontSize={{ base: '2rem' }} /> : null}
                 <Spacer />
-                <HStack spacing='20px'>
+                <HStack>
+                    <CartDisplayer />
                     <Button data-testid='theme-mode-button' onClick={toggleColorMode}>
                         {colorMode === 'light' ? (
                             <SunIcon data-testid='sun-icon' />

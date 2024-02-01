@@ -23,12 +23,15 @@ import {
     type SearchResult,
     type SearchArticlesErrorResult,
     type SearchArticlesSuccessResult,
+    type ArticleSummary,
 } from '../../types'
-import { ChevronDownIcon, ExternalLinkIcon } from '@chakra-ui/icons'
+import { ChevronDownIcon, ExternalLinkIcon, AddIcon, CloseIcon } from '@chakra-ui/icons'
 import { useTranslation } from 'react-i18next'
 import { getError, parseDateTime } from '../../utils'
 import { ErrorPanel } from './ErrorPanel'
 import { ScraperErrorAlert } from './ScraperErrorAlert'
+import { addToCart, removeFromCart, selectCartItems } from '../articleCart'
+import { useAppDispatch, useAppSelector } from '../../app/hooks'
 
 /**
  * SearchResults is a custom React component for displaying search results
@@ -36,6 +39,8 @@ import { ScraperErrorAlert } from './ScraperErrorAlert'
  */
 export const SearchResults: FC = () => {
     const { topic } = useParams()
+    const dispatch = useAppDispatch()
+    const selectArtSumms = useAppSelector(state => selectCartItems(state))
     const [searchArticles, { isLoading }] = scraperApi.endpoints.searchArticles.useLazyQuery({})
     const [moreIsLoading, setMoreIsLoading] = useState<boolean>(false)
     const [articleSumms, setArticleSumms] = useState<SearchArticlesSuccessResult[]>([])
@@ -103,6 +108,16 @@ export const SearchResults: FC = () => {
         setPage(prevPage => prevPage + 1)
     }
 
+    const existsArtSumm = (selectArticleSumm: ArticleSummary): boolean => {
+        const artSumms = selectArtSumms
+        return artSumms.includes(selectArticleSumm)
+    }
+
+    const handleSelectArticleSumm = (selectArticleSumm: ArticleSummary): void => {
+        if (existsArtSumm(selectArticleSumm)) dispatch(removeFromCart(selectArticleSumm))
+        else dispatch(addToCart(selectArticleSumm))
+    }
+
     // For managing requests
     useEffect(() => {
         handleSearchArticles()
@@ -158,7 +173,7 @@ export const SearchResults: FC = () => {
                                         }
                                     >
                                         <CardHeader>
-                                            <Link href={articleSumm.url}>
+                                            <Link href={articleSumm.url} isExternal={true}>
                                                 <HStack spacing='0.5rem'>
                                                     <Heading as='h1'>{articleSumm.title}</Heading>
                                                     <ExternalLinkIcon />
@@ -203,6 +218,20 @@ export const SearchResults: FC = () => {
                                                 </Text>
                                             </VStack>
                                         </CardFooter>
+
+                                        <Button
+                                            aria-label='add-article'
+                                            m='1rem'
+                                            onClick={() => {
+                                                handleSelectArticleSumm(articleSumm)
+                                            }}
+                                        >
+                                            {existsArtSumm(articleSumm) ? (
+                                                <CloseIcon />
+                                            ) : (
+                                                <AddIcon />
+                                            )}
+                                        </Button>
                                     </Card>
                                 )
                             })

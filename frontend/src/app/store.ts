@@ -1,9 +1,11 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { scraperApi } from '../services'
+import { cartSlice } from '../components/articleCart'
 import type { ToolkitStore } from '@reduxjs/toolkit/dist/configureStore'
 
 const rootReducer = combineReducers({
     [scraperApi.reducerPath]: scraperApi.reducer,
+    cart: cartSlice.reducer,
 })
 
 export function setupStore(preloadedState?: Partial<RootState>): ToolkitStore {
