@@ -12,7 +12,7 @@ export const Root: FC = () => {
         <>
             <Grid
                 templateColumns='repeat(6 1fr)'
-                templateRows='repeat(6 1fr)'
+                templateRows='0% 10% 80% 10%'
                 height='100vh'
                 alignItems='center'
             >

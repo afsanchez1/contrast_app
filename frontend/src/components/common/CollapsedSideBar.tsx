@@ -38,6 +38,7 @@ export const CollapsedSideBar: FC<CollapsedSideBarProps> = ({
                 backgroundColor={colorMode === 'light' ? 'gray.300' : 'gray.700'}
                 width={{ base: '100%', sm: '70%', md: '50%', lg: '30%' }}
                 height='100%'
+                position='fixed'
             >
                 <Flex alignItems='center' p={3}>
                     <Spacer />
