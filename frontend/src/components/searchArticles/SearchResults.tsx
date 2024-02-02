@@ -141,8 +141,8 @@ export const SearchResults: FC = () => {
 
     return (
         <VStack margin='2rem' spacing='1.75rem'>
-            {isLoading ? null : (
-                <Flex width='100%' m='0' h='0.5rem'>
+            {isLoading || errorMessage.length > 0 ? null : (
+                <Flex width='100%' mb='0.75rem' h='0.5rem'>
                     <BackButton route='/' />
                 </Flex>
             )}
