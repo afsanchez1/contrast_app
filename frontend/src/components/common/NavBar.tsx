@@ -45,7 +45,7 @@ export const NavBar: FC<NavBarProps> = ({ hasLogo, hasSideBarButton }) => {
                     {hasLogo ? <Logo fontSize={{ base: '2rem' }} /> : null}
                 </Box>
 
-                <HStack>
+                <HStack ml='0.5rem'>
                     <CartDisplayer />
                     <Button data-testid='theme-mode-button' onClick={toggleColorMode}>
                         {colorMode === 'light' ? (

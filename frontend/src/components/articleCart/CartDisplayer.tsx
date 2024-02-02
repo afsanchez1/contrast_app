@@ -40,7 +40,7 @@ export const CartDisplayer = (): JSX.Element => {
         <>
             <Button onClick={onOpen}>
                 <HStack>
-                    <Text>{t('show-selected-articles') + ` (${selectTotalItems.toString()})`}</Text>
+                    <Text>{t('selected-articles') + ` (${selectTotalItems.toString()})`}</Text>
                     <EditIcon />
                 </HStack>
             </Button>

@@ -111,7 +111,10 @@ export const SearchResults: FC = () => {
 
     const existsArtSumm = (selectArticleSumm: ArticleSummary): boolean => {
         const artSumms = selectArtSumms
-        return artSumms.includes(selectArticleSumm)
+        return artSumms.reduce<boolean>(
+            (acc, artSumm) => artSumm.url === selectArticleSumm.url || acc,
+            false
+        )
     }
 
     const handleSelectArticleSumm = (selectArticleSumm: ArticleSummary): void => {
@@ -138,9 +141,12 @@ export const SearchResults: FC = () => {
 
     return (
         <VStack margin='2rem' spacing='1.75rem'>
-            <Flex width='100%' m='0' h='0.5rem'>
-                <BackButton route='/' />
-            </Flex>
+            {isLoading ? null : (
+                <Flex width='100%' m='0' h='0.5rem'>
+                    <BackButton route='/' />
+                </Flex>
+            )}
+
             {errorMessage.length > 0 ? null : (
                 <Flex
                     direction={{ base: 'column', sm: 'column', md: 'row' }}

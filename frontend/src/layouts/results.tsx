@@ -1,4 +1,4 @@
-import { Grid, GridItem } from '@chakra-ui/react'
+import { Grid, GridItem, useBreakpoint } from '@chakra-ui/react'
 import type { FC } from 'react'
 import { Outlet } from 'react-router-dom'
 import { NavBar, Footer } from '../components'
@@ -8,6 +8,9 @@ import { NavBar, Footer } from '../components'
  * @returns {JSX.Element}
  */
 export const Results: FC = () => {
+    const breakpoint = useBreakpoint('sm')
+    const hasLogo = !(breakpoint === 'base' || breakpoint === 'sm')
+
     return (
         <>
             <Grid
@@ -18,7 +21,7 @@ export const Results: FC = () => {
             >
                 {/* NavBar */}
                 <GridItem rowSpan={1} mb='3rem'>
-                    <NavBar hasLogo={true} hasSideBarButton={true} />
+                    <NavBar hasLogo={hasLogo} hasSideBarButton={true} />
                 </GridItem>
 
                 {/* Main Content */}
