@@ -19,11 +19,11 @@ import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { removeFromCart, selectCartItems, selectCartTotalItems } from '.'
 import { type ArticleSummary } from '../../types'
 import { parseDateTime } from '../../utils'
+
 /**
  * CartDisplayer is a custom React component for displaying cart contents
  * @returns {JSX.Element}
  */
-
 export const CartDisplayer = (): JSX.Element => {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const { colorMode } = useColorMode()
@@ -97,6 +97,7 @@ export const CartDisplayer = (): JSX.Element => {
                 <DrawerFooter justifyContent='center' borderTopWidth='thin' zIndex='2'>
                     <HStack spacing={'0.75rem'}>
                         <Button onClick={onClose}>{t('cancel')}</Button>
+                        {/** TODO implement comparison */}
                         <Button>{t('compare')}</Button>
                     </HStack>
                 </DrawerFooter>

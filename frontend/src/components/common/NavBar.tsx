@@ -1,14 +1,6 @@
-import {
-    Flex,
-    Button,
-    HStack,
-    useColorMode,
-    IconButton,
-    useDisclosure,
-    Box,
-} from '@chakra-ui/react'
-import { SunIcon, MoonIcon, HamburgerIcon } from '@chakra-ui/icons'
-import { CollapsedSideBar, Logo, SideBar } from '.'
+import { Flex, Button, HStack, useColorMode, Box } from '@chakra-ui/react'
+import { SunIcon, MoonIcon } from '@chakra-ui/icons'
+import { Logo, SideBarDisplayer } from '.'
 import type { FC } from 'react'
 import { CartDisplayer } from '../articleCart'
 
@@ -32,13 +24,9 @@ export interface NavBarProps {
  */
 export const NavBar: FC<NavBarProps> = ({ hasLogo, hasSideBarButton }) => {
     const { colorMode, toggleColorMode } = useColorMode()
-    const { isOpen, onToggle } = useDisclosure()
 
     return (
         <>
-            <CollapsedSideBar isSidebarOpen={isOpen} toggleSideBar={onToggle}>
-                <SideBar />
-            </CollapsedSideBar>
             <Flex
                 as='nav'
                 p='0.5rem'
@@ -51,14 +39,7 @@ export const NavBar: FC<NavBarProps> = ({ hasLogo, hasSideBarButton }) => {
                 backgroundColor={colorMode === 'light' ? 'white' : 'gray.800'}
                 boxShadow={colorMode === 'light' ? 'base' : 'xl'}
             >
-                {hasSideBarButton ? (
-                    <IconButton
-                        data-testid='side-bar-button'
-                        aria-label='Toggle SideBar'
-                        icon={<HamburgerIcon />}
-                        onClick={onToggle}
-                    ></IconButton>
-                ) : null}
+                {hasSideBarButton ? <SideBarDisplayer /> : null}
 
                 <Box position='absolute' left='50%' transform='translateX(-50%)'>
                     {hasLogo ? <Logo fontSize={{ base: '2rem' }} /> : null}

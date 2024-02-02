@@ -10,24 +10,19 @@ import { NavBar, Footer } from '../components'
 export const Root: FC = () => {
     return (
         <>
-            <Grid
-                templateColumns='repeat(6 1fr)'
-                templateRows='0% 10% 80% 10%'
-                height='100vh'
-                alignItems='center'
-            >
+            <Grid templateRows='0.1% 90.9% 9%' height='100vh' alignItems='center'>
                 {/* NavBar */}
-                <GridItem rowSpan={1}>
+                <GridItem>
                     <NavBar hasLogo={false} hasSideBarButton={true} />
                 </GridItem>
 
                 {/* Main Content */}
-                <GridItem rowSpan={50}>
+                <GridItem>
                     <Outlet />
                 </GridItem>
 
                 {/* Footer */}
-                <GridItem rowSpan={1} textAlign='center'>
+                <GridItem textAlign='center'>
                     <Footer />
                 </GridItem>
             </Grid>

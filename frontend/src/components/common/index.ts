@@ -1,6 +1,6 @@
 export * from './NavBar'
 export * from './Logo'
 export * from './SideBar'
-export * from './CollapsedSideBar'
 export * from './Footer'
 export * from './CustomDrawer'
+export * from './SideBarDisplayer'
