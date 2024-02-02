@@ -12,5 +12,10 @@
     "warning": "Atención",
     "no-results-scraper-error": "No se han podido encontrar resultados de los siguientes periódicos",
     "try-again": "Intentar de nuevo",
-    "search-another-topic": "Buscar otro tema"
+    "search-another-topic": "Buscar otro tema",
+    "selected-articles": "Artículos seleccionados",
+    "show-selected-articles": "Mostrar artículos seleccionados",
+    "no-articles-selected-yet": "No se han seleccionado artículos...",
+    "cancel": "Cancelar",
+    "compare": "Comparar"
 }

@@ -1,11 +1,11 @@
 import {
     Flex,
     Button,
-    Spacer,
     HStack,
     useColorMode,
     IconButton,
     useDisclosure,
+    Box,
 } from '@chakra-ui/react'
 import { SunIcon, MoonIcon, HamburgerIcon } from '@chakra-ui/icons'
 import { CollapsedSideBar, Logo, SideBar } from '.'
@@ -41,8 +41,9 @@ export const NavBar: FC<NavBarProps> = ({ hasLogo, hasSideBarButton }) => {
             </CollapsedSideBar>
             <Flex
                 as='nav'
-                p='10px'
+                p='0.5rem'
                 alignItems='center'
+                justify='space-between'
                 position='fixed'
                 w='100%'
                 backdropFilter='saturate(180%)'
@@ -58,9 +59,11 @@ export const NavBar: FC<NavBarProps> = ({ hasLogo, hasSideBarButton }) => {
                         onClick={onToggle}
                     ></IconButton>
                 ) : null}
-                <Spacer />
-                {hasLogo ? <Logo fontSize={{ base: '2rem' }} /> : null}
-                <Spacer />
+
+                <Box position='absolute' left='50%' transform='translateX(-50%)'>
+                    {hasLogo ? <Logo fontSize={{ base: '2rem' }} /> : null}
+                </Box>
+
                 <HStack>
                     <CartDisplayer />
                     <Button data-testid='theme-mode-button' onClick={toggleColorMode}>
