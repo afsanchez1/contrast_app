@@ -9,7 +9,7 @@ import {
 import type { FC, ReactNode } from 'react'
 
 /**
- * Props for Drawer
+ * Props for CustomDrawer
  */
 export interface CustomDrawerProps {
     /**

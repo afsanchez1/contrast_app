@@ -32,6 +32,7 @@ import { ErrorPanel } from './ErrorPanel'
 import { ScraperErrorAlert } from './ScraperErrorAlert'
 import { addToCart, removeFromCart, selectCartItems } from '../articleCart'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
+import { BackButton } from '..'
 
 /**
  * SearchResults is a custom React component for displaying search results
@@ -137,6 +138,9 @@ export const SearchResults: FC = () => {
 
     return (
         <VStack margin='2rem' spacing='1.75rem'>
+            <Flex width='100%' m='0' h='0.5rem'>
+                <BackButton route='/' />
+            </Flex>
             {errorMessage.length > 0 ? null : (
                 <Flex
                     direction={{ base: 'column', sm: 'column', md: 'row' }}
