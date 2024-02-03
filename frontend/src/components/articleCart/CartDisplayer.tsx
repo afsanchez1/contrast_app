@@ -98,7 +98,7 @@ export const CartDisplayer = (): JSX.Element => {
                     <HStack spacing={'0.75rem'}>
                         <Button onClick={onClose}>{t('cancel')}</Button>
                         {/** TODO implement comparison */}
-                        <Button>{t('compare')}</Button>
+                        <Button isDisabled={selectedArticles.length === 0}>{t('compare')}</Button>
                     </HStack>
                 </DrawerFooter>
             </CustomDrawer>

@@ -9,7 +9,7 @@ import { NavBar, Footer } from '../components'
  */
 export const Results: FC = () => {
     const breakpoint = useBreakpoint('sm')
-    const hasLogo = !(breakpoint === 'base' || breakpoint === 'sm')
+    const hasLogo = !(breakpoint === 'base' || breakpoint === 'sm' || breakpoint === 'md')
 
     return (
         <>

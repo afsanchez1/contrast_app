@@ -91,7 +91,12 @@ export const SearchResults: FC = () => {
             )
                 .then(value => {
                     if (value.isSuccess) {
-                        setData(value.data)
+                        if (value.data.length === 0)
+                            setErrorMessage(t('empty-result-error') + ': ' + topic)
+                        else {
+                            setData(value.data)
+                            setErrorMessage('')
+                        }
                     } else if (value.isError) {
                         setErrorMessage(t(getError(ErrorType.FetchError)))
                     }
@@ -127,40 +132,11 @@ export const SearchResults: FC = () => {
         handleSearchArticles()
     }, [page])
 
-    // For managing error setup
-    useEffect(() => {
-        if (articleSumms.length === 0) {
-            setErrorMessage(t('empty-result-error') + ': ' + topic)
-        } else {
-            setErrorMessage('')
-        }
-        return () => {
-            setErrorMessage('')
-        }
-    }, [articleSumms, setErrorMessage])
-
     return (
-        <VStack margin='2rem' spacing='1.75rem'>
+        <VStack margin='1rem' spacing='1.75rem'>
             {isLoading || errorMessage.length > 0 ? null : (
                 <Flex width='100%' mb='0.75rem' h='0.5rem'>
                     <BackButton route='/' />
-                </Flex>
-            )}
-
-            {errorMessage.length > 0 ? null : (
-                <Flex
-                    direction={{ base: 'column', sm: 'column', md: 'row' }}
-                    align='center'
-                    justify='center'
-                    textAlign='center'
-                >
-                    <Heading as='h1' fontSize={{ base: '1.5rem', md: '1.75rem' }}>
-                        {t('results-for') + ': '}
-                    </Heading>
-                    <Spacer ml='1rem' />
-                    <Text as='i' fontSize={{ base: '1.5rem', md: '1.75rem' }}>
-                        {topic}
-                    </Text>
                 </Flex>
             )}
 
@@ -170,6 +146,20 @@ export const SearchResults: FC = () => {
                 <ErrorPanel errorMessage={errorMessage} refetchFunction={handleSearchArticles} />
             ) : (
                 <>
+                    <Flex
+                        direction={{ base: 'column', sm: 'column', md: 'row' }}
+                        align='center'
+                        justify='center'
+                        textAlign='center'
+                    >
+                        <Heading as='h1' fontSize={{ base: '1.5rem', md: '1.75rem' }}>
+                            {t('results-for') + ': '}
+                        </Heading>
+                        <Spacer ml='1rem' />
+                        <Text as='i' fontSize={{ base: '1.5rem', md: '1.75rem' }}>
+                            {topic}
+                        </Text>
+                    </Flex>
                     <ScraperErrorAlert scraperErrors={scraperErrors} />
                     <SimpleGrid columns={{ sm: 1, lg: 2 }} spacing='2rem'>
                         {articleSumms.map(articleResult => {
