@@ -77,6 +77,9 @@ export const SearchResults: FC = () => {
         }) as SearchArticlesSuccessResult[]
 
         setArticleSumms([...articleSumms, ...successResults])
+
+        if (successResults.length === 0) setErrorMessage(t('empty-result-error') + ': ' + topic)
+        else setErrorMessage('')
     }
 
     const handleSearchArticles = (): void => {
@@ -91,12 +94,7 @@ export const SearchResults: FC = () => {
             )
                 .then(value => {
                     if (value.isSuccess) {
-                        if (value.data.length === 0)
-                            setErrorMessage(t('empty-result-error') + ': ' + topic)
-                        else {
-                            setData(value.data)
-                            setErrorMessage('')
-                        }
+                        setData(value.data)
                     } else if (value.isError) {
                         setErrorMessage(t(getError(ErrorType.FetchError)))
                     }
