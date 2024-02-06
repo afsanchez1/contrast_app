@@ -1,11 +1,4 @@
-import type { ArticleSummary } from '.'
-
-/**
- * Represents a SearchArticles query error result
- * @type SearchError
- * @example { error: 'parsing error' }
- */
-export type SearchError = Record<string, string>
+import type { ArticleSummary, ApiError } from '.'
 
 /**
  * Represents a SearchArticles query successful result
@@ -36,9 +29,9 @@ export interface SearchArticlesErrorResult {
     scraper: string
     /**
      * Search results
-     * @type {SearchError}
+     * @type {ApiError}
      */
-    results: SearchError
+    results: ApiError
 }
 
 /**

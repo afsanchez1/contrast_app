@@ -2,10 +2,24 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { scraperApi } from '../services'
 import { cartSlice } from '../components/articleCart'
 import type { ToolkitStore } from '@reduxjs/toolkit/dist/configureStore'
+import { articleSlice } from '../components'
+import { persistReducer } from 'redux-persist'
+import storage from 'redux-persist/lib/storage'
+
+const cartPersistConfig = {
+    key: 'cart',
+    storage,
+}
+
+const comparePersistConfig = {
+    key: 'compare',
+    storage,
+}
 
 const rootReducer = combineReducers({
     [scraperApi.reducerPath]: scraperApi.reducer,
-    cart: cartSlice.reducer,
+    cart: persistReducer(cartPersistConfig, cartSlice.reducer),
+    compare: persistReducer(comparePersistConfig, articleSlice.reducer),
 })
 
 export function setupStore(preloadedState?: Partial<RootState>): ToolkitStore {

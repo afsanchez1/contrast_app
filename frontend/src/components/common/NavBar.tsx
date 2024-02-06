@@ -9,20 +9,28 @@ import { CartDisplayer } from '../articleCart'
  */
 export interface NavBarProps {
     /**
+     * A boolean for controlling toggle sidebar button displaying
+     */
+    hasSideBarButton: boolean
+    /**
      * A boolean for controlling logo displaying
      */
     hasLogo: boolean
     /**
-     * A boolean for controlling toggle sidebar button displaying
+     * A boolean for controlling selected articles button displaying
      */
-    hasSideBarButton: boolean
+    hasSelectedArticlesButton: boolean
 }
 /**
  * NavBar is a custom React component for the navigation bar of the app
  * @param {NavBarProps}
  * @returns {JSX.Element}
  */
-export const NavBar: FC<NavBarProps> = ({ hasLogo, hasSideBarButton }) => {
+export const NavBar: FC<NavBarProps> = ({
+    hasSideBarButton,
+    hasLogo,
+    hasSelectedArticlesButton,
+}) => {
     const { colorMode, toggleColorMode } = useColorMode()
 
     return (
@@ -46,7 +54,7 @@ export const NavBar: FC<NavBarProps> = ({ hasLogo, hasSideBarButton }) => {
                 </Box>
 
                 <HStack ml='0.5rem'>
-                    <CartDisplayer />
+                    {hasSelectedArticlesButton ? <CartDisplayer /> : null}
                     <Button data-testid='theme-mode-button' onClick={toggleColorMode}>
                         {colorMode === 'light' ? (
                             <SunIcon data-testid='sun-icon' />

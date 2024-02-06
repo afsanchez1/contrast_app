@@ -16,5 +16,7 @@
     "selected-articles": "Selected articles",
     "no-articles-selected-yet": "No articles selected yet...",
     "cancel": "Cancel",
-    "compare": "Compare"
+    "compare": "Compare",
+    "select": "Select",
+    "select-article": "Select an article"
 }

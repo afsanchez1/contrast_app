@@ -19,6 +19,7 @@ import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { removeFromCart, selectCartItems, selectCartTotalItems } from '.'
 import { type ArticleSummary } from '../../types'
 import { parseDateTime } from '../../utils'
+import { useNavigate } from 'react-router-dom'
 
 /**
  * CartDisplayer is a custom React component for displaying cart contents
@@ -31,9 +32,15 @@ export const CartDisplayer = (): JSX.Element => {
     const selectedArticles = useAppSelector(state => selectCartItems(state))
     const selectTotalItems = useAppSelector(state => selectCartTotalItems(state))
     const dispatch = useAppDispatch()
+    const navigate = useNavigate()
 
     const handleRemoveArticle = (artSumm: ArticleSummary): void => {
         dispatch(removeFromCart(artSumm))
+    }
+
+    const handleCompare = (): void => {
+        onClose()
+        navigate('/compare_articles/')
     }
 
     return (
@@ -97,8 +104,9 @@ export const CartDisplayer = (): JSX.Element => {
                 <DrawerFooter justifyContent='center' borderTopWidth='thin' zIndex='2'>
                     <HStack spacing={'0.75rem'}>
                         <Button onClick={onClose}>{t('cancel')}</Button>
-                        {/** TODO implement comparison */}
-                        <Button isDisabled={selectedArticles.length === 0}>{t('compare')}</Button>
+                        <Button isDisabled={selectedArticles.length < 2} onClick={handleCompare}>
+                            {t('compare')}
+                        </Button>
                     </HStack>
                 </DrawerFooter>
             </CustomDrawer>

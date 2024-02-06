@@ -4,10 +4,10 @@ import { Outlet } from 'react-router-dom'
 import { NavBar, Footer } from '../components'
 
 /**
- * Results is a custom React component for creating the search result displaying layout of the app
+ * Compare is a custom React component for creating the article comparing layout of the app
  * @returns {JSX.Element}
  */
-export const Results: FC = () => {
+export const Compare: FC = () => {
     const breakpoint = useBreakpoint('sm')
     const hasLogo = !(breakpoint === 'base' || breakpoint === 'sm' || breakpoint === 'md')
 
@@ -24,7 +24,7 @@ export const Results: FC = () => {
                     <NavBar
                         hasLogo={hasLogo}
                         hasSideBarButton={true}
-                        hasSelectedArticlesButton={true}
+                        hasSelectedArticlesButton={false}
                     />
                 </GridItem>
 
