@@ -41,4 +41,9 @@ export interface Article {
      * @type {ArticleBody}
      */
     body: ArticleBody
+    /**
+     * The article's url
+     * @type {string}
+     */
+    url: string
 }

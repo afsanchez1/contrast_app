@@ -16,7 +16,7 @@ import { CloseIcon, EditIcon } from '@chakra-ui/icons'
 import { useTranslation } from 'react-i18next'
 import { CustomDrawer } from '..'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { removeFromCart, selectCartItems, selectCartTotalItems } from '.'
+import { removeFromCart, selectCartItems } from '.'
 import { type ArticleSummary } from '../../types'
 import { parseDateTime } from '../../utils'
 import { useNavigate } from 'react-router-dom'
@@ -30,7 +30,6 @@ export const CartDisplayer = (): JSX.Element => {
     const { colorMode } = useColorMode()
     const { t } = useTranslation()
     const selectedArticles = useAppSelector(state => selectCartItems(state))
-    const selectTotalItems = useAppSelector(state => selectCartTotalItems(state))
     const dispatch = useAppDispatch()
     const navigate = useNavigate()
 
@@ -47,7 +46,9 @@ export const CartDisplayer = (): JSX.Element => {
         <>
             <Button onClick={onOpen}>
                 <HStack>
-                    <Text>{t('selected-articles') + ` (${selectTotalItems.toString()})`}</Text>
+                    <Text>
+                        {t('selected-articles') + ` (${selectedArticles.length.toString()})`}
+                    </Text>
                     <EditIcon />
                 </HStack>
             </Button>
@@ -58,7 +59,7 @@ export const CartDisplayer = (): JSX.Element => {
                 placement={'right'}
             >
                 <DrawerBody mt='1rem'>
-                    {selectTotalItems > 0 ? (
+                    {selectedArticles.length > 0 ? (
                         selectedArticles.map((artSumm, index) => {
                             return (
                                 <Card

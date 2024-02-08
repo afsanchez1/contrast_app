@@ -18,8 +18,7 @@ export const scraperApi = createApi({
             },
         }),
         getArticle: builder.query<GetArticleResult, GetArticleQuery>({
-            query: args => {
-                const { url } = args
+            query: ({ url }) => {
                 return `get_article?url=${url}`
             },
         }),

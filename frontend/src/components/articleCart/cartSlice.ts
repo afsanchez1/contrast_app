@@ -4,11 +4,9 @@ import { type RootState } from '../../app/store'
 
 interface cartSliceState {
     cartItems: ArticleSummary[]
-    cartTotalItems: number
 }
 const initialState: cartSliceState = {
     cartItems: [] as ArticleSummary[],
-    cartTotalItems: 0,
 }
 
 export const cartSlice = createSlice({
@@ -17,15 +15,15 @@ export const cartSlice = createSlice({
     reducers: {
         addToCart(state, action: PayloadAction<ArticleSummary>) {
             state.cartItems = [...state.cartItems, action.payload]
-            state.cartTotalItems += 1
         },
         removeFromCart(state, action: PayloadAction<ArticleSummary>) {
             state.cartItems = state.cartItems.filter(artSumm => artSumm.url !== action.payload.url)
-            state.cartTotalItems -= 1
+        },
+        clearCart(state) {
+            state.cartItems = []
         },
     },
 })
 
 export const selectCartItems = (state: RootState): ArticleSummary[] => state.cart.cartItems
-export const selectCartTotalItems = (state: RootState): number => state.cart.cartTotalItems
-export const { addToCart, removeFromCart } = cartSlice.actions
+export const { addToCart, removeFromCart, clearCart } = cartSlice.actions

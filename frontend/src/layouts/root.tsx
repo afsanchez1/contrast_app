@@ -13,7 +13,11 @@ export const Root: FC = () => {
             <Grid templateRows='0.1% 90.9% 9%' height='100vh' alignItems='center'>
                 {/* NavBar */}
                 <GridItem>
-                    <NavBar hasLogo={false} hasSideBarButton={true} />
+                    <NavBar
+                        hasLogo={false}
+                        hasSideBarButton={true}
+                        hasSelectedArticlesButton={true}
+                    />
                 </GridItem>
 
                 {/* Main Content */}

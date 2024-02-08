@@ -32,7 +32,7 @@ import { ErrorPanel } from './ErrorPanel'
 import { ScraperErrorAlert } from './ScraperErrorAlert'
 import { addToCart, removeFromCart, selectCartItems } from '../articleCart'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { BackButton } from '..'
+import { BackButton, clearCompare } from '..'
 
 /**
  * SearchResults is a custom React component for displaying search results
@@ -125,6 +125,11 @@ export const SearchResults: FC = () => {
         else dispatch(addToCart(selectArticleSumm))
     }
 
+    // For cleaning compared articles
+    useEffect(() => {
+        dispatch(clearCompare())
+    }, [dispatch])
+
     // For managing requests
     useEffect(() => {
         handleSearchArticles()
@@ -200,12 +205,14 @@ export const SearchResults: FC = () => {
                                                                   isExternal={true}
                                                               >
                                                                   <HStack spacing='0.5rem'>
-                                                                      <Text>{author.name}</Text>
+                                                                      <Text key={index}>
+                                                                          {author.name}
+                                                                      </Text>
                                                                       <ExternalLinkIcon />
                                                                   </HStack>
                                                               </Link>
                                                           ) : (
-                                                              <Text>{author.name}</Text>
+                                                              <Text key={index}>{author.name}</Text>
                                                           )
                                                       })
                                                     : null}

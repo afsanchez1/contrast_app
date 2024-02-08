@@ -11,13 +11,14 @@ import {
     VStack,
     useColorMode,
 } from '@chakra-ui/react'
-import { CustomDrawer } from '..'
+import { CustomDrawer, addToCompare, selectCompareArticles } from '..'
 import { useTranslation } from 'react-i18next'
-import { useAppSelector } from '../../app/hooks'
-import { selectCartItems, selectCartTotalItems } from '../articleCart'
+import { useAppDispatch, useAppSelector } from '../../app/hooks'
+import { selectCartItems } from '../articleCart'
 import { parseDateTime } from '../../utils'
 import { SearchIcon } from '@chakra-ui/icons'
 import { useNavigate } from 'react-router-dom'
+import type { ArticleSummary } from '../../types'
 
 /**
  * Props for ArticleSelector
@@ -41,10 +42,16 @@ export const ArticleSelector: FC<ArticleSelectorProps> = ({ isOpen, onClose }) =
     const { t } = useTranslation()
     const navigate = useNavigate()
     const selectedArticles = useAppSelector(state => selectCartItems(state))
-    const selectTotalItems = useAppSelector(state => selectCartTotalItems(state))
+    const comparedArticles = useAppSelector(state => selectCompareArticles(state))
+    const dispatch = useAppDispatch()
 
     const handleNavigate = (): void => {
         navigate('/')
+    }
+
+    const handleArticleSelection = (artSumm: ArticleSummary): void => {
+        onClose()
+        dispatch(addToCompare(artSumm))
     }
 
     return (
@@ -55,8 +62,14 @@ export const ArticleSelector: FC<ArticleSelectorProps> = ({ isOpen, onClose }) =
             placement={'right'}
         >
             <DrawerBody mt='1rem'>
-                {selectTotalItems > 0 ? (
+                {selectedArticles.length > 0 ? (
                     selectedArticles.map((artSumm, index) => {
+                        const inComparison = comparedArticles.reduce<boolean>(
+                            (acc, curr) => acc || curr.articleSummary.url === artSumm.url,
+                            false
+                        )
+                        // If it's already in comparison, don't show
+                        if (inComparison) return null
                         return (
                             <Card
                                 key={index}
@@ -78,11 +91,11 @@ export const ArticleSelector: FC<ArticleSelectorProps> = ({ isOpen, onClose }) =
                                     </VStack>
                                 </CardFooter>
                                 <Button
-                                    aria-label='remove-article'
+                                    aria-label='select-article'
                                     m='1rem'
                                     size='sm'
                                     onClick={() => {
-                                        console.log('add article')
+                                        handleArticleSelection(artSumm)
                                     }}
                                 >
                                     <Text>{t('select')}</Text>

@@ -18,5 +18,7 @@
     "cancel": "Cancelar",
     "compare": "Comparar",
     "select": "Seleccionar",
-    "select-article": "Selecciona un artículo"
+    "select-article": "Selecciona un artículo",
+    "no-article-selected-yet": "No se ha seleccionado ningún artículo...",
+    "switch-articles": "Intercambiar artículos"
 }
