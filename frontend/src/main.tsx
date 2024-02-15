@@ -12,7 +12,6 @@ import { CompareArticles, SearchArticles, SearchResults } from './components'
 import { Root, Results, Compare } from './layouts'
 import { PersistGate } from 'redux-persist/integration/react'
 import { persistStore } from 'redux-persist'
-// import { StorageCleaner } from './components/common/StorageCleaner.tsx'
 
 const store = setupStore()
 const persistor = persistStore(store)

@@ -9,11 +9,13 @@ export interface compareSelection {
 
 interface articleSliceState {
     compareSelections: compareSelection[]
+    currSelection: compareSelection | null
     currSelectorIndex: number
 }
 
 const initialState: articleSliceState = {
     compareSelections: [],
+    currSelection: null,
     currSelectorIndex: 0,
 }
 
@@ -27,18 +29,21 @@ export const articleSlice = createSlice({
                 articleSummary: action.payload,
                 index,
             }
-            state.compareSelections = [...state.compareSelections, selection]
+            const removedIndex = state.compareSelections.filter(
+                selection => selection.index !== index
+            )
+            state.compareSelections = [...removedIndex, selection]
+            state.currSelection = selection
         },
         removeFromCompare(state, action: PayloadAction<number>) {
             state.compareSelections = state.compareSelections.filter(
                 compareSelection => compareSelection.index !== action.payload
             )
+
+            if (state.compareSelections.length === 0) state.currSelectorIndex = 0
         },
         setCurrSelector(state, action: PayloadAction<number>) {
             state.currSelectorIndex = action.payload
-        },
-        switchCompare(state) {
-            state.compareSelections = state.compareSelections.reverse()
         },
         clearCompare(state) {
             state.compareSelections = []
@@ -51,5 +56,8 @@ export const selectCompareArticles = (state: RootState): compareSelection[] => {
     return state.compare.compareSelections
 }
 
-export const { addToCompare, removeFromCompare, setCurrSelector, switchCompare, clearCompare } =
+export const selectCurrSelection = (state: RootState): compareSelection | null =>
+    state.compare.currSelection
+
+export const { addToCompare, removeFromCompare, setCurrSelector, clearCompare } =
     articleSlice.actions

@@ -11,15 +11,10 @@ const cartPersistConfig = {
     storage,
 }
 
-const comparePersistConfig = {
-    key: 'compare',
-    storage,
-}
-
 const rootReducer = combineReducers({
     [scraperApi.reducerPath]: scraperApi.reducer,
     cart: persistReducer(cartPersistConfig, cartSlice.reducer),
-    compare: persistReducer(comparePersistConfig, articleSlice.reducer),
+    compare: articleSlice.reducer,
 })
 
 export function setupStore(preloadedState?: Partial<RootState>): ToolkitStore {

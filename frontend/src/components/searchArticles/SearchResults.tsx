@@ -14,6 +14,7 @@ import {
     Text,
     VStack,
     useColorMode,
+    Tooltip,
 } from '@chakra-ui/react'
 import { type FC, useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
@@ -224,19 +225,27 @@ export const SearchResults: FC = () => {
                                             </VStack>
                                         </CardFooter>
 
-                                        <Button
-                                            aria-label='add-article'
-                                            m='1rem'
-                                            onClick={() => {
-                                                handleSelectArticleSumm(articleSumm)
-                                            }}
+                                        <Tooltip
+                                            label={
+                                                articleSumm.is_premium ? t('is-premium-info') : null
+                                            }
+                                            aria-label='premium article notification'
                                         >
-                                            {existsArtSumm(articleSumm) ? (
-                                                <CloseIcon />
-                                            ) : (
-                                                <AddIcon />
-                                            )}
-                                        </Button>
+                                            <Button
+                                                aria-label='add-article'
+                                                m='1rem'
+                                                onClick={() => {
+                                                    handleSelectArticleSumm(articleSumm)
+                                                }}
+                                                isDisabled={articleSumm.is_premium}
+                                            >
+                                                {existsArtSumm(articleSumm) ? (
+                                                    <CloseIcon />
+                                                ) : (
+                                                    <AddIcon />
+                                                )}
+                                            </Button>
+                                        </Tooltip>
                                     </Card>
                                 )
                             })

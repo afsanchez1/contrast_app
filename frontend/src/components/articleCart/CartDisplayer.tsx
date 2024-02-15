@@ -11,10 +11,11 @@ import {
     VStack,
     Center,
     useColorMode,
+    Flex,
 } from '@chakra-ui/react'
 import { CloseIcon, EditIcon } from '@chakra-ui/icons'
 import { useTranslation } from 'react-i18next'
-import { CustomDrawer } from '..'
+import { CustomDrawer, clearCart } from '..'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { removeFromCart, selectCartItems } from '.'
 import { type ArticleSummary } from '../../types'
@@ -59,6 +60,14 @@ export const CartDisplayer = (): JSX.Element => {
                 placement={'right'}
             >
                 <DrawerBody mt='1rem'>
+                    {selectedArticles.length > 0 ? (
+                        <Flex w='100%' justify='right' mb='1rem'>
+                            <Button size='sm' onClick={() => dispatch(clearCart())}>
+                                {t('clear-all')}
+                            </Button>
+                        </Flex>
+                    ) : null}
+
                     {selectedArticles.length > 0 ? (
                         selectedArticles.map((artSumm, index) => {
                             return (

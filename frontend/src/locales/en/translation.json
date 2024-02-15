@@ -20,5 +20,7 @@
     "select": "Select",
     "select-article": "Select an article",
     "no-article-selected-yet": "No article selected yet...",
-    "switch-articles": "Switch articles"
+    "switch-articles": "Switch articles",
+    "clear-all": "Clear all",
+    "is-premium-info": "This article can not be selected because it is premium"
 }

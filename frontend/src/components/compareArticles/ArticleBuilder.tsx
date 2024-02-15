@@ -6,10 +6,6 @@ import { type Article } from '../../types'
  */
 export interface ArticleBuilderProps {
     /**
-     * The article key
-     */
-    key: number
-    /**
      * The article body
      */
     article: Article
@@ -18,9 +14,9 @@ export interface ArticleBuilderProps {
  * ArticleBuilder is a custom React component for building articles
  * @returns {JSX.Element}
  */
-export const ArticleBuilder: FC<ArticleBuilderProps> = ({ key, article }) => {
+export const ArticleBuilder: FC<ArticleBuilderProps> = ({ article }) => {
     return (
-        <VStack key={key} textAlign='left' overflowY='auto' maxH='53vh' padding='1rem'>
+        <VStack textAlign='left' overflowY='auto' maxH='53vh' padding='1rem'>
             <Heading
                 as='h1'
                 fontSize={{
@@ -84,6 +80,7 @@ export const ArticleBuilder: FC<ArticleBuilderProps> = ({ key, article }) => {
                                         base: '1rem',
                                         md: '1.2rem',
                                     }}
+                                    mb='1.5rem'
                                 >
                                     {content}
                                 </Text>

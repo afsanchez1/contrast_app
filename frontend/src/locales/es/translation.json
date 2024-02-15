@@ -20,5 +20,7 @@
     "select": "Seleccionar",
     "select-article": "Selecciona un artículo",
     "no-article-selected-yet": "No se ha seleccionado ningún artículo...",
-    "switch-articles": "Intercambiar artículos"
+    "switch-articles": "Intercambiar artículos",
+    "clear-all": "Borrar todo",
+    "is-premium-info": "Este artículo no puede ser seleccionado porque es premium"
 }
