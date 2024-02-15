@@ -76,6 +76,7 @@ export const CartDisplayer = (): JSX.Element => {
                                     mb='1rem'
                                     boxShadow='md'
                                     bgColor={colorMode === 'light' ? 'gray.50' : 'blackAlpha.400'}
+                                    border={colorMode === 'light' ? '1px' : 'hidden'}
                                 >
                                     <CardHeader>
                                         <Text fontSize='lg' fontWeight='bold'>

@@ -31,6 +31,7 @@ import { CloseIcon, RepeatIcon } from '@chakra-ui/icons'
 import { scraperApi } from '../../services'
 import type { Article, ArticleSummary } from '../../types'
 import { BackButton } from '..'
+import { selectTopic } from '../searchArticles/searchSlice'
 
 /**
  * ArticleDisplayer props
@@ -49,6 +50,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
     const compareIndexes = new Array<number>(displayCount).fill(0).map((_, i) => i)
     const compareArticles = useAppSelector(state => selectCompareArticles(state))
     const currSelection = useAppSelector(state => selectCurrSelection(state))
+    const lastTopic = useAppSelector(state => selectTopic(state))
     const dispatch = useAppDispatch()
     const [getArticle, { isLoading }] = scraperApi.endpoints.getArticle.useLazyQuery({})
     const [articlesCache, setArticlesCache] = useState<Article[]>([])
@@ -164,11 +166,11 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
             <ArticleSelector isOpen={isOpen} onClose={onClose} />
             <VStack maxW='90%' minW='80%' mt='1rem'>
                 <Flex width='100%' mb='2.5rem' h='0.5rem'>
-                    <BackButton route='/' />
+                    <BackButton route={`/search_results/${lastTopic}`} />
                 </Flex>
 
                 <Flex
-                    bgColor={colorMode === 'light' ? 'black' : 'blackAlpha.900'}
+                    bgColor={colorMode === 'light' ? 'black' : 'blackAlpha.500'}
                     width='100%'
                     mb='1rem'
                     justify='space-between'
@@ -176,6 +178,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                     roundedLeft='base'
                     roundedRight='base'
                     h='4rem'
+                    border={colorMode === 'light' ? '1px' : 'hidden'}
                 >
                     <Spacer />
                     <Button onClick={handleSwitchCompare}>
@@ -192,6 +195,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                             <Card
                                 key={index}
                                 boxShadow='lg'
+                                border={colorMode === 'light' ? '1px' : 'hidden'}
                                 bgColor={colorMode === 'light' ? 'gray.50' : 'blackAlpha.400'}
                             >
                                 {findCompareArt(index) == null ? null : (
