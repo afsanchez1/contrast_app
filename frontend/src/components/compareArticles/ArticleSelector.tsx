@@ -77,6 +77,7 @@ export const ArticleSelector: FC<ArticleSelectorProps> = ({ isOpen, onClose }) =
                                 boxShadow='md'
                                 bgColor={colorMode === 'light' ? 'gray.50' : 'blackAlpha.400'}
                                 border={colorMode === 'light' ? '1px' : 'hidden'}
+                                borderColor='gray.300'
                             >
                                 <CardHeader>
                                     <Text fontSize='lg' fontWeight='bold'>

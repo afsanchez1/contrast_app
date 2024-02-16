@@ -32,6 +32,7 @@ import { scraperApi } from '../../services'
 import type { Article, ArticleSummary } from '../../types'
 import { BackButton } from '..'
 import { selectTopic } from '../searchArticles/searchSlice'
+import { ArticleErrorModal } from './ArticleErrorModal'
 
 /**
  * ArticleDisplayer props
@@ -46,6 +47,7 @@ export interface ArticleDisplayerProps {
  */
 export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) => {
     const { isOpen, onOpen, onClose } = useDisclosure()
+    const modalControls = useDisclosure()
     const { t } = useTranslation()
     const compareIndexes = new Array<number>(displayCount).fill(0).map((_, i) => i)
     const compareArticles = useAppSelector(state => selectCompareArticles(state))
@@ -55,7 +57,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
     const [getArticle, { isLoading }] = scraperApi.endpoints.getArticle.useLazyQuery({})
     const [articlesCache, setArticlesCache] = useState<Article[]>([])
     const [articlesToCompare, setArticlesToCompare] = useState<ArticleToCompare[]>([])
-    const [hasErrorUrl, setHasErrorUrl] = useState<string>('')
+    const [hasErrorUrl, setHasErrorUrl] = useState<boolean>(false)
     const { colorMode } = useColorMode()
 
     interface ArticleToCompare {
@@ -88,15 +90,13 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
         setArticlesToCompare(switched)
     }
     const handleRemove = (index: number): void => {
-        console.log(`remove index: ${index}`)
         const filtered = articlesToCompare.filter(art => art.index !== index)
-        console.log(filtered)
+
         setArticlesToCompare(filtered)
         dispatch(removeFromCompare(index))
     }
 
     const updateToCompareArticles = (articleToCompare: ArticleToCompare): void => {
-        console.log(articlesToCompare.length)
         if (articlesToCompare.length === 0) {
             setArticlesToCompare([...articlesToCompare, articleToCompare])
         } else {
@@ -112,58 +112,73 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
         })
     }
 
-    const handleArticleSelection = (compareSelections: compareSelection[]): void => {
-        // Filter only the ones not requested previously
-        const requestedArts = compareSelections.filter(
-            compareSelection => findArticleInCache(compareSelection.articleSummary) == null
-        )
+    const handleArticleSelection = (): void => {
+        setHasErrorUrl(false)
+        if (currSelection != null) {
+            // Try find it in the article cache
+            const cacheResult = findArticleInCache(currSelection.articleSummary)
 
-        if (requestedArts.length === 0) {
-            if (currSelection != null) {
-                const artToCompare = findArticleInCache(currSelection.articleSummary)
-                if (artToCompare != null)
-                    updateToCompareArticles({ article: artToCompare, index: currSelection.index })
+            if (cacheResult != null) {
+                updateToCompareArticles({
+                    article: cacheResult,
+                    index: currSelection.index,
+                })
+                return
             }
-            return
-        }
 
-        // Make requests for the not requested ones
-        requestedArts.forEach(requestedArt => {
-            const url = encodeURIComponent(requestedArt.articleSummary.url)
+            // If not in cache, make the request
+            const url = encodeURIComponent(currSelection.articleSummary.url)
             getArticle({ url }, false)
                 .then(value => {
                     if (value.isSuccess) {
-                        console.log(`requestedart index: ${requestedArt.index}`)
+                        setHasErrorUrl(false)
                         setArticlesCache([...articlesCache, value.data as Article])
                         updateToCompareArticles({
                             article: value.data as Article,
-                            index: requestedArt.index,
+                            index: currSelection.index,
                         })
                     } else {
-                        setHasErrorUrl(requestedArt.articleSummary.url)
+                        setHasErrorUrl(true)
                     }
                 })
                 .catch(e => {
                     console.log(e)
                 })
-        })
+        }
     }
 
+    // For cleaning comparison selections
     useEffect(() => {
         dispatch(clearCompare())
+        onClose()
+        modalControls.onClose()
     }, [])
 
+    // For handling new comparison selections
     useEffect(() => {
         if (compareArticles.length === 0) {
             setTimeout(() => {
                 onOpen()
-            }, 200)
-        } else handleArticleSelection(compareArticles)
-    }, [compareArticles])
+            }, 300)
+        } else handleArticleSelection()
+    }, [currSelection])
+
+    // For displaying errors
+    useEffect(() => {
+        if (hasErrorUrl) {
+            modalControls.onOpen()
+        }
+    }, [hasErrorUrl])
 
     return (
         <>
             <ArticleSelector isOpen={isOpen} onClose={onClose} />
+            <ArticleErrorModal
+                isOpen={modalControls.isOpen}
+                onClose={modalControls.onClose}
+                onRefetch={handleArticleSelection}
+                onRemove={handleRemove}
+            />
             <VStack maxW='90%' minW='80%' mt='1rem'>
                 <Flex width='100%' mb='2.5rem' h='0.5rem'>
                     <BackButton route={`/search_results/${lastTopic}`} />
@@ -197,6 +212,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                                 boxShadow='lg'
                                 border={colorMode === 'light' ? '1px' : 'hidden'}
                                 bgColor={colorMode === 'light' ? 'gray.50' : 'blackAlpha.400'}
+                                borderColor='gray.300'
                             >
                                 {findCompareArt(index) == null ? null : (
                                     <CardHeader h='0.5rem' mb='0.5rem'>

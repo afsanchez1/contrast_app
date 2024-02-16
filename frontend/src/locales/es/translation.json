@@ -22,5 +22,7 @@
     "no-article-selected-yet": "No se ha seleccionado ningún artículo...",
     "switch-articles": "Intercambiar artículos",
     "clear-all": "Borrar todo",
-    "is-premium-info": "Este artículo no puede ser seleccionado porque es premium"
+    "is-premium-info": "Este artículo no puede ser seleccionado porque es premium",
+    "get-article-error": "Algo ha ido mal con este artículo",
+    "remove-this-article": "Borrar artículo"
 }

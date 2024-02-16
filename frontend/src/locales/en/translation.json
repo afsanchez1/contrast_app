@@ -22,5 +22,7 @@
     "no-article-selected-yet": "No article selected yet...",
     "switch-articles": "Switch articles",
     "clear-all": "Clear all",
-    "is-premium-info": "This article can not be selected because it is premium"
+    "is-premium-info": "This article can not be selected because it is premium",
+    "get-article-error": "Something went wrong with this article",
+    "remove-this-article": "Remove article"
 }

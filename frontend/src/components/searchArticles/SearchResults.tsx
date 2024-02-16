@@ -176,6 +176,7 @@ export const SearchResults: FC = () => {
                                             colorMode === 'light' ? 'gray.50' : 'blackAlpha.400'
                                         }
                                         border={colorMode === 'light' ? '1px' : 'hidden'}
+                                        borderColor='gray.300'
                                     >
                                         <CardHeader>
                                             <Link href={articleSumm.url} isExternal={true}>
