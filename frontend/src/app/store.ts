@@ -1,5 +1,5 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
-import { scraperApi } from '../services'
+import { scraperApi, compareApi } from '../services'
 import { cartSlice } from '../components/articleCart'
 import { articleSlice, searchSlice } from '../components'
 import type { ToolkitStore } from '@reduxjs/toolkit/dist/configureStore'
@@ -18,6 +18,7 @@ const searchPersistConfig = {
 
 const rootReducer = combineReducers({
     [scraperApi.reducerPath]: scraperApi.reducer,
+    [compareApi.reducerPath]: compareApi.reducer,
     cart: persistReducer(cartPersistConfig, cartSlice.reducer),
     search: persistReducer(searchPersistConfig, searchSlice.reducer),
     compare: articleSlice.reducer,
@@ -28,7 +29,9 @@ export function setupStore(preloadedState?: Partial<RootState>): ToolkitStore {
         reducer: rootReducer,
         preloadedState,
         middleware: getDefaultMiddleware => {
-            return getDefaultMiddleware().concat(scraperApi.middleware)
+            return getDefaultMiddleware()
+                .concat(scraperApi.middleware)
+                .concat(compareApi.middleware)
         },
     })
 }

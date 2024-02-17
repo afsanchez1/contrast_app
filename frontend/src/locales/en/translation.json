@@ -24,5 +24,8 @@
     "clear-all": "Clear all",
     "is-premium-info": "This article can not be selected because it is premium",
     "get-article-error": "Something went wrong with this article",
-    "remove-this-article": "Remove article"
+    "remove-this-article": "Remove article",
+    "calculate-similarity": "Check similarity",
+    "select-articles-to-compare-tooltip": "Select two articles first to calculate similarity",
+    "similarity": "Similarity"
 }

@@ -55,10 +55,14 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
     const lastTopic = useAppSelector(state => selectTopic(state))
     const dispatch = useAppDispatch()
     const [getArticle, { isLoading }] = scraperApi.endpoints.getArticle.useLazyQuery({})
+    // const [getSimilarityRatio, compareStatus] =
+    //     compareApi.endpoints.getSimilarityRatio.useLazyQuery({})
     const [articlesCache, setArticlesCache] = useState<Article[]>([])
     const [articlesToCompare, setArticlesToCompare] = useState<ArticleToCompare[]>([])
     const [hasErrorUrl, setHasErrorUrl] = useState<boolean>(false)
     const { colorMode } = useColorMode()
+    // const [currSimilarity, setCurrSimilarity] = useState<number>(-1)
+    // const [hasSimilarityError, setHasSimilarityError] = useState<boolean>(false)
 
     interface ArticleToCompare {
         article: Article
@@ -114,6 +118,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
 
     const handleArticleSelection = (): void => {
         setHasErrorUrl(false)
+        // setCurrSimilarity(-1)
         if (currSelection != null) {
             // Try find it in the article cache
             const cacheResult = findArticleInCache(currSelection.articleSummary)
@@ -146,6 +151,36 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                 })
         }
     }
+
+    // const extractTextFromArticle = (article: Article): string => {
+    //     return article.body.reduce((acc, curr) => {
+    //         return acc + Object.values(curr)[0]
+    //     }, '')
+    // }
+    // const handleSimilarityCalc = (): void => {
+    //     const text1 = extractTextFromArticle(articlesToCompare[0].article)
+    //     const text2 = extractTextFromArticle(articlesToCompare[1].article)
+    //
+    //     getSimilarityRatio(
+    //         {
+    //             text1,
+    //             text2,
+    //         },
+    //         false
+    //     )
+    //         .then(value => {
+    //             if (value.isSuccess) {
+    //                 const data = value.data as successCompareResult
+    //                 const similarity = data.similarity * 100
+    //                 setCurrSimilarity(similarity)
+    //             } else {
+    //                 setHasSimilarityError(true)
+    //             }
+    //         })
+    //         .catch(e => {
+    //             console.log(e)
+    //         })
+    // }
 
     // For cleaning comparison selections
     useEffect(() => {
@@ -188,7 +223,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                     bgColor={colorMode === 'light' ? 'black' : 'blackAlpha.500'}
                     width='100%'
                     mb='1rem'
-                    justify='space-between'
+                    justify='space-evenly'
                     align='center'
                     roundedLeft='base'
                     roundedRight='base'
@@ -203,7 +238,37 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                         </HStack>
                     </Button>
                     <Spacer />
+                    {/*
+                    <Tooltip
+                        label={
+                            !(articlesToCompare.length === 2)
+                                ? t('select-articles-to-compare-tooltip')
+                                : null
+                        }
+                        aria-label='select-articles-to-compare-tooltip'
+                    >
+                        <Button
+                            isDisabled={!(articlesToCompare.length === 2)}
+                            mr='2rem'
+                            onClick={handleSimilarityCalc}
+                        >
+                            {t('calculate-similarity') + ' (%)'}
+                        </Button>
+                    </Tooltip> */}
                 </Flex>
+                {/*
+                <Flex width='100%' align='center'>
+                    {compareStatus.isLoading ? (
+                        <Spinner size='xl' />
+                    ) : currSimilarity >= 0 ? (
+                        <HStack spacing='1rem'>
+                            <Text fontSize='2rem' fontWeight='bold'>
+                                {t('similarity') + ': '}
+                            </Text>
+                            <Text fontSize='2rem'>{currSimilarity.toString() + '%'}</Text>
+                        </HStack>
+                    ) : null}
+                    </Flex> */}
                 <SimpleGrid width='100%' columns={{ base: 1, md: 2 }} spacing='1rem'>
                     {compareIndexes.map(index => {
                         return (
