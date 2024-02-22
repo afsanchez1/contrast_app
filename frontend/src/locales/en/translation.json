@@ -27,5 +27,6 @@
     "remove-this-article": "Remove article",
     "calculate-similarity": "Check similarity",
     "select-articles-to-compare-tooltip": "Select two articles first to calculate similarity",
-    "similarity": "Similarity"
+    "similarity": "Similarity",
+    "not-enough-articles": "There are not enough articles selected"
 }

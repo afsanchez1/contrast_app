@@ -12,7 +12,9 @@ afterEach(cleanup)
 describe('NavBar component', () => {
     test('Has logo and no sidebar Button', () => {
         renderWithProviders(
-            buildSingleRouterWrapper(<NavBar hasLogo={true} hasSideBarButton={false} />)
+            buildSingleRouterWrapper(
+                <NavBar hasLogo={true} hasSideBarButton={false} hasSelectedArticlesButton={false} />
+            )
         )
         expect(screen.getByTestId('contrast-logo')).toBeInTheDocument()
         expect(screen.queryByTestId('side-bar-button')).toBeNull()
@@ -20,7 +22,9 @@ describe('NavBar component', () => {
 
     test('Has sidebar button and no logo', () => {
         renderWithProviders(
-            buildSingleRouterWrapper(<NavBar hasLogo={false} hasSideBarButton={true} />)
+            buildSingleRouterWrapper(
+                <NavBar hasLogo={false} hasSideBarButton={true} hasSelectedArticlesButton={false} />
+            )
         )
 
         expect(screen.queryByTestId('contrast-logo')).toBeNull()
@@ -29,7 +33,13 @@ describe('NavBar component', () => {
 
     test('Has neither sidebar button or logo', () => {
         renderWithProviders(
-            buildSingleRouterWrapper(<NavBar hasLogo={false} hasSideBarButton={false} />)
+            buildSingleRouterWrapper(
+                <NavBar
+                    hasLogo={false}
+                    hasSideBarButton={false}
+                    hasSelectedArticlesButton={false}
+                />
+            )
         )
         expect(screen.queryByTestId('contrast-logo')).toBeNull()
         expect(screen.queryByTestId('side-bar-button')).toBeNull()
@@ -37,7 +47,13 @@ describe('NavBar component', () => {
 
     test('Has toggle theme button', () => {
         renderWithProviders(
-            buildSingleRouterWrapper(<NavBar hasLogo={false} hasSideBarButton={false} />)
+            buildSingleRouterWrapper(
+                <NavBar
+                    hasLogo={false}
+                    hasSideBarButton={false}
+                    hasSelectedArticlesButton={false}
+                />
+            )
         )
 
         expect(screen.getByTestId('theme-mode-button')).toBeInTheDocument()

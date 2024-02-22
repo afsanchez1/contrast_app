@@ -8,6 +8,8 @@ import i18n from '../../i18n'
 import theme from '../../theme.ts'
 import { setupStore, type AppStore, type RootState } from '../../app/store'
 import { MemoryRouter } from 'react-router-dom'
+import { PersistGate } from 'redux-persist/integration/react'
+import { persistStore } from 'redux-persist'
 
 interface ExtendedRenderOptions extends Omit<RenderOptions, 'queries'> {
     preloadedState?: Partial<RootState>
@@ -28,10 +30,12 @@ export function renderWithProviders(
     function Wrapper({ children }: PropsWithChildren<{}>): JSX.Element {
         return (
             <Provider store={store}>
-                <ChakraProvider>
-                    <ColorModeScript initialColorMode={theme.config.initialColorMode} />
-                    <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
-                </ChakraProvider>
+                <PersistGate persistor={persistStore(store)}>
+                    <ChakraProvider>
+                        <ColorModeScript initialColorMode={theme.config.initialColorMode} />
+                        <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
+                    </ChakraProvider>
+                </PersistGate>
             </Provider>
         )
     }

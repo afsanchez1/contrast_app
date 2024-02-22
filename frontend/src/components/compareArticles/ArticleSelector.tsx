@@ -62,7 +62,7 @@ export const ArticleSelector: FC<ArticleSelectorProps> = ({ isOpen, onClose }) =
             placement={'right'}
         >
             <DrawerBody mt='1rem'>
-                {selectedArticles.length > 0 ? (
+                {selectedArticles.length >= 2 ? (
                     selectedArticles.map((artSumm, index) => {
                         const inComparison = comparedArticles.reduce<boolean>(
                             (acc, curr) => acc || curr.articleSummary.url === artSumm.url,
@@ -110,8 +110,10 @@ export const ArticleSelector: FC<ArticleSelectorProps> = ({ isOpen, onClose }) =
                 ) : (
                     <Center h='90%' textAlign='center'>
                         <VStack>
-                            <Text fontWeight='medium' fontSize={'xl'}>
-                                {t('no-articles-selected-yet')}
+                            <Text fontWeight='medium' fontSize={'xl'} mb='2rem'>
+                                {selectedArticles.length < 2 || selectedArticles.length > 0
+                                    ? t('not-enough-articles')
+                                    : t('no-articles-selected-yet')}
                             </Text>
                             <Button
                                 data-testid='search-another-topic-button'

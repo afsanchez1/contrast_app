@@ -3,17 +3,17 @@ import { scraperApi, compareApi } from '../services'
 import { cartSlice } from '../components/articleCart'
 import { articleSlice, searchSlice } from '../components'
 import type { ToolkitStore } from '@reduxjs/toolkit/dist/configureStore'
-import { persistReducer } from 'redux-persist'
-import storage from 'redux-persist/lib/storage'
+import { persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const cartPersistConfig = {
     key: 'cart',
-    storage,
+    storage: AsyncStorage,
 }
 
 const searchPersistConfig = {
     key: 'search',
-    storage,
+    storage: AsyncStorage,
 }
 
 const rootReducer = combineReducers({
@@ -29,7 +29,11 @@ export function setupStore(preloadedState?: Partial<RootState>): ToolkitStore {
         reducer: rootReducer,
         preloadedState,
         middleware: getDefaultMiddleware => {
-            return getDefaultMiddleware()
+            return getDefaultMiddleware({
+                serializableCheck: {
+                    ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+                },
+            })
                 .concat(scraperApi.middleware)
                 .concat(compareApi.middleware)
         },
