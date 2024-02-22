@@ -12,5 +12,21 @@
     "warning": "Atención",
     "no-results-scraper-error": "No se han podido encontrar resultados de los siguientes periódicos",
     "try-again": "Intentar de nuevo",
-    "search-another-topic": "Buscar otro tema"
+    "search-another-topic": "Buscar otro tema",
+    "selected-articles": "Artículos seleccionados",
+    "no-articles-selected-yet": "No se han seleccionado artículos...",
+    "cancel": "Cancelar",
+    "compare": "Comparar",
+    "select": "Seleccionar",
+    "select-article": "Selecciona un artículo",
+    "no-article-selected-yet": "No se ha seleccionado ningún artículo...",
+    "switch-articles": "Intercambiar artículos",
+    "clear-all": "Borrar todo",
+    "is-premium-info": "Este artículo no puede ser seleccionado porque es premium",
+    "get-article-error": "Algo ha ido mal con este artículo",
+    "remove-this-article": "Borrar artículo",
+    "calculate-similarity": "Calcular similitud",
+    "select-articles-to-compare-tooltip": "Selecciona dos artículos para calcular su similitud",
+    "similarity": "Similitud",
+    "not-enough-articles": "No hay suficientes artículos seleccionados"
 }

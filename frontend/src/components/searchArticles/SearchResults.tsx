@@ -14,6 +14,7 @@ import {
     Text,
     VStack,
     useColorMode,
+    Tooltip,
 } from '@chakra-ui/react'
 import { type FC, useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
@@ -23,12 +24,16 @@ import {
     type SearchResult,
     type SearchArticlesErrorResult,
     type SearchArticlesSuccessResult,
+    type ArticleSummary,
 } from '../../types'
-import { ChevronDownIcon, ExternalLinkIcon } from '@chakra-ui/icons'
+import { ChevronDownIcon, ExternalLinkIcon, AddIcon, CloseIcon } from '@chakra-ui/icons'
 import { useTranslation } from 'react-i18next'
 import { getError, parseDateTime } from '../../utils'
 import { ErrorPanel } from './ErrorPanel'
 import { ScraperErrorAlert } from './ScraperErrorAlert'
+import { addToCart, removeFromCart, selectCartItems } from '../articleCart'
+import { useAppDispatch, useAppSelector } from '../../app/hooks'
+import { BackButton, clearCompare } from '..'
 
 /**
  * SearchResults is a custom React component for displaying search results
@@ -36,6 +41,8 @@ import { ScraperErrorAlert } from './ScraperErrorAlert'
  */
 export const SearchResults: FC = () => {
     const { topic } = useParams()
+    const dispatch = useAppDispatch()
+    const selectArtSumms = useAppSelector(state => selectCartItems(state))
     const [searchArticles, { isLoading }] = scraperApi.endpoints.searchArticles.useLazyQuery({})
     const [moreIsLoading, setMoreIsLoading] = useState<boolean>(false)
     const [articleSumms, setArticleSumms] = useState<SearchArticlesSuccessResult[]>([])
@@ -71,6 +78,9 @@ export const SearchResults: FC = () => {
         }) as SearchArticlesSuccessResult[]
 
         setArticleSumms([...articleSumms, ...successResults])
+
+        if (successResults.length === 0) setErrorMessage(t('empty-result-error') + ': ' + topic)
+        else setErrorMessage('')
     }
 
     const handleSearchArticles = (): void => {
@@ -103,39 +113,34 @@ export const SearchResults: FC = () => {
         setPage(prevPage => prevPage + 1)
     }
 
+    const existsArtSumm = (selectArticleSumm: ArticleSummary): boolean => {
+        const artSumms = selectArtSumms
+        return artSumms.reduce<boolean>(
+            (acc, artSumm) => artSumm.url === selectArticleSumm.url || acc,
+            false
+        )
+    }
+
+    const handleSelectArticleSumm = (selectArticleSumm: ArticleSummary): void => {
+        if (existsArtSumm(selectArticleSumm)) dispatch(removeFromCart(selectArticleSumm))
+        else dispatch(addToCart(selectArticleSumm))
+    }
+
+    // For cleaning compared articles
+    useEffect(() => {
+        dispatch(clearCompare())
+    }, [dispatch])
+
     // For managing requests
     useEffect(() => {
         handleSearchArticles()
     }, [page])
 
-    // For managing error setup
-    useEffect(() => {
-        if (articleSumms.length === 0) {
-            setErrorMessage(t('empty-result-error') + ': ' + topic)
-        } else {
-            setErrorMessage('')
-        }
-        return () => {
-            setErrorMessage('')
-        }
-    }, [articleSumms, setErrorMessage])
-
     return (
-        <VStack margin='2rem' spacing='1.75rem'>
-            {errorMessage.length > 0 ? null : (
-                <Flex
-                    direction={{ base: 'column', sm: 'column', md: 'row' }}
-                    align='center'
-                    justify='center'
-                    textAlign='center'
-                >
-                    <Heading as='h1' fontSize={{ base: '1.5rem', md: '1.75rem' }}>
-                        {t('results-for') + ': '}
-                    </Heading>
-                    <Spacer ml='1rem' />
-                    <Text as='i' fontSize={{ base: '1.5rem', md: '1.75rem' }}>
-                        {topic}
-                    </Text>
+        <VStack ml='2rem' mr='2rem' mt='1.25rem' mb='1rem' spacing='1.75rem'>
+            {isLoading || errorMessage.length > 0 ? null : (
+                <Flex width='100%' mb='0.75rem' h='0.5rem'>
+                    <BackButton route='/' />
                 </Flex>
             )}
 
@@ -145,6 +150,20 @@ export const SearchResults: FC = () => {
                 <ErrorPanel errorMessage={errorMessage} refetchFunction={handleSearchArticles} />
             ) : (
                 <>
+                    <Flex
+                        direction={{ base: 'column', sm: 'column', md: 'row' }}
+                        align='center'
+                        justify='center'
+                        textAlign='center'
+                    >
+                        <Heading as='h1' fontSize={{ base: '1.5rem', md: '1.75rem' }}>
+                            {t('results-for') + ': '}
+                        </Heading>
+                        <Spacer ml='1rem' />
+                        <Text as='i' fontSize={{ base: '1.5rem', md: '1.75rem' }}>
+                            {topic}
+                        </Text>
+                    </Flex>
                     <ScraperErrorAlert scraperErrors={scraperErrors} />
                     <SimpleGrid columns={{ sm: 1, lg: 2 }} spacing='2rem'>
                         {articleSumms.map(articleResult => {
@@ -156,9 +175,11 @@ export const SearchResults: FC = () => {
                                         bgColor={
                                             colorMode === 'light' ? 'gray.50' : 'blackAlpha.400'
                                         }
+                                        border={colorMode === 'light' ? '1px' : 'hidden'}
+                                        borderColor='gray.300'
                                     >
                                         <CardHeader>
-                                            <Link href={articleSumm.url}>
+                                            <Link href={articleSumm.url} isExternal={true}>
                                                 <HStack spacing='0.5rem'>
                                                     <Heading as='h1'>{articleSumm.title}</Heading>
                                                     <ExternalLinkIcon />
@@ -187,12 +208,14 @@ export const SearchResults: FC = () => {
                                                                   isExternal={true}
                                                               >
                                                                   <HStack spacing='0.5rem'>
-                                                                      <Text>{author.name}</Text>
+                                                                      <Text key={index}>
+                                                                          {author.name}
+                                                                      </Text>
                                                                       <ExternalLinkIcon />
                                                                   </HStack>
                                                               </Link>
                                                           ) : (
-                                                              <Text>{author.name}</Text>
+                                                              <Text key={index}>{author.name}</Text>
                                                           )
                                                       })
                                                     : null}
@@ -203,12 +226,41 @@ export const SearchResults: FC = () => {
                                                 </Text>
                                             </VStack>
                                         </CardFooter>
+
+                                        <Tooltip
+                                            label={
+                                                articleSumm.is_premium ? t('is-premium-info') : null
+                                            }
+                                            aria-label='premium article notification'
+                                        >
+                                            <Button
+                                                aria-label='add-article'
+                                                m='1rem'
+                                                onClick={() => {
+                                                    handleSelectArticleSumm(articleSumm)
+                                                }}
+                                                isDisabled={articleSumm.is_premium}
+                                                border={colorMode === 'light' ? '1px' : 'hidden'}
+                                                borderColor='gray.300'
+                                            >
+                                                {existsArtSumm(articleSumm) ? (
+                                                    <CloseIcon />
+                                                ) : (
+                                                    <AddIcon />
+                                                )}
+                                            </Button>
+                                        </Tooltip>
                                     </Card>
                                 )
                             })
                         })}
                     </SimpleGrid>
-                    <Button isLoading={moreIsLoading} onClick={handleShowMore}>
+                    <Button
+                        border={colorMode === 'light' ? '1px' : 'hidden'}
+                        borderColor='gray.300'
+                        isLoading={moreIsLoading}
+                        onClick={handleShowMore}
+                    >
                         <SimpleGrid columns={3} alignItems='center'>
                             <ChevronDownIcon />
                             <Text>{t('show-more')}</Text>

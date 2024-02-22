@@ -1,6 +1,12 @@
 import type { Author } from './author'
 
 /**
+ * Represents the body of an article
+ * @type ArticleBody
+ */
+export type ArticleBody = Array<Record<string, string>>
+
+/**
  * Represents a newspaper article
  * @interface Article
  */
@@ -32,7 +38,12 @@ export interface Article {
     last_date_time: string
     /**
      * The article's body as an array of objects of the form { htmlTag: content }
-     * @type {Array<Record<string, string>>}
+     * @type {ArticleBody}
      */
-    body: Array<Record<string, string>>
+    body: ArticleBody
+    /**
+     * The article's url
+     * @type {string}
+     */
+    url: string
 }

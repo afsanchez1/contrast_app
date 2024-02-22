@@ -12,5 +12,21 @@
     "warning": "Warning",
     "no-results-scraper-error": "Could not find results for the next newspapers",
     "try-again": "Try again",
-    "search-another-topic": "Search another topic"
+    "search-another-topic": "Search another topic",
+    "selected-articles": "Selected articles",
+    "no-articles-selected-yet": "No articles selected yet...",
+    "cancel": "Cancel",
+    "compare": "Compare",
+    "select": "Select",
+    "select-article": "Select an article",
+    "no-article-selected-yet": "No article selected yet...",
+    "switch-articles": "Switch articles",
+    "clear-all": "Clear all",
+    "is-premium-info": "This article can not be selected because it is premium",
+    "get-article-error": "Something went wrong with this article",
+    "remove-this-article": "Remove article",
+    "calculate-similarity": "Check similarity",
+    "select-articles-to-compare-tooltip": "Select two articles first to calculate similarity",
+    "similarity": "Similarity",
+    "not-enough-articles": "There are not enough articles selected"
 }

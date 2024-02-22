@@ -1,63 +1,74 @@
-import {
-    Flex,
-    Button,
-    Spacer,
-    HStack,
-    useColorMode,
-    IconButton,
-    useDisclosure,
-} from '@chakra-ui/react'
-import { SunIcon, MoonIcon, HamburgerIcon } from '@chakra-ui/icons'
-import { CollapsedSideBar, Logo, SideBar } from '.'
+import { Flex, Button, HStack, useColorMode, Box } from '@chakra-ui/react'
+import { SunIcon, MoonIcon } from '@chakra-ui/icons'
+import { Logo, SideBarDisplayer } from '.'
 import type { FC } from 'react'
+import { CartDisplayer } from '../articleCart'
 
 /**
  * Props for NavBar
  */
 export interface NavBarProps {
     /**
+     * A boolean for controlling toggle sidebar button displaying
+     */
+    hasSideBarButton: boolean
+    /**
      * A boolean for controlling logo displaying
      */
     hasLogo: boolean
     /**
-     * A boolean for controlling toggle sidebar button displaying
+     * A boolean for controlling selected articles button displaying
      */
-    hasSideBarButton: boolean
+    hasSelectedArticlesButton: boolean
 }
 /**
  * NavBar is a custom React component for the navigation bar of the app
  * @param {NavBarProps}
  * @returns {JSX.Element}
  */
-export const NavBar: FC<NavBarProps> = ({ hasLogo, hasSideBarButton }) => {
+export const NavBar: FC<NavBarProps> = ({
+    hasSideBarButton,
+    hasLogo,
+    hasSelectedArticlesButton,
+}) => {
     const { colorMode, toggleColorMode } = useColorMode()
-    const { isOpen, onToggle } = useDisclosure()
 
     return (
-        <Flex as='nav' p='10px' alignItems='center'>
-            <CollapsedSideBar isSidebarOpen={isOpen} toggleSideBar={onToggle}>
-                <SideBar />
-            </CollapsedSideBar>
-            {hasSideBarButton ? (
-                <IconButton
-                    data-testid='side-bar-button'
-                    aria-label='Toggle SideBar'
-                    icon={<HamburgerIcon />}
-                    onClick={onToggle}
-                />
-            ) : null}
-            <Spacer />
-            {hasLogo ? <Logo fontSize={{ base: '2rem' }} /> : null}
-            <Spacer />
-            <HStack spacing='20px'>
-                <Button data-testid='theme-mode-button' onClick={toggleColorMode}>
-                    {colorMode === 'light' ? (
-                        <SunIcon data-testid='sun-icon' />
-                    ) : (
-                        <MoonIcon data-testid='moon-icon' />
-                    )}
-                </Button>
-            </HStack>
-        </Flex>
+        <>
+            <Flex
+                as='nav'
+                p='0.5rem'
+                alignItems='center'
+                justify='space-between'
+                position='fixed'
+                w='100%'
+                backdropFilter='saturate(180%)'
+                zIndex='1'
+                backgroundColor={colorMode === 'light' ? 'white' : 'gray.800'}
+                boxShadow={colorMode === 'light' ? 'base' : 'xl'}
+            >
+                {hasSideBarButton ? <SideBarDisplayer /> : null}
+
+                <Box position='absolute' left='50%' transform='translateX(-50%)'>
+                    {hasLogo ? <Logo fontSize={{ base: '2rem' }} /> : null}
+                </Box>
+
+                <HStack ml='0.5rem'>
+                    {hasSelectedArticlesButton ? <CartDisplayer /> : null}
+                    <Button
+                        data-testid='theme-mode-button'
+                        onClick={toggleColorMode}
+                        border={colorMode === 'light' ? '1px' : 'hidden'}
+                        borderColor='gray.300'
+                    >
+                        {colorMode === 'light' ? (
+                            <SunIcon data-testid='sun-icon' />
+                        ) : (
+                            <MoonIcon data-testid='moon-icon' />
+                        )}
+                    </Button>
+                </HStack>
+            </Flex>
+        </>
     )
 }
