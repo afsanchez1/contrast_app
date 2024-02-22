@@ -55,7 +55,12 @@ export const NavBar: FC<NavBarProps> = ({
 
                 <HStack ml='0.5rem'>
                     {hasSelectedArticlesButton ? <CartDisplayer /> : null}
-                    <Button data-testid='theme-mode-button' onClick={toggleColorMode}>
+                    <Button
+                        data-testid='theme-mode-button'
+                        onClick={toggleColorMode}
+                        border={colorMode === 'light' ? '1px' : 'hidden'}
+                        borderColor='gray.300'
+                    >
                         {colorMode === 'light' ? (
                             <SunIcon data-testid='sun-icon' />
                         ) : (

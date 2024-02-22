@@ -14,6 +14,7 @@ import {
     VStack,
     InputGroup,
     InputLeftElement,
+    useColorMode,
 } from '@chakra-ui/react'
 import { Logo, updateTopic } from '../../components'
 import { scraperApi } from '../../services/scraper'
@@ -37,6 +38,7 @@ export const SearchArticles: FC = () => {
     const [searchArticles, { isLoading }] = scraperApi.endpoints.searchArticles.useLazyQuery({})
     const navigate = useNavigate()
     const dispatch = useAppDispatch()
+    const { colorMode } = useColorMode()
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         const value = event.target.value
@@ -121,6 +123,8 @@ export const SearchArticles: FC = () => {
                                     _focus={{
                                         borderColor: hasEmptyError ? 'red' : '',
                                     }}
+                                    border='1px'
+                                    borderColor={colorMode === 'light' ? 'gray.300' : 'gray.900'}
                                 />
                             </InputGroup>
                             {isLoading ? <Spinner data-testid='search-spinner' /> : null}

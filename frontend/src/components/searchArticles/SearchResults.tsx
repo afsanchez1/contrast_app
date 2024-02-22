@@ -137,7 +137,7 @@ export const SearchResults: FC = () => {
     }, [page])
 
     return (
-        <VStack margin='1rem' spacing='1.75rem'>
+        <VStack ml='2rem' mr='2rem' mt='1.25rem' mb='1rem' spacing='1.75rem'>
             {isLoading || errorMessage.length > 0 ? null : (
                 <Flex width='100%' mb='0.75rem' h='0.5rem'>
                     <BackButton route='/' />
@@ -240,6 +240,8 @@ export const SearchResults: FC = () => {
                                                     handleSelectArticleSumm(articleSumm)
                                                 }}
                                                 isDisabled={articleSumm.is_premium}
+                                                border={colorMode === 'light' ? '1px' : 'hidden'}
+                                                borderColor='gray.300'
                                             >
                                                 {existsArtSumm(articleSumm) ? (
                                                     <CloseIcon />
@@ -253,7 +255,12 @@ export const SearchResults: FC = () => {
                             })
                         })}
                     </SimpleGrid>
-                    <Button isLoading={moreIsLoading} onClick={handleShowMore}>
+                    <Button
+                        border={colorMode === 'light' ? '1px' : 'hidden'}
+                        borderColor='gray.300'
+                        isLoading={moreIsLoading}
+                        onClick={handleShowMore}
+                    >
                         <SimpleGrid columns={3} alignItems='center'>
                             <ChevronDownIcon />
                             <Text>{t('show-more')}</Text>

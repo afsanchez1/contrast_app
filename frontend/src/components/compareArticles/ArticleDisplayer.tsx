@@ -309,6 +309,8 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                                                 onClick={() => {
                                                     handlePreSelection(index)
                                                 }}
+                                                border={colorMode === 'light' ? '1px' : 'hidden'}
+                                                borderColor='gray.300'
                                             >
                                                 {t('select-article')}
                                             </Button>

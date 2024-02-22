@@ -96,6 +96,8 @@ export const ArticleSelector: FC<ArticleSelectorProps> = ({ isOpen, onClose }) =
                                     aria-label='select-article'
                                     m='1rem'
                                     size='sm'
+                                    border={colorMode === 'light' ? '1px' : 'hidden'}
+                                    borderColor='gray.300'
                                     onClick={() => {
                                         handleArticleSelection(artSumm)
                                     }}

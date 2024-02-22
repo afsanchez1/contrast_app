@@ -45,7 +45,11 @@ export const CartDisplayer = (): JSX.Element => {
 
     return (
         <>
-            <Button onClick={onOpen}>
+            <Button
+                onClick={onOpen}
+                border={colorMode === 'light' ? '1px' : 'hidden'}
+                borderColor='gray.300'
+            >
                 <HStack>
                     <Text>
                         {t('selected-articles') + ` (${selectedArticles.length.toString()})`}
@@ -96,6 +100,8 @@ export const CartDisplayer = (): JSX.Element => {
                                         aria-label='remove-article'
                                         m='1rem'
                                         size='sm'
+                                        border={colorMode === 'light' ? '1px' : 'hidden'}
+                                        borderColor='gray.300'
                                         onClick={() => {
                                             handleRemoveArticle(artSumm)
                                         }}

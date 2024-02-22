@@ -1,5 +1,5 @@
 import { HamburgerIcon } from '@chakra-ui/icons'
-import { DrawerBody, IconButton, useDisclosure } from '@chakra-ui/react'
+import { DrawerBody, IconButton, useColorMode, useDisclosure } from '@chakra-ui/react'
 import { CustomDrawer } from '.'
 import { useTranslation } from 'react-i18next'
 
@@ -10,10 +10,17 @@ import { useTranslation } from 'react-i18next'
 export const SideBarDisplayer = (): JSX.Element => {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const { t } = useTranslation()
+    const { colorMode } = useColorMode()
 
     return (
         <>
-            <IconButton aria-label='sidebar-button' icon={<HamburgerIcon />} onClick={onOpen} />
+            <IconButton
+                border={colorMode === 'light' ? '1px' : 'hidden'}
+                borderColor='gray.300'
+                aria-label='sidebar-button'
+                icon={<HamburgerIcon />}
+                onClick={onOpen}
+            />
             <CustomDrawer
                 headerTitle={t('menu')}
                 isOpen={isOpen}
