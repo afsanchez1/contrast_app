@@ -4,25 +4,26 @@ import { cartSlice } from '../components/articleCart'
 import { articleSlice, searchSlice } from '../components'
 import type { ToolkitStore } from '@reduxjs/toolkit/dist/configureStore'
 import { persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import storage from 'redux-persist/lib/storage'
 
 const cartPersistConfig = {
     key: 'cart',
-    storage: AsyncStorage,
+    storage,
 }
 
 const searchPersistConfig = {
     key: 'search',
-    storage: AsyncStorage,
+    storage,
 }
 
-const rootReducer = combineReducers({
+const reducers = {
     [scraperApi.reducerPath]: scraperApi.reducer,
     [compareApi.reducerPath]: compareApi.reducer,
     cart: persistReducer(cartPersistConfig, cartSlice.reducer),
     search: persistReducer(searchPersistConfig, searchSlice.reducer),
     compare: articleSlice.reducer,
-})
+}
+const rootReducer = combineReducers(reducers)
 
 export function setupStore(preloadedState?: Partial<RootState>): ToolkitStore {
     return configureStore({
