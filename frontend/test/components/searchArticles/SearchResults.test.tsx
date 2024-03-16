@@ -13,6 +13,7 @@ import {
     setupDelayed,
     setupNetworkError,
     setupSuccess,
+    setupTotalError,
     testTopic,
 } from './mocks/searchArticlesMock'
 import { RouterProvider, createMemoryRouter, useNavigate } from 'react-router-dom'
@@ -82,17 +83,17 @@ describe('SearchResults component parts', () => {
     })
 })
 
-// describe('Shows error panel when results had errors', () => {
-//     beforeEach(setupTotalError)
-//     afterEach(nock.cleanAll)
-//     test('Shows error panel', async () => {
-//         renderWithProviders(<RouterProvider router={router} />)
-//         const alertPattern = new RegExp(`${i18n.t('empty-result-error')}`)
-//         await waitFor(() => {
-//             expect(screen.queryAllByText(alertPattern)[0]).toBeInTheDocument()
-//         })
-//     })
-// })
+describe('Shows error panel when results had errors', () => {
+    beforeEach(setupTotalError)
+    afterEach(nock.cleanAll)
+    test('Shows error panel', async () => {
+        renderWithProviders(<RouterProvider router={router} />)
+        const alertPattern = new RegExp(`${i18n.t('empty-result-error')}`)
+        await waitFor(() => {
+            expect(screen.queryAllByText(alertPattern)[0]).toBeInTheDocument()
+        })
+    })
+})
 
 describe('Shows error panel when there are network errors', () => {
     beforeEach(setupNetworkError)

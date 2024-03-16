@@ -3,12 +3,15 @@ import nock from 'nock'
 const baseUrl = process.env.SCRAPER_URL ?? ''
 
 const errorResult = {
-    error: {
-        'el-pais': 'test error',
+    scraper: 'el-pais',
+    results: {
+        error: {
+            'el-pais': 'test error',
+        },
     },
 }
 
-function searchArticles(limit: number): SearchResult {
+export function searchArticles(limit: number): SearchResult {
     const artSumms = []
 
     for (let index = 0; index < limit; index++) {
