@@ -6,8 +6,12 @@ import { ChakraProvider, ColorModeScript } from '@chakra-ui/react'
 import { I18nextProvider } from 'react-i18next'
 import i18n from '../../i18n'
 import theme from '../../theme.ts'
-import { setupStore, type AppStore, type RootState } from '../../app/store'
+import { type AppStore, type RootState } from '../../app/store'
 import { MemoryRouter } from 'react-router-dom'
+import { combineReducers, configureStore } from '@reduxjs/toolkit'
+import { scraperApi } from '../../services/scraper.ts'
+import { compareApi } from '../../services/compareArticles.ts'
+import { articleSlice, cartSlice, searchSlice } from '../../components/index.ts'
 
 interface ExtendedRenderOptions extends Omit<RenderOptions, 'queries'> {
     preloadedState?: Partial<RootState>
@@ -20,7 +24,21 @@ export function renderWithProviders(
     {
         preloadedState = {},
         // Automatically create a store instance if no store was passed in
-        store = setupStore(),
+        store = configureStore({
+            reducer: combineReducers({
+                [scraperApi.reducerPath]: scraperApi.reducer,
+                [compareApi.reducerPath]: compareApi.reducer,
+                cart: cartSlice.reducer,
+                search: searchSlice.reducer,
+                compare: articleSlice.reducer,
+            }),
+            preloadedState,
+            middleware: getDefaultMiddleware => {
+                return getDefaultMiddleware()
+                    .concat(scraperApi.middleware)
+                    .concat(compareApi.middleware)
+            },
+        }),
         ...renderOptions
     }: ExtendedRenderOptions = {}
 ) {

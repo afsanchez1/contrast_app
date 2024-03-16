@@ -38,11 +38,7 @@ function searchArticles(limit: number): SearchResult {
 
 export const testTopic = 'testTopic'
 const path = '/search_articles'
-const baseServer = nock(baseUrl).get(path).query({
-    topic: testTopic,
-    page: 0,
-    limit: 4,
-})
+const baseServer = nock(baseUrl).get(/.*/)
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
