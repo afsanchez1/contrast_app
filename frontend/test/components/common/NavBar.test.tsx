@@ -28,7 +28,7 @@ describe('NavBar component', () => {
         )
 
         expect(screen.queryByTestId('contrast-logo')).toBeNull()
-        expect(screen.getByTestId('side-bar-button')).toBeInTheDocument()
+        expect(screen.queryByTestId('sidebar-button')).toBeInTheDocument()
     })
 
     test('Has neither sidebar button or logo', () => {

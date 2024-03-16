@@ -231,7 +231,10 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                     border={colorMode === 'light' ? '1px' : 'hidden'}
                 >
                     <Spacer />
-                    <Button onClick={handleSwitchCompare}>
+                    <Button
+                        onClick={handleSwitchCompare}
+                        isDisabled={articlesToCompare.length !== 2}
+                    >
                         <HStack spacing='0.5rem'>
                             <Text>{t('switch-articles')}</Text>
                             <RepeatIcon />

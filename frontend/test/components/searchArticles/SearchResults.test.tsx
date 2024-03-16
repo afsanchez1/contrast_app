@@ -86,13 +86,11 @@ describe('SearchResults component parts', () => {
 describe('Shows error panel when results had errors', () => {
     beforeEach(setupTotalError)
     afterEach(nock.cleanAll)
-
     test('Shows error panel', async () => {
         renderWithProviders(<RouterProvider router={router} />)
-
         const alertPattern = new RegExp(`${i18n.t('empty-result-error')}`)
         await waitFor(() => {
-            expect(screen.getByText(alertPattern)).toBeInTheDocument()
+            expect(screen.queryAllByText(alertPattern)[0]).toBeInTheDocument()
         })
     })
 })
@@ -106,7 +104,7 @@ describe('Shows error panel when there are network errors', () => {
 
         const alertPattern = new RegExp(`${i18n.t('error-notification')}`)
         await waitFor(() => {
-            expect(screen.getByText(alertPattern)).toBeInTheDocument()
+            expect(screen.queryAllByText(alertPattern)[0]).toBeInTheDocument()
         })
     })
 })

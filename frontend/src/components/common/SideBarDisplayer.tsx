@@ -18,6 +18,7 @@ export const SideBarDisplayer = (): JSX.Element => {
                 border={colorMode === 'light' ? '1px' : 'hidden'}
                 borderColor='gray.300'
                 aria-label='sidebar-button'
+                data-testid='sidebar-button'
                 icon={<HamburgerIcon />}
                 onClick={onOpen}
             />
