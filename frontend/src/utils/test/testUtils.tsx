@@ -10,7 +10,6 @@ import { type AppStore, type RootState } from '../../app/store'
 import { MemoryRouter } from 'react-router-dom'
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { scraperApi } from '../../services/scraper.ts'
-import { compareApi } from '../../services/compareArticles.ts'
 import { articleSlice, cartSlice, searchSlice } from '../../components/index.ts'
 
 interface ExtendedRenderOptions extends Omit<RenderOptions, 'queries'> {
@@ -27,16 +26,13 @@ export function renderWithProviders(
         store = configureStore({
             reducer: combineReducers({
                 [scraperApi.reducerPath]: scraperApi.reducer,
-                [compareApi.reducerPath]: compareApi.reducer,
                 cart: cartSlice.reducer,
                 search: searchSlice.reducer,
                 compare: articleSlice.reducer,
             }),
             preloadedState,
             middleware: getDefaultMiddleware => {
-                return getDefaultMiddleware()
-                    .concat(scraperApi.middleware)
-                    .concat(compareApi.middleware)
+                return getDefaultMiddleware().concat(scraperApi.middleware)
             },
         }),
         ...renderOptions

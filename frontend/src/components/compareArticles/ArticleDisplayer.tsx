@@ -13,6 +13,11 @@ import {
     HStack,
     Spinner,
     useColorMode,
+    Tooltip,
+    SlideFade,
+    Alert,
+    AlertIcon,
+    AlertDescription,
 } from '@chakra-ui/react'
 import { useState, type FC, useEffect } from 'react'
 import {
@@ -33,6 +38,7 @@ import type { Article, ArticleSummary } from '../../types'
 import { BackButton } from '..'
 import { selectTopic } from '../searchArticles/searchSlice'
 import { ArticleErrorModal } from './ArticleErrorModal'
+import { type successCompareResult } from '../../types/compareArticles/compareResults'
 
 /**
  * ArticleDisplayer props
@@ -55,14 +61,14 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
     const lastTopic = useAppSelector(state => selectTopic(state))
     const dispatch = useAppDispatch()
     const [getArticle, { isLoading }] = scraperApi.endpoints.getArticle.useLazyQuery({})
-    // const [getSimilarityRatio, compareStatus] =
-    //     compareApi.endpoints.getSimilarityRatio.useLazyQuery({})
+    const [compareStatus, setCompareStatus] = useState<string>('')
     const [articlesCache, setArticlesCache] = useState<Article[]>([])
     const [articlesToCompare, setArticlesToCompare] = useState<ArticleToCompare[]>([])
     const [hasErrorUrl, setHasErrorUrl] = useState<boolean>(false)
     const { colorMode } = useColorMode()
-    // const [currSimilarity, setCurrSimilarity] = useState<number>(-1)
-    // const [hasSimilarityError, setHasSimilarityError] = useState<boolean>(false)
+    const [currSimilarity, setCurrSimilarity] = useState<number>(-1)
+    const [hasSimilarityError, setHasSimilarityError] = useState<boolean>(false)
+    const token = process.env.COMPARE_API_TOKEN ?? ''
 
     interface ArticleToCompare {
         article: Article
@@ -95,7 +101,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
     }
     const handleRemove = (index: number): void => {
         const filtered = articlesToCompare.filter(art => art.index !== index)
-
+        setCurrSimilarity(-1)
         setArticlesToCompare(filtered)
         dispatch(removeFromCompare(index))
     }
@@ -152,35 +158,59 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
         }
     }
 
-    // const extractTextFromArticle = (article: Article): string => {
-    //     return article.body.reduce((acc, curr) => {
-    //         return acc + Object.values(curr)[0]
-    //     }, '')
-    // }
-    // const handleSimilarityCalc = (): void => {
-    //     const text1 = extractTextFromArticle(articlesToCompare[0].article)
-    //     const text2 = extractTextFromArticle(articlesToCompare[1].article)
-    //
-    //     getSimilarityRatio(
-    //         {
-    //             text1,
-    //             text2,
-    //         },
-    //         false
-    //     )
-    //         .then(value => {
-    //             if (value.isSuccess) {
-    //                 const data = value.data as successCompareResult
-    //                 const similarity = data.similarity * 100
-    //                 setCurrSimilarity(similarity)
-    //             } else {
-    //                 setHasSimilarityError(true)
-    //             }
-    //         })
-    //         .catch(e => {
-    //             console.log(e)
-    //         })
-    // }
+    const extractTextFromArticle = (article: Article): string => {
+        return article.body.reduce((acc, curr) => {
+            return acc + Object.values(curr)[0]
+        }, '')
+    }
+    const handleSimilarityCalc = (): void => {
+        setCurrSimilarity(-1)
+        setHasSimilarityError(false)
+        setCompareStatus('loading')
+        const text1 = extractTextFromArticle(articlesToCompare[0].article)
+        const text2 = extractTextFromArticle(articlesToCompare[1].article)
+
+        fetch('https://api.dandelion.eu/datatxt/sim/v1', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                text1,
+                text2,
+                token,
+                lang: 'es',
+                bow: 'never',
+            }),
+        })
+            .then(value => {
+                if (value.ok) {
+                    setHasSimilarityError(false)
+                    value
+                        .json()
+                        .then(json => {
+                            setCompareStatus('completed')
+                            const data = json as successCompareResult
+                            console.log(data)
+                            const similarity = data.similarity * 100
+                            setCurrSimilarity(similarity)
+                        })
+                        .catch(error => {
+                            setHasSimilarityError(true)
+                            setCompareStatus('failed')
+                            console.log(error)
+                        })
+                } else {
+                    setCompareStatus('failed')
+                    setHasSimilarityError(true)
+                }
+            })
+            .catch(error => {
+                setHasSimilarityError(true)
+                setCompareStatus('failed')
+                console.log(error)
+            })
+    }
 
     // For cleaning comparison selections
     useEffect(() => {
@@ -230,7 +260,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                     h='4rem'
                     border={colorMode === 'light' ? '1px' : 'hidden'}
                 >
-                    <Spacer />
+                    <Spacer ml={{ sm: '10 rem', md: '15rem' }} />
                     <Button
                         onClick={handleSwitchCompare}
                         isDisabled={articlesToCompare.length !== 2}
@@ -241,7 +271,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                         </HStack>
                     </Button>
                     <Spacer />
-                    {/*
+
                     <Tooltip
                         label={
                             !(articlesToCompare.length === 2)
@@ -257,21 +287,8 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                         >
                             {t('calculate-similarity') + ' (%)'}
                         </Button>
-                    </Tooltip> */}
+                    </Tooltip>
                 </Flex>
-                {/*
-                <Flex width='100%' align='center'>
-                    {compareStatus.isLoading ? (
-                        <Spinner size='xl' />
-                    ) : currSimilarity >= 0 ? (
-                        <HStack spacing='1rem'>
-                            <Text fontSize='2rem' fontWeight='bold'>
-                                {t('similarity') + ': '}
-                            </Text>
-                            <Text fontSize='2rem'>{currSimilarity.toString() + '%'}</Text>
-                        </HStack>
-                    ) : null}
-                    </Flex> */}
                 <SimpleGrid width='100%' columns={{ base: 1, md: 2 }} spacing='1rem'>
                     {compareIndexes.map(index => {
                         return (
@@ -339,6 +356,24 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                         )
                     })}
                 </SimpleGrid>
+                <Flex width='100%' justifyContent='center'>
+                    {compareStatus === 'loading' ? (
+                        <Spinner size='xl' />
+                    ) : currSimilarity >= 0 ? (
+                        <HStack spacing='1rem'>
+                            <Text fontSize='2rem' fontWeight='bold'>
+                                {t('similarity') + ': '}
+                            </Text>
+                            <Text fontSize='2rem'>{currSimilarity.toString() + '%'}</Text>
+                        </HStack>
+                    ) : null}
+                </Flex>
+                <SlideFade in={hasSimilarityError}>
+                    <Alert status='error' rounded='full' size={{ base: 'sm', md: 'md', lg: 'lg' }}>
+                        <AlertIcon />
+                        <AlertDescription>{t('comparison-error')}</AlertDescription>
+                    </Alert>
+                </SlideFade>
             </VStack>
         </>
     )

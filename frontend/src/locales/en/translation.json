@@ -28,5 +28,6 @@
     "calculate-similarity": "Check similarity",
     "select-articles-to-compare-tooltip": "Select two articles first to calculate similarity",
     "similarity": "Similarity",
-    "not-enough-articles": "There are not enough articles selected"
+    "not-enough-articles": "There are not enough articles selected",
+    "comparison-error": "An error ocurred while comparing. Try again later"
 }

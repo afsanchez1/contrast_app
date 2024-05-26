@@ -14,14 +14,18 @@ export const compareApi = createApi({
                     text1,
                     text2,
                     token,
-                    bow: 'never',
                     lang: 'es',
+                    bow: 'never',
                 }
 
                 return {
                     url: '',
                     method: 'POST',
                     body,
+                    headers: {
+                        'Access-Control-Allow-Origin': '*',
+                        'Content-Type': 'application/json',
+                    },
                 }
             },
         }),
