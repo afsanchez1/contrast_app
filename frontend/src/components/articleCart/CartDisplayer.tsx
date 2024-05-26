@@ -66,7 +66,12 @@ export const CartDisplayer = (): JSX.Element => {
                 <DrawerBody mt='1rem'>
                     {selectedArticles.length > 0 ? (
                         <Flex w='100%' justify='right' mb='1rem'>
-                            <Button size='sm' onClick={() => dispatch(clearCart())}>
+                            <Button
+                                border={colorMode === 'light' ? '1px' : 'hidden'}
+                                borderColor='gray.300'
+                                size='sm'
+                                onClick={() => dispatch(clearCart())}
+                            >
                                 {t('clear-all')}
                             </Button>
                         </Flex>
@@ -121,8 +126,19 @@ export const CartDisplayer = (): JSX.Element => {
                 </DrawerBody>
                 <DrawerFooter justifyContent='center' borderTopWidth='thin' zIndex='2'>
                     <HStack spacing={'0.75rem'}>
-                        <Button onClick={onClose}>{t('cancel')}</Button>
-                        <Button isDisabled={selectedArticles.length < 2} onClick={handleCompare}>
+                        <Button
+                            onClick={onClose}
+                            border={colorMode === 'light' ? '1px' : 'hidden'}
+                            borderColor='gray.300'
+                        >
+                            {t('cancel')}
+                        </Button>
+                        <Button
+                            border={colorMode === 'light' ? '1px' : 'hidden'}
+                            borderColor='gray.300'
+                            isDisabled={selectedArticles.length < 2}
+                            onClick={handleCompare}
+                        >
                             {t('compare')}
                         </Button>
                     </HStack>

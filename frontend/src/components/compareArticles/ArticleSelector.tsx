@@ -127,7 +127,13 @@ export const ArticleSelector: FC<ArticleSelectorProps> = ({ isOpen, onClose }) =
                 )}
             </DrawerBody>
             <DrawerFooter justifyContent='center' borderTopWidth='thin' zIndex='2'>
-                <Button onClick={onClose}>{t('cancel')}</Button>
+                <Button
+                    onClick={onClose}
+                    border={colorMode === 'light' ? '1px' : 'hidden'}
+                    borderColor='gray.300'
+                >
+                    {t('cancel')}{' '}
+                </Button>
             </DrawerFooter>
         </CustomDrawer>
     )
