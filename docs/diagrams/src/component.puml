@@ -2,7 +2,7 @@
 !include <C4/C4_Component>
 
 Container(WebApp, "Single-Page Application", "TypeScript y React", "Proporciona la interfaz mediante la cual el usuario final puede buscar, seleccionar y comparar noticias")
-System_Boundary(SysBound, "Scraper API") {
+Container_Boundary(SysBound, "Scraper API") {
   Component(AppSupervisor, "AppSupervisor", "Elixir/Supervisor", "Proceso encargado de gestionar el ciclo de vida del pool de conxiones y el ScraperManager")
   Component(ConnectionManager, "Asignador de conexiones", "PlugCowboy/ConnectionManagerProcess", "Proceso encargado de asignar un proceso manejador para las conexiones entrantes")
   Component(ConnProc1, "Manejador de conexión 1", "PlugCowboy/PoolProcess","Proceso que gestiona las conexiones entrantes al servidor web")
