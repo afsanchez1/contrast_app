@@ -6,9 +6,9 @@ System_Boundary(SysBound, "Sistema") {
   Container(WebApp, "Single-Page Application", "TypeScript y React", "Proporciona la interfaz mediante la cual el usuario final puede buscar, seleccionar y comparar noticias")
   Container(Backend, "Scraper API", "Elixir","Proporciona funcionalidades para la búsqueda de noticias y entre diferentes medios online")
 }
-System(NewsWebApp1, "Aplicación web de periódico 1", "Aplicación web de algún periódico")
-System(NewsWebApp2, "Aplicación web de periódico N", "Aplicación web de otro periódico")
-System(DandelionAPI, "API de comparación de similitud entre textos", "API de Dandelion de comparación semántica de textos")
+System_Ext(NewsWebApp1, "Aplicación web de periódico 1", "Aplicación web de algún periódico")
+System_Ext(NewsWebApp2, "Aplicación web de periódico N", "Aplicación web de otro periódico")
+System_Ext(DandelionAPI, "API de comparación de similitud entre textos", "API de Dandelion de comparación semántica de textos")
 
 Rel(User, WebApp, "Visita la aplicación web para buscar noticias por tema y las selecciona para compararlas", "HTTP")
 Rel(WebApp, Backend, "Realiza llamadas a la API", "HTTP")

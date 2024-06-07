@@ -5,9 +5,9 @@ Person(User, "Usuario", "Usuario de la aplicación")
 System_Boundary(SysBound, "Sistema") {
   System(MyTool, "Herramienta de web scraping de prensa online","Permite a los usuarios hacer búsquedas por tema, recopila diferentes noticias de distintas fuentes sobre ellos y facilita la visualización del contenido y su comparación")
 }
-System(NewsWebApp1, "Aplicación web de periódico 1", "Aplicación web de algún periódico")
-System(NewsWebApp2, "Aplicación web de periódico N", "Aplicación web de otro periódico")
-System(DandelionAPI, "API de comparación de similitud entre textos", "API de Dandelion de comparación semántica de textos")
+System_Ext(NewsWebApp1, "Aplicación web de periódico 1", "Aplicación web de algún periódico")
+System_Ext(NewsWebApp2, "Aplicación web de periódico N", "Aplicación web de otro periódico")
+System_Ext(DandelionAPI, "API de comparación de similitud entre textos", "API de Dandelion de comparación semántica de textos")
 
 Rel(User, MyTool, "utiliza")
 Rel(MyTool, NewsWebApp1, "Recopila contenidos")
