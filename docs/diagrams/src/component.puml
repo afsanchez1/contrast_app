@@ -5,15 +5,19 @@ Container(WebApp, "Single-Page Application", "TypeScript y React", "Proporciona 
 Container_Boundary(SysBound, "Scraper API") {
   Component(AppSupervisor, "AppSupervisor", "Elixir/Supervisor", "Proceso encargado de gestionar el ciclo de vida del pool de conxiones y el ScraperManager")
   Component(ConnectionManager, "Asignador de conexiones", "PlugCowboy/ConnectionManagerProcess", "Proceso encargado de asignar un proceso manejador para las conexiones entrantes")
-  Component(ConnProc1, "Manejador de conexión 1", "PlugCowboy/PoolProcess","Proceso que gestiona las conexiones entrantes al servidor web")
-  Component(ConnProc2, "Manejador de conexión N", "PlugCowboy/PoolProcess","Proceso que gestiona las conexiones entrantes al servidor web")
+  Boundary(ConnectionPool, "Pool de conexiones") {
+    Component(ConnProc1, "Manejador de conexión 1", "PlugCowboy/PoolProcess","Proceso que gestiona las conexiones entrantes al servidor web")
+    Component(ConnProc2, "Manejador de conexión N", "PlugCowboy/PoolProcess","Proceso que gestiona las conexiones entrantes al servidor web")
+  }
   Component(ScraperManager, "ScraperManager", "Elixir/GenServer", "Proceso intermediario entre los manejadores de conexiones y el pipeline de transformación de artículos")
   Component(PipelineSupervisor, "PipelineSupervisor", "Elixir/Supervisor", "Proceso encargado de gestionar el ciclo de vida del pipeline")
-  Component(ScraperEventManager, "ScraperEventManager", "Elixir/GenStageProducer", "Proceso encargado de propagar las operaciones al resto del pipeline")
-  Component(ScraperRequestHandler1, "ScraperRequestHandler1", "Elixir/GenStageProducerConsumer", "Proceso encargado de realizar las peticiones HTTP a las aplicaciones web de los periódicos")
-  Component(ScraperRequestHandlerN, "ScraperRequestHandlerN", "Elixir/GenStageProducerConsumer", "Proceso encargado de realizar las peticiones HTTP a las aplicaciones web de los periódicos")
-  Component(ScraperParsingHandler1, "ScraperParsingHandler1", "Elixir/GenStageConsumer", "Proceso encargado de realizar la transformación de las respuestas a las peticiones HTTP")
-  Component(ScraperParsingHandlerN, "ScraperParsingHandlerN", "Elixir/GenStageConsumer", "Proceso encargado de realizar la transformación de las respuestas a las peticiones HTTP")
+  Boundary(PipelineBound, "Pipeline"){
+    Component(ScraperEventManager, "ScraperEventManager", "Elixir/GenStageProducer", "Proceso encargado de propagar las operaciones al resto del pipeline")
+    Component(ScraperRequestHandler1, "ScraperRequestHandler1", "Elixir/GenStageProducerConsumer", "Proceso encargado de realizar las peticiones HTTP a las aplicaciones web de los periódicos")
+    Component(ScraperRequestHandlerN, "ScraperRequestHandlerN", "Elixir/GenStageProducerConsumer", "Proceso encargado de realizar las peticiones HTTP a las aplicaciones web de los periódicos")
+    Component(ScraperParsingHandler1, "ScraperParsingHandler1", "Elixir/GenStageConsumer", "Proceso encargado de realizar la transformación de las respuestas a las peticiones HTTP")
+    Component(ScraperParsingHandlerN, "ScraperParsingHandlerN", "Elixir/GenStageConsumer", "Proceso encargado de realizar la transformación de las respuestas a las peticiones HTTP")
+  }
 }
 Rel(AppSupervisor, ConnectionManager, "Supervisa")
 Rel(AppSupervisor, ScraperManager, "Supervisa")
