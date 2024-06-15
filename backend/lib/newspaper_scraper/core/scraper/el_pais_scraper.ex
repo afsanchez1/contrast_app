@@ -45,6 +45,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   @impl ScraperParser
   def get_selectors(function) do
     selectors = %{
+      parse_search_results: [".bu_b"],
       check_premium: ["#ctn_freemium_article", "#ctn_premium_article"],
       parse_art_header: [".a_e_txt", ".articulo-titulares"],
       parse_art_authors: [".a_md_a", ".autor-texto"],
@@ -58,11 +59,10 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # -----------------------------------------------------------------------------------
 
   @impl Scraper
-  def search_articles(topic, page, limit) do
-    {:ok, query} =
-      Jason.encode(%{q: topic, page: page + 1, limit: limit, language: "es"})
-
-    url = Tesla.build_url(@api_url, query: query, _website: "el-pais")
+  def search_articles(topic, page, _limit) do
+    url =
+      Enum.join([@api_url, topic, "/", page])
+      |> URI.encode()
 
     req = Tesla.get(@client, url)
 
@@ -74,7 +74,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   defp handle_response(res) do
     case res.status do
-      200 -> {:ok, res.body["articles"]}
+      200 -> {:ok, res.body}
       _ -> {:error, res.body}
     end
   end
@@ -82,64 +82,102 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   # -----------------------------------------------------------------------------------
 
   @impl Scraper
-  def parse_search_results(articles) do
+  def parse_search_results(search_result) do
+    selectors = get_selectors(:parse_search_results)
+
+    with {:ok, html} <- Floki.parse_document(search_result),
+         {:ok, found_html} <- ParsingUtils.find_element(html, selectors),
+         results when is_list(results) <- parse_search_results_html(found_html),
+         do: {:ok, results},
+         else: (error -> error)
+  end
+
+  # -----------------------------------------------------------------------------------
+  @spec parse_search_results_html(html :: ScraperParser.html_tree()) ::
+          [
+            ArticleSummary.t()
+          ]
+          | {:error, any()}
+  defp parse_search_results_html(html) do
     try do
-      parsed_arts =
-        Enum.map(
-          articles,
-          fn article ->
-            date_time = parse_search_date_time(article["updatedTs"])
-            authors = parse_search_authors(article["authors"])
-            is_premium = ParsingUtils.search_check_premium(article["url"], ElPaisScraper)
+      Floki.traverse_and_update(html, fn
+        {"div", [{"class", "c_f"}], _children} ->
+          nil
 
-            %ArticleSummary{
-              newspaper: @newspaper_name,
-              authors: authors,
-              title: article["title"],
-              excerpt: article["excerpt"],
-              date_time: date_time,
-              url: article["url"],
-              is_premium: is_premium
-            }
-          end
-        )
+        {"div", [{"class", "c_a"}], children} ->
+          {:authors, build_search_authors(children)}
 
-      case parsed_arts do
-        [] -> {:error, "no articles found to parse"}
-        [_ | _] -> {:ok, parsed_arts}
-      end
+        {"p", [{"class", "c_d"}], children} ->
+          {:excerpt, ParsingUtils.transform_text_children(children)}
+
+        {"div", _attrs, children} ->
+          children
+
+        {"header", _attrs, children} ->
+          children
+
+        {"h2", _attrs, [{"a", [{"href", url}], children}]} ->
+          [{:url, url}, {:title, ParsingUtils.transform_text_children(children)}]
+
+        {"article", [_class, _timestamp, {"datetime", datetime}], children} ->
+          {:art_summ, [{:date_time, datetime} | children]}
+
+        {"figure", _attrs, _children} ->
+          nil
+
+        {"span", _attrs, _children} ->
+          nil
+
+        {"a", [{"class", "c_k  "}, _href], _children} ->
+          nil
+
+        other ->
+          other
+      end)
+      |> build_article_summs()
     rescue
-      _e -> {:error, "parsing error"}
+      _e ->
+        {:error, "parsing error"}
     end
   end
 
-  # -----------------------------------------------------------------------------------
-
-  # UpdatedTs comes in Unix seconds so we parse it to ISO 8601:2019 format
-  @spec parse_search_date_time(date_time :: integer()) :: {:ok, String.t()} | {:error, atom()}
-  defp parse_search_date_time(date_time) do
-    dt = DateTime.from_unix(date_time, :second)
-
-    case dt do
-      {:ok, datetime} -> DateTime.to_iso8601(datetime, :extended)
-      {:error, e} -> {:error, e}
-    end
-  end
-
-  # -----------------------------------------------------------------------------------
-
-  # Parses authors to our defined Authors struct
-  @spec parse_search_authors(authors :: list(map())) :: list(Author.t()) | []
-  defp parse_search_authors(authors) do
-    Enum.map(
-      authors,
-      fn author ->
+  # This function helps building the search results authors
+  @spec build_search_authors(children :: ScraperParser.html_tree()) :: list(Author.t())
+  defp build_search_authors(children) do
+    Enum.map(children, fn
+      {"a", [{"href", url}, _class], children} ->
         %Author{
-          name: author["name"],
-          url: author["url"]
+          name: ParsingUtils.transform_text_children(children),
+          url: url
         }
-      end
-    )
+
+      _other ->
+        nil
+    end)
+    |> Enum.filter(fn data -> data !== nil end)
+  end
+
+  # A function for building the Article Summary list
+  @spec build_article_summs(raw_art_summs :: list()) :: [
+          ArticleSummary.t()
+        ]
+  defp build_article_summs(raw_art_summs) do
+    Enum.map(raw_art_summs, fn {:art_summ, contents} ->
+      contents_map =
+        Map.new(contents)
+
+      url = contents_map[:url]
+
+      %ArticleSummary{
+        newspaper: get_newspaper_name(),
+        authors: contents_map[:authors],
+        title: contents_map[:title],
+        excerpt: contents_map[:excerpt],
+        date_time: contents_map[:date_time],
+        url: url,
+        is_premium: ParsingUtils.search_check_premium(url, ElPaisScraper)
+      }
+    end)
   end
 
   # ===================================================================================
