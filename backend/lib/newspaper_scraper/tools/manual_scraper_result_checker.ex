@@ -34,6 +34,7 @@ defmodule NewspaperScraper.Tools.ManualScraperResultChecker do
       |> scraper.parse_search_results()
       |> Tuple.to_list()
       |> Enum.at(1)
+      |> Enum.filter(fn res -> res.is_premium === false end)
       |> Enum.random()
       |> Map.get(:url)
       |> dbg()

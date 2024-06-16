@@ -61,7 +61,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
   @impl Scraper
   def search_articles(topic, page, _limit) do
     url =
-      Enum.join([@api_url, topic, "/", page])
+      Enum.join([@api_url, topic, "/", page + 1])
       |> URI.encode()
 
     req = Tesla.get(@client, url)
@@ -128,7 +128,7 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
         {"span", _attrs, _children} ->
           nil
 
-        {"a", [{"class", "c_k  "}, _href], _children} ->
+        {"a", [{"class", _classname}, _href], _children} ->
           nil
 
         other ->
@@ -268,7 +268,27 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
   @impl ScraperParser
   def parse_art_date(parsed_art, html) do
-    ScraperCommImpl.comm_parse_art_date(parsed_art, html)
+    parsed_date_time =
+      Floki.traverse_and_update(html, fn
+        {"div", _attrs, children} ->
+          children
+
+        {"span", children} ->
+          children
+
+        {"time", attrs, _children} ->
+          transformed_attrs = ParsingUtils.transform_attributes(attrs)
+          date_time = transformed_attrs["datetime"]
+          {:date_time, date_time}
+
+        {_other, _attrs, children} ->
+          children
+
+        _other ->
+          nil
+      end)
+
+    Map.put(parsed_art, :date_time, parsed_date_time[:date_time])
   end
 
   # -----------------------------------------------------------------------------------
@@ -330,10 +350,11 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
 
       %{p: text} ->
         not (String.contains?(text, "Sigue toda la información de Cinco Días") or
-               String.contains?(text, "nuestra newsletter semanal") or
+               String.contains?(text, "newsletter") or
                String.contains?(text, "EL PAÍS") or
                String.contains?(text, "Publicaciones nuevas") or
-               String.contains?(text, "seguir"))
+               String.contains?(text, "seguir") or
+               String.contains?(text, "suscríbete"))
 
       text ->
         not is_binary(text)
