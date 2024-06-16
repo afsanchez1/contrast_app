@@ -85,6 +85,6 @@ defmodule NewspaperScraper.Boundary.ScraperValidator do
         end
       )
 
-    not Enum.member?(checks, {:error, "invalid url"})
+    Enum.member?(checks, {:error, "invalid url"})
   end
 end
