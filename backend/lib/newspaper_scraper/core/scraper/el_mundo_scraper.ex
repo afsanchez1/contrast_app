@@ -219,7 +219,7 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
         excerpt: contents_map[:excerpt],
         date_time: art_contents_map[:date_time],
         url: url,
-        is_premium: ParsingUtils.search_check_premium(url, ElMundoScraper)
+        is_premium: art_contents_map[:is_premium]
       }
     end)
   end
@@ -229,9 +229,12 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
   defp get_contents_from_art(url) do
     with {:ok, {html_doc, _url}} <- get_article(url),
          {:ok, html} <- Floki.parse_document(html_doc) do
-      %{}
-      |> ParsingUtils.parse(:parse_art_authors, html, ElMundoScraper)
-      |> ParsingUtils.parse(:parse_art_date, html, ElMundoScraper)
+      contents =
+        %{}
+        |> ParsingUtils.parse(:parse_art_authors, html, ElMundoScraper)
+        |> ParsingUtils.parse(:parse_art_date, html, ElMundoScraper)
+
+      Map.put(contents, :is_premium, ParsingUtils.check_premium(html, ElMundoScraper))
     else
       {:error, e} -> {:error, e}
       e -> {:error, e}

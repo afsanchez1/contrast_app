@@ -53,11 +53,11 @@ defmodule NewspaperScraper.Core.LaVozDeGaliciaScraper do
   def get_selectors(function) do
     selectors = %{
       parse_search_results: ["#resultPrint"],
-      check_premium: [".c-paid"],
+      check_premium: [".c-paid.i-access-subscribers"],
       parse_art_header: [".root.container"],
       parse_art_authors: [".data.flex.f-dir-row.f-align-center.mg-t-2"],
-      parse_art_date: [],
-      parse_art_body: []
+      parse_art_date: ["meta"],
+      parse_art_body: [".col.sz-dk-67.txt-blk"]
     }
 
     selectors[function]
@@ -67,13 +67,14 @@ defmodule NewspaperScraper.Core.LaVozDeGaliciaScraper do
 
   @impl Scraper
   def search_articles(topic, page, limit) do
+    # minimum limit is 5
     body =
       Enum.join([
         "pageSize=",
         to_string(limit),
         "&",
         "pageNumber=",
-        to_string(page),
+        to_string(page + 1),
         "&",
         "sort=D0003_FECHAPUBLICACION+desc&",
         "doctype=&",
@@ -88,10 +89,6 @@ defmodule NewspaperScraper.Core.LaVozDeGaliciaScraper do
         "text=",
         URI.encode(topic)
       ])
-
-    # TODO delete this
-    backup =
-      "pageSize=5&pageNumber=2&sort=score+desc&source=info&text=pedro+s%C3%A1nchez"
 
     case Tesla.post(@client, @api_url, body) do
       {:ok, res} ->
@@ -151,7 +148,7 @@ defmodule NewspaperScraper.Core.LaVozDeGaliciaScraper do
           [{:url, build_url(raw_url)}, {:title, ParsingUtils.transform_text_children(children)}]
 
         {"p", [{"itemprop", "alternativeHeadline description"}], [h | _t]} ->
-          {:excerpt, ParsingUtils.transform_text_children(h)}
+          {:excerpt, Enum.join([ParsingUtils.transform_text_children(h), "..."])}
 
         {"time", [{"pubdate", art_date} | _t], _children} ->
           {:date_time, build_date_time(art_date)}
@@ -231,7 +228,7 @@ defmodule NewspaperScraper.Core.LaVozDeGaliciaScraper do
         excerpt: contents_map[:excerpt],
         date_time: contents_map[:date_time],
         url: url,
-        is_premium: ParsingUtils.search_check_premium(url, LaVozDeGaliciaScraper)
+        is_premium: art_contents_map[:is_premium]
       }
     end)
   end
@@ -241,11 +238,11 @@ defmodule NewspaperScraper.Core.LaVozDeGaliciaScraper do
   defp get_contents_from_art(url) do
     with {:ok, {html_doc, _url}} <- get_article(url),
          {:ok, html} <- Floki.parse_document(html_doc) do
-      html |> dbg()
+      contents =
+        %{}
+        |> ParsingUtils.parse(:parse_art_authors, html, LaVozDeGaliciaScraper)
 
-      %{}
-      |> ParsingUtils.parse(:parse_art_header, html, LaVozDeGaliciaScraper)
-      |> ParsingUtils.parse(:parse_art_authors, html, LaVozDeGaliciaScraper)
+      Map.put(contents, :is_premium, ParsingUtils.check_premium(html, LaVozDeGaliciaScraper))
     else
       {:error, e} -> {:error, e}
       e -> {:error, e}
@@ -274,15 +271,22 @@ defmodule NewspaperScraper.Core.LaVozDeGaliciaScraper do
 
   # -----------------------------------------------------------------------------------
 
+  @impl Scraper
+  def parse_article(html_doc, url) do
+    ScraperCommImpl.comm_parse_article(html_doc, url, LaVozDeGaliciaScraper)
+  end
+
+  # -----------------------------------------------------------------------------------
+
   @impl ScraperParser
   def parse_art_header(parsed_art, html) do
-    parsed_art |> dbg()
-
     parsed_title =
-      ParsingUtils.transform_text_children(Floki.find(html, ".headline.mg-b-2"))
+      Floki.find(html, ".headline.mg-b-2")
+      |> ParsingUtils.transform_text_children()
 
     parsed_subtitle =
-      ParsingUtils.transform_text_children(Floki.find(html, ".subtitle.t-bld"))
+      Floki.find(html, ".subtitle.t-bld")
+      |> ParsingUtils.transform_text_children()
 
     parsed_art
     |> Map.put(:headline, parsed_title)
@@ -324,15 +328,70 @@ defmodule NewspaperScraper.Core.LaVozDeGaliciaScraper do
     Enum.map(children, fn
       {"a", [{"href", raw_url}], children} ->
         %Author{
-          name: ParsingUtils.transform_text_children(children),
+          name: ParsingUtils.transform_text_children(children) |> String.capitalize(),
           url: build_url(raw_url)
         }
 
       other when is_binary(other) ->
         %Author{
-          name: ParsingUtils.transform_text_children(children),
+          name: ParsingUtils.transform_text_children(children) |> String.capitalize(),
           url: nil
         }
     end)
+  end
+
+  # -----------------------------------------------------------------------------------
+  @impl ScraperParser
+  def parse_art_date(parsed_art, html) do
+    parsed_date_time =
+      Floki.traverse_and_update(html, fn
+        {"meta", [{"property", "article:published_time"}, {"content", date_time}], _children} ->
+          {:date_time, date_time}
+
+        _other ->
+          nil
+      end)
+
+    Map.put(parsed_art, :date_time, parsed_date_time[:date_time])
+  end
+
+  # -----------------------------------------------------------------------------------
+
+  @impl ScraperParser
+  def parse_art_body(parsed_art, html) do
+    parsed_body =
+      Floki.traverse_and_update(html, fn
+        {"div", _attrs, children} ->
+          children
+
+        {"h2", _attrs, children} ->
+          %{h2: ParsingUtils.transform_text_children(children)}
+
+        {"h3", _attrs, children} ->
+          %{h3: ParsingUtils.transform_text_children(children)}
+
+        {"a", _attrs, children} ->
+          children
+
+        {"i", _attrs, children} ->
+          children
+
+        {"em", _attrs, children} ->
+          children
+
+        {"b", _attrs, children} ->
+          children
+
+        {"strong", _attrs, children} ->
+          children
+
+        {"p", _attrs, children} ->
+          %{p: ParsingUtils.transform_text_children(children)}
+
+        _other ->
+          nil
+      end)
+
+    Map.put(parsed_art, :body, parsed_body)
   end
 end
