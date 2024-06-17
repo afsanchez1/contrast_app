@@ -203,25 +203,31 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
           ArticleSummary.t()
         ]
   defp build_article_summs(raw_art_summs) do
-    Enum.map(raw_art_summs, fn {:art_summ, contents} ->
-      contents_map =
-        Map.new(contents)
+    tasks =
+      Enum.map(raw_art_summs, fn
+        {:art_summ, contents} ->
+          Task.async(fn ->
+            contents_map =
+              Map.new(contents)
 
-      url = contents_map[:url]
+            url = contents_map[:url]
 
-      art_contents_map =
-        get_contents_from_art(url)
+            art_contents_map =
+              get_contents_from_art(url)
 
-      %ArticleSummary{
-        newspaper: get_newspaper_name(),
-        authors: art_contents_map[:authors],
-        title: contents_map[:title],
-        excerpt: contents_map[:excerpt],
-        date_time: art_contents_map[:date_time],
-        url: url,
-        is_premium: art_contents_map[:is_premium]
-      }
-    end)
+            %ArticleSummary{
+              newspaper: get_newspaper_name(),
+              authors: art_contents_map[:authors],
+              title: contents_map[:title],
+              excerpt: contents_map[:excerpt],
+              date_time: art_contents_map[:date_time],
+              url: url,
+              is_premium: art_contents_map[:is_premium]
+            }
+          end)
+      end)
+
+    Task.await_many(tasks, 20_000)
   end
 
   # This function parses an article to gather info to improve search results, as the search HTML document
