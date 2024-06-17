@@ -162,6 +162,8 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
           ArticleSummary.t()
         ]
   defp build_article_summs(raw_art_summs) do
+    raw_art_summs = Enum.take(raw_art_summs, 6)
+
     tasks =
       Enum.map(raw_art_summs, fn
         {:art_summ, contents} ->

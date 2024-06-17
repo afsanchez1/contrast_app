@@ -69,7 +69,7 @@ export const SearchArticles: FC = () => {
         const queryParams = {
             topic,
             page: 0,
-            limit: 4,
+            limit: 6,
         }
 
         searchArticles(queryParams, false)

@@ -89,7 +89,7 @@ export const SearchResults: FC = () => {
                 {
                     topic,
                     page,
-                    limit: 4,
+                    limit: 6,
                 },
                 true
             )
