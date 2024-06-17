@@ -140,7 +140,8 @@ defmodule NewspaperScraper.Utils.Core.ParsingUtils do
   """
   @spec check_premium(html :: ScraperParser.html_tree(), scraper :: module()) :: true | false
   def check_premium(html, scraper) do
-    selectors = scraper.get_selectors(:check_premium)
+    selectors =
+      scraper.get_selectors(:check_premium)
 
     case find_element(html, selectors) do
       {:error, :not_found} -> false

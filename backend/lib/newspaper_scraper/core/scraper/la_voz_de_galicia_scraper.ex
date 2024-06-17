@@ -1,8 +1,8 @@
-defmodule NewspaperScraper.Core.ElMundoScraper do
+defmodule NewspaperScraper.Core.LaVozDeGaliciaScraper do
   @moduledoc """
-  This module contains all the logic needed for scraping https://www.elmundo.es/
+  This module contains all the logic needed for scraping https://www.lavozdegalicia.es/
   """
-  alias NewspaperScraper.Core.ElMundoScraper
+  alias NewspaperScraper.Core.LaVozDeGaliciaScraper
   alias NewspaperScraper.Core.ScraperParser
   alias NewspaperScraper.Core.Scraper
   alias NewspaperScraper.Utils.Core.ParsingUtils
@@ -13,21 +13,21 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
   @behaviour Scraper
   @behaviour ScraperParser
 
-  @scraper_name "el-mundo"
-  @newspaper_name "El Mundo"
+  @scraper_name "la-voz-de-galicia"
+  @newspaper_name "La Voz De Galicia"
+  @base_url Application.compile_env(:newspaper_scraper, :la_voz_de_galicia_base_url)
+  @api_url Application.compile_env(:newspaper_scraper, :la_voz_de_galicia_api_url)
 
-  @api_url Application.compile_env(:newspaper_scraper, :el_mundo_api_url)
-
-  # Add the user-agent header to avoid server rejection
   @middleware [
+    Tesla.Middleware.EncodeFormUrlencoded,
+    {Tesla.Middleware.BaseUrl, @base_url},
     Tesla.Middleware.FollowRedirects,
     {Tesla.Middleware.Headers,
      [
+       {"Content-Type", "application/x-www-form-urlencoded"},
        {"user-agent",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"},
-       {"accept", "text/html"}
-     ]},
-    Tesla.Middleware.DecompressResponse
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"}
+     ]}
   ]
 
   @client Tesla.client(@middleware)
@@ -44,7 +44,7 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
 
   @impl Scraper
   def scraper_check(url) do
-    ScraperCommImpl.comm_scraper_check(url, "elmundo.es")
+    ScraperCommImpl.comm_scraper_check(url, "lavozdegalicia.es")
   end
 
   # -----------------------------------------------------------------------------------
@@ -52,12 +52,12 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
   @impl ScraperParser
   def get_selectors(function) do
     selectors = %{
-      parse_search_results: [".lista_resultados"],
-      check_premium: [".ue-c-article__premium-tag"],
-      parse_art_header: [".ue-c-article"],
-      parse_art_authors: [".ue-c-article__author-name", ".ue-c-article__byline-name"],
-      parse_art_date: [".ue-c-article__publishdate"],
-      parse_art_body: [".ue-l-article__body"]
+      parse_search_results: ["#resultPrint"],
+      check_premium: [".c-paid.i-access-subscribers"],
+      parse_art_header: [".root.container"],
+      parse_art_authors: [".data.flex.f-dir-row.f-align-center.mg-t-2"],
+      parse_art_date: ["meta"],
+      parse_art_body: [".col.sz-dk-67.txt-blk"]
     }
 
     selectors[function]
@@ -67,58 +67,43 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
 
   @impl Scraper
   def search_articles(topic, page, limit) do
-    req_page =
-      page * limit + 1
+    # minimum limit is 5
+    body =
+      Enum.join([
+        "pageSize=",
+        to_string(limit),
+        "&",
+        "pageNumber=",
+        to_string(page + 1),
+        "&",
+        "sort=D0003_FECHAPUBLICACION+desc&",
+        "doctype=&",
+        "dateFrom=&",
+        "dateTo=&",
+        "edicion=&",
+        "formato=&",
+        "seccion=&",
+        "blog=&",
+        "autor=&",
+        "source=info&",
+        "text=",
+        URI.encode(topic)
+      ])
 
-    try do
-      #  Transform it to latin1 encoding for elmundo server to understand
-      {:ok, parsed_topic} = Codepagex.from_string(topic, :iso_8859_1)
+    case Tesla.post(@client, @api_url, body) do
+      {:ok, res} ->
+        handle_response(res)
 
-      request = [
-        q: parsed_topic,
-        t: 1,
-        # Index
-        i: req_page,
-        n: limit,
-        fd: 0,
-        td: 0,
-        #  Coincidence ratio
-        w: 80,
-        #  Order by date = 1, order by coincidence = 0
-        s: 1,
-        no_acd: 1,
-        b_avanzada: "elmundoes"
-      ]
-
-      url =
-        Tesla.build_url(@api_url, request)
-
-      case Tesla.get(@client, url) do
-        {:ok, res} ->
-          handle_response(res)
-
-        {:error, err} ->
-          {:error, err}
-      end
-    rescue
-      err -> {:error, err}
+      {:error, err} ->
+        {:error, err}
     end
   end
 
   defp handle_response(res) do
     case res.status do
-      200 -> {:ok, transform_body_into_html(res.body)}
+      200 -> {:ok, res.body}
       _ -> {:error, res.body}
     end
-  end
-
-  # Response comes in binary, so we transform it into a string
-  @spec transform_body_into_html(body :: binary()) :: String.t()
-  defp transform_body_into_html(body) do
-    body
-    |> :binary.bin_to_list()
-    |> List.to_string()
-    |> String.replace(~r/\n/, "")
   end
 
   # -----------------------------------------------------------------------------------
@@ -134,7 +119,8 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
          else: (error -> error)
   end
 
-  # Auxiliar function for parsing search results
+  # -----------------------------------------------------------------------------------
+
   @spec parse_search_results_html(html :: ScraperParser.html_tree()) ::
           [
             ArticleSummary.t()
@@ -143,50 +129,32 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
   defp parse_search_results_html(html) do
     try do
       Floki.traverse_and_update(html, fn
-        {"div", _attrs, children} ->
-          children
-
         {"ul", _attrs, children} ->
           children
 
-        {"li", _attrs, []} ->
+        {:comment, _comment_data} ->
           nil
 
-        {"li", _attrs, [{:date, date_str} | t]} ->
-          [{:date, date_str} | t]
+        {"li", _attrs, children} ->
+          children
 
-        {"li", [], children} ->
+        {"header", _attrs, children} ->
+          children
+
+        {"h1", [{"itemprop", "headline name"}], children} ->
+          children
+
+        {"a", [_itemprop, {"href", raw_url}], children} ->
+          [{:url, build_url(raw_url)}, {:title, ParsingUtils.transform_text_children(children)}]
+
+        {"p", [{"itemprop", "alternativeHeadline description"}], [h | _t]} ->
+          {:excerpt, Enum.join([ParsingUtils.transform_text_children(h), "..."])}
+
+        {"time", [{"pubdate", _art_date} | _t], _children} ->
+          nil
+
+        {"article", [_itemtype, _itemscope, {"class", "hentry "}], children} ->
           {:art_summ, children}
-
-        {"h3", _attrs, children} ->
-          children
-
-        {"a", [{"href", url}], children} ->
-          [{:url, url}, {:title, ParsingUtils.transform_text_children(children)}]
-
-        {"p", [], children} ->
-          {:excerpt, ParsingUtils.transform_text_children(children)}
-
-        {"p", _attrs, _children} ->
-          nil
-
-        {"span", [{"class", "fecha"}], [_date]} ->
-          nil
-
-        {"span", [{"class", "firma"}], children} ->
-          children
-
-        {"strong", [{"class", "autor"}], [_author_name]} ->
-          nil
-
-        {"strong", [], [children]} ->
-          children
-
-        {"strong", _attrs, _children} ->
-          nil
-
-        {:comment, _comment} ->
-          nil
 
         other ->
           other
@@ -196,6 +164,12 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
       _e ->
         {:error, "parsing error"}
     end
+  end
+
+  # Article URLs come incomplete
+  @spec build_url(raw_url :: String.t()) :: String.t()
+  defp build_url(raw_url) do
+    Enum.join([@base_url, raw_url])
   end
 
   # A function for building the Article Summary list
@@ -237,10 +211,10 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
          {:ok, html} <- Floki.parse_document(html_doc) do
       contents =
         %{}
-        |> ParsingUtils.parse(:parse_art_authors, html, ElMundoScraper)
-        |> ParsingUtils.parse(:parse_art_date, html, ElMundoScraper)
+        |> ParsingUtils.parse(:parse_art_authors, html, LaVozDeGaliciaScraper)
+        |> ParsingUtils.parse(:parse_art_date, html, LaVozDeGaliciaScraper)
 
-      Map.put(contents, :is_premium, ParsingUtils.check_premium(html, ElMundoScraper))
+      Map.put(contents, :is_premium, ParsingUtils.check_premium(html, LaVozDeGaliciaScraper))
     else
       {:error, e} -> {:error, e}
       e -> {:error, e}
@@ -260,43 +234,35 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
     end
   end
 
-  # -----------------------------------------------------------------------------------
-
-  @impl Scraper
-  def parse_article(html_doc, url) do
-    ScraperCommImpl.comm_parse_article(html_doc, url, ElMundoScraper)
+  @spec transform_body_into_html(body :: binary()) :: String.t()
+  defp transform_body_into_html(body) do
+    body
+    |> :binary.bin_to_list()
+    |> List.to_string()
   end
 
   # -----------------------------------------------------------------------------------
 
-  @spec find_and_parse_text(
-          html :: Floki.html_tree(),
-          selectors :: list(Floki.css_selector())
-        ) :: content :: String.t()
-  defp find_and_parse_text(html, selectors) do
-    case ParsingUtils.find_element(html, selectors) do
-      {:error, _e} -> nil
-      {:ok, found_html} -> ParsingUtils.transform_text_children(found_html)
-    end
+  @impl Scraper
+  def parse_article(html_doc, url) do
+    ScraperCommImpl.comm_parse_article(html_doc, url, LaVozDeGaliciaScraper)
   end
 
   # -----------------------------------------------------------------------------------
 
   @impl ScraperParser
   def parse_art_header(parsed_art, html) do
-    parsed_header =
-      [
-        {:headline, find_and_parse_text(html, [".ue-c-article__headline"])},
-        {:subheadline,
-         find_and_parse_text(html, [
-           ".ue-c-article__standfirst",
-           ".ue-c-article__card-body"
-         ])}
-      ]
+    parsed_title =
+      Floki.find(html, ".headline.mg-b-2")
+      |> ParsingUtils.transform_text_children()
+
+    parsed_subtitle =
+      Floki.find(html, ".subtitle.t-bld")
+      |> ParsingUtils.transform_text_children()
 
     parsed_art
-    |> Map.put(:headline, parsed_header[:headline])
-    |> Map.put(:subheadline, parsed_header[:subheadline])
+    |> Map.put(:headline, parsed_title)
+    |> Map.put(:subheadline, parsed_subtitle)
   end
 
   # -----------------------------------------------------------------------------------
@@ -305,48 +271,60 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
   def parse_art_authors(parsed_art, html) do
     parsed_authors =
       Floki.traverse_and_update(html, fn
-        {"div", _attrs, [h | t]} ->
-          if is_binary(h) do
-            build_no_url_author(h)
-          else
-            [h | t]
-          end
+        {"div", _attrs, children} ->
+          children
 
-        {"a", attrs, children} ->
-          transformed_attrs = ParsingUtils.transform_attributes(attrs)
-          url = transformed_attrs["href"]
-
-          name =
-            ParsingUtils.transform_text_children(children)
-            |> ParsingUtils.normalize_name()
-
-          %Author{
-            name: name,
-            url: url
-          }
-
-        {"span", _attrs, _children} ->
+        {"figure", _attrs, _children} ->
           nil
 
+        {"span", [{"class", "flex"}], children} ->
+          children
+
+        {"span", [{"class", class}], children} ->
+          case String.contains?(class, "author") do
+            true ->
+              build_authors(children)
+
+            false ->
+              nil
+          end
+
         other ->
-          build_no_url_author(other)
+          other
       end)
 
     Map.put(parsed_art, :authors, parsed_authors)
   end
 
-  defp build_no_url_author(auth_name) do
-    %Author{
-      name: ParsingUtils.normalize_name(auth_name),
-      url: nil
-    }
+  defp build_authors(children) do
+    Enum.map(children, fn
+      {"a", [{"href", raw_url}], children} ->
+        %Author{
+          name: ParsingUtils.transform_text_children(children) |> String.capitalize(),
+          url: build_url(raw_url)
+        }
+
+      other when is_binary(other) ->
+        %Author{
+          name: ParsingUtils.transform_text_children(children) |> String.capitalize(),
+          url: nil
+        }
+    end)
   end
 
   # -----------------------------------------------------------------------------------
-
   @impl ScraperParser
   def parse_art_date(parsed_art, html) do
-    ScraperCommImpl.comm_parse_art_date(parsed_art, html)
+    parsed_date_time =
+      Floki.traverse_and_update(html, fn
+        {"meta", [{"property", "article:published_time"}, {"content", date_time}], _children} ->
+          {:date_time, date_time}
+
+        _other ->
+          nil
+      end)
+
+    Map.put(parsed_art, :date_time, parsed_date_time[:date_time])
   end
 
   # -----------------------------------------------------------------------------------
@@ -357,15 +335,6 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
       Floki.traverse_and_update(html, fn
         {"div", _attrs, children} ->
           children
-
-        {"dl", _attrs, children} ->
-          children
-
-        {"dt", _attrs, children} ->
-          %{p: ParsingUtils.transform_text_children(children)}
-
-        {"dd", _attrs, children} ->
-          %{p: ParsingUtils.transform_text_children(children)}
 
         {"h2", _attrs, children} ->
           %{h2: ParsingUtils.transform_text_children(children)}
@@ -394,24 +363,7 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
         _other ->
           nil
       end)
-      |> filter_body_content()
 
     Map.put(parsed_art, :body, parsed_body)
-  end
-
-  # Filters unwanted content out from the parsed body
-  @spec filter_body_content(body :: list()) :: list()
-  defp filter_body_content(body) do
-    Enum.filter(body, fn
-      content when is_map(content) ->
-        case Map.values(content) do
-          [""] -> false
-          [nil] -> false
-          _other -> true
-        end
-
-      text ->
-        not is_binary(text)
-    end)
   end
 end

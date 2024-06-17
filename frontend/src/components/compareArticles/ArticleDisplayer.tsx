@@ -60,7 +60,11 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
     const currSelection = useAppSelector(state => selectCurrSelection(state))
     const lastTopic = useAppSelector(state => selectTopic(state))
     const dispatch = useAppDispatch()
-    const [getArticle, { isLoading }] = scraperApi.endpoints.getArticle.useLazyQuery({})
+    const [getArticle] = scraperApi.endpoints.getArticle.useLazyQuery({})
+    const [isLoadingArticle, setIsLoadingArticle] = useState<ArticleLoading[]>([
+        { index: 0, isLoading: false },
+        { index: 1, isLoading: true },
+    ])
     const [compareStatus, setCompareStatus] = useState<string>('')
     const [articlesCache, setArticlesCache] = useState<Article[]>([])
     const [articlesToCompare, setArticlesToCompare] = useState<ArticleToCompare[]>([])
@@ -73,6 +77,10 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
     interface ArticleToCompare {
         article: Article
         index: number
+    }
+    interface ArticleLoading {
+        index: number
+        isLoading: boolean
     }
 
     // Checks if it's in store
@@ -122,6 +130,19 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
         })
     }
 
+    const updateIsLoadingArticle = (currSelection: compareSelection, state: boolean): void => {
+        setIsLoadingArticle(
+            isLoadingArticle.map(article => {
+                if (article.index === currSelection.index)
+                    return {
+                        ...article,
+                        isLoading: state,
+                    }
+                return article
+            })
+        )
+    }
+
     const handleArticleSelection = (): void => {
         setHasErrorUrl(false)
         // setCurrSimilarity(-1)
@@ -134,9 +155,10 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                     article: cacheResult,
                     index: currSelection.index,
                 })
+
                 return
             }
-
+            updateIsLoadingArticle(currSelection, true)
             // If not in cache, make the request
             const url = encodeURIComponent(currSelection.articleSummary.url)
             getArticle({ url }, false)
@@ -148,12 +170,15 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                             article: value.data as Article,
                             index: currSelection.index,
                         })
+                        updateIsLoadingArticle(currSelection, false)
                     } else {
                         setHasErrorUrl(true)
+                        updateIsLoadingArticle(currSelection, false)
                     }
                 })
                 .catch(e => {
                     console.log(e)
+                    updateIsLoadingArticle(currSelection, false)
                 })
         }
     }
@@ -244,7 +269,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                 onRefetch={handleArticleSelection}
                 onRemove={handleRemove}
             />
-            <VStack maxW='90%' minW='80%' mt='1rem'>
+            <VStack maxW='90%' minW='90%' mt='1rem'>
                 <Flex width='100%' mb='2.5rem' h='0.5rem'>
                     <BackButton route={`/search_results/${lastTopic}`} />
                 </Flex>
@@ -335,7 +360,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                                                 {t('select-article')}
                                             </Button>
                                         </VStack>
-                                    ) : isLoading ? (
+                                    ) : isLoadingArticle[index].isLoading ? (
                                         <Flex align='center' justify='center' h='40vh'>
                                             <Spinner size='xl' />
                                         </Flex>

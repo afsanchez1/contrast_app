@@ -162,22 +162,30 @@ defmodule NewspaperScraper.Core.ElPaisScraper do
           ArticleSummary.t()
         ]
   defp build_article_summs(raw_art_summs) do
-    Enum.map(raw_art_summs, fn {:art_summ, contents} ->
-      contents_map =
-        Map.new(contents)
+    raw_art_summs = Enum.take(raw_art_summs, 6)
 
-      url = contents_map[:url]
+    tasks =
+      Enum.map(raw_art_summs, fn
+        {:art_summ, contents} ->
+          Task.async(fn ->
+            contents_map =
+              Map.new(contents)
 
-      %ArticleSummary{
-        newspaper: get_newspaper_name(),
-        authors: contents_map[:authors],
-        title: contents_map[:title],
-        excerpt: contents_map[:excerpt],
-        date_time: contents_map[:date_time],
-        url: url,
-        is_premium: ParsingUtils.search_check_premium(url, ElPaisScraper)
-      }
-    end)
+            url = contents_map[:url]
+
+            %ArticleSummary{
+              newspaper: get_newspaper_name(),
+              authors: contents_map[:authors],
+              title: contents_map[:title],
+              excerpt: contents_map[:excerpt],
+              date_time: contents_map[:date_time],
+              url: url,
+              is_premium: ParsingUtils.search_check_premium(url, ElPaisScraper)
+            }
+          end)
+      end)
+
+    Task.await_many(tasks, 20_000)
   end
 
   # ===================================================================================

@@ -23,6 +23,7 @@ import { type SearchArticlesErrorResult } from '../../types/scraper/searchArticl
 function getNewspaperName(scraperName: string): string {
     if (scraperName === 'el-pais') return 'El País'
     else if (scraperName === 'el-mundo') return 'El Mundo'
+    else if (scraperName === 'la-voz-de-galicia') return 'La Voz De Galicia'
     return 'Unknown newspaper'
 }
 

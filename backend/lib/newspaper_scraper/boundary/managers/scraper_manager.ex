@@ -9,7 +9,7 @@ defmodule NewspaperScraper.Boundary.ScraperManager do
 
   require Logger
 
-  @timeout 60_000
+  @timeout 25_000
 
   # ===================================================================================
 
