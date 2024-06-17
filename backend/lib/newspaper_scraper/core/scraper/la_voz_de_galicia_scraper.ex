@@ -150,8 +150,8 @@ defmodule NewspaperScraper.Core.LaVozDeGaliciaScraper do
         {"p", [{"itemprop", "alternativeHeadline description"}], [h | _t]} ->
           {:excerpt, Enum.join([ParsingUtils.transform_text_children(h), "..."])}
 
-        {"time", [{"pubdate", art_date} | _t], _children} ->
-          {:date_time, build_date_time(art_date)}
+        {"time", [{"pubdate", _art_date} | _t], _children} ->
+          nil
 
         {"article", [_itemtype, _itemscope, {"class", "hentry "}], children} ->
           {:art_summ, children}
@@ -164,41 +164,6 @@ defmodule NewspaperScraper.Core.LaVozDeGaliciaScraper do
       _e ->
         {:error, "parsing error"}
     end
-  end
-
-  # Used to parse the articles datetime
-  @spec build_date_time(date_str :: String.t()) :: iso_str :: String.t()
-  defp build_date_time(date_str) do
-    [day, _, raw_month, _, raw_year] =
-      String.trim(date_str)
-      |> String.split()
-
-    year =
-      String.split(raw_year, ".")
-      |> List.first()
-
-    spanish_month_map = %{
-      "enero" => "01",
-      "febrero" => "02",
-      "marzo" => "03",
-      "abril" => "04",
-      "mayo" => "05",
-      "junio" => "06",
-      "julio" => "07",
-      "agosto" => "08",
-      "septiembre" => "09",
-      "octubre" => "10",
-      "noviembre" => "11",
-      "diciembre" => "12"
-    }
-
-    month = spanish_month_map[String.downcase(raw_month)]
-
-    utc_date = Enum.join([year, "-", month, "-", day])
-    {:ok, dt} = Date.from_iso8601(utc_date)
-    iso_dt = DateTime.new!(dt, ~T[00:00:00], "Etc/UTC")
-
-    DateTime.to_iso8601(iso_dt)
   end
 
   # Article URLs come incomplete
@@ -229,7 +194,7 @@ defmodule NewspaperScraper.Core.LaVozDeGaliciaScraper do
               authors: art_contents_map[:authors],
               title: contents_map[:title],
               excerpt: contents_map[:excerpt],
-              date_time: contents_map[:date_time],
+              date_time: art_contents_map[:date_time],
               url: url,
               is_premium: art_contents_map[:is_premium]
             }
@@ -247,6 +212,7 @@ defmodule NewspaperScraper.Core.LaVozDeGaliciaScraper do
       contents =
         %{}
         |> ParsingUtils.parse(:parse_art_authors, html, LaVozDeGaliciaScraper)
+        |> ParsingUtils.parse(:parse_art_date, html, LaVozDeGaliciaScraper)
 
       Map.put(contents, :is_premium, ParsingUtils.check_premium(html, LaVozDeGaliciaScraper))
     else
