@@ -30,5 +30,6 @@
     "similarity": "Similarity",
     "not-enough-articles": "There are not enough articles selected",
     "comparison-error": "An error ocurred while comparing. Try again later",
-    "change-display": "Change visualization"
+    "detail-view": "Detailed view",
+    "comparison-view": "Comparison view"
 }

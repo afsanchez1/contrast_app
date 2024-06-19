@@ -51,12 +51,8 @@ export const articleSlice = createSlice({
             state.compareSelections = []
             state.currSelectorIndex = 0
         },
-        updateLayout(state) {
-            if (state.layout === 1) {
-                state.layout = 2
-            } else if (state.layout === 2) {
-                state.layout = 1
-            }
+        updateLayout(state, action: PayloadAction<number>) {
+            state.layout = action.payload
         },
     },
 })

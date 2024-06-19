@@ -18,9 +18,8 @@ import {
     Alert,
     AlertIcon,
     AlertDescription,
+    Select,
 } from '@chakra-ui/react'
-import { FaRegSquare } from 'react-icons/fa'
-import { BsLayoutSplit } from 'react-icons/bs'
 import { useState, type FC, useEffect } from 'react'
 import {
     ArticleSelector,
@@ -241,8 +240,10 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
             })
     }
 
-    const changeLayout = (): void => {
-        dispatch(updateLayout())
+    const handleSelectChange = (event: React.FormEvent<HTMLSelectElement>): void => {
+        const selectedValue = event.currentTarget.value
+        if (selectedValue === '') return
+        dispatch(updateLayout(parseInt(selectedValue)))
     }
 
     // For cleaning comparison selections
@@ -293,12 +294,21 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                     h='4rem'
                     border={colorMode === 'light' ? '1px' : 'hidden'}
                 >
-                    <Button ml={'2rem'} onClick={changeLayout}>
-                        <HStack spacing='0.5rem' justifyItems={'center'}>
-                            <Text>{t('change-display')}</Text>
-                            {layout === 1 ? <FaRegSquare /> : <BsLayoutSplit />}
-                        </HStack>
-                    </Button>
+                    <Select
+                        w='14rem'
+                        bgColor={colorMode === 'light' ? 'gray.100' : 'whiteAlpha.200'}
+                        color={colorMode === 'light' ? 'black' : 'white'}
+                        placeholder='Cambiar visualización'
+                        ml={'2rem'}
+                        onChange={handleSelectChange}
+                    >
+                        <option value={1}>
+                            <Text>{t('detail-view')}</Text>
+                        </option>
+                        <option value={2}>
+                            <Text>{t('comparison-view')}</Text>
+                        </option>
+                    </Select>
                     <Spacer />
 
                     <Button
