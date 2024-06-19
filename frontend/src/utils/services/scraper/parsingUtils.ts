@@ -4,5 +4,5 @@
  * @returns {string}
  */
 export function parseDateTime(dateTime: string): string {
-    return new Date(dateTime).toLocaleString()
+    return new Date(dateTime).toLocaleString('es')
 }

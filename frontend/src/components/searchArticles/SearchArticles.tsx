@@ -55,6 +55,7 @@ export const SearchArticles: FC = () => {
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
         event.preventDefault()
+        sethasSearchError(false)
 
         // If the topic is empty set errors and do nothing
         if (topic.trim() === '') {

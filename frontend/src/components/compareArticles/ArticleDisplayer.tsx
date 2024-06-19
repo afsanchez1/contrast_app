@@ -217,7 +217,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                             setCompareStatus('completed')
                             const data = json as successCompareResult
                             console.log(data)
-                            const similarity = data.similarity * 100
+                            const similarity = data.similarity * 100.0
                             setCurrSimilarity(similarity)
                         })
                         .catch(error => {
@@ -381,7 +381,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                         )
                     })}
                 </SimpleGrid>
-                <Flex width='100%' justifyContent='center'>
+                <Flex mt={{ base: '1rem', md: '1.2rem' }} width='100%' justifyContent='center'>
                     {compareStatus === 'loading' ? (
                         <Spinner size='xl' />
                     ) : currSimilarity >= 0 ? (
@@ -389,7 +389,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                             <Text fontSize='2rem' fontWeight='bold'>
                                 {t('similarity') + ': '}
                             </Text>
-                            <Text fontSize='2rem'>{currSimilarity.toString() + '%'}</Text>
+                            <Text fontSize='2rem'>{currSimilarity.toFixed(2) + '%'}</Text>
                         </HStack>
                     ) : null}
                 </Flex>

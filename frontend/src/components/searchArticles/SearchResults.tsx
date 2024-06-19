@@ -26,7 +26,13 @@ import {
     type SearchArticlesSuccessResult,
     type ArticleSummary,
 } from '../../types'
-import { ChevronDownIcon, ExternalLinkIcon, AddIcon, CloseIcon } from '@chakra-ui/icons'
+import {
+    ChevronDownIcon,
+    ExternalLinkIcon,
+    AddIcon,
+    CloseIcon,
+    NotAllowedIcon,
+} from '@chakra-ui/icons'
 import { useTranslation } from 'react-i18next'
 import { getError, parseDateTime } from '../../utils'
 import { ErrorPanel } from './ErrorPanel'
@@ -165,7 +171,7 @@ export const SearchResults: FC = () => {
                         </Text>
                     </Flex>
                     <ScraperErrorAlert scraperErrors={scraperErrors} />
-                    <SimpleGrid columns={{ sm: 1, lg: 2 }} spacing='2rem'>
+                    <SimpleGrid columns={{ sm: 1, md: 2, lg: 2, xl: 3 }} spacing='2rem'>
                         {articleSumms.map(articleResult => {
                             return articleResult.results.map((articleSumm, index) => {
                                 return (
@@ -181,7 +187,17 @@ export const SearchResults: FC = () => {
                                         <CardHeader>
                                             <Link href={articleSumm.url} isExternal={true}>
                                                 <HStack spacing='0.5rem'>
-                                                    <Heading as='h1'>{articleSumm.title}</Heading>
+                                                    <Heading
+                                                        as='h1'
+                                                        fontSize={{
+                                                            base: '1.5rem',
+                                                            sm: '1.5rem',
+                                                            md: '1.5rem',
+                                                            lg: '2rem',
+                                                        }}
+                                                    >
+                                                        {articleSumm.title}
+                                                    </Heading>
                                                     <ExternalLinkIcon />
                                                 </HStack>
                                             </Link>
@@ -190,8 +206,8 @@ export const SearchResults: FC = () => {
                                             <Text
                                                 fontSize={{
                                                     sm: '1.25rem',
-                                                    md: '1.5rem',
-                                                    lg: '1.55rem',
+                                                    md: '1.25rem',
+                                                    lg: '1.25rem',
                                                 }}
                                             >
                                                 {articleSumm.excerpt}
@@ -243,7 +259,9 @@ export const SearchResults: FC = () => {
                                                 border={colorMode === 'light' ? '1px' : 'hidden'}
                                                 borderColor='gray.300'
                                             >
-                                                {existsArtSumm(articleSumm) ? (
+                                                {articleSumm.is_premium ? (
+                                                    <NotAllowedIcon />
+                                                ) : existsArtSumm(articleSumm) ? (
                                                     <CloseIcon />
                                                 ) : (
                                                     <AddIcon />
