@@ -1,7 +1,7 @@
 import { Grid, GridItem, useBreakpoint } from '@chakra-ui/react'
 import type { FC } from 'react'
 import { Outlet } from 'react-router-dom'
-import { NavBar, Footer } from '../components'
+import { NavBar, Footer, BackButton } from '../components'
 
 /**
  * Results is a custom React component for creating the search result displaying layout of the app
@@ -26,6 +26,9 @@ export const Results: FC = () => {
                         hasSideBarButton={true}
                         hasSelectedArticlesButton={true}
                     />
+                </GridItem>
+                <GridItem rowSpan={1} ml='1.5rem' mt='1rem'>
+                    <BackButton route={'/'} />
                 </GridItem>
 
                 {/* Main Content */}

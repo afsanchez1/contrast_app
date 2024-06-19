@@ -29,5 +29,6 @@
     "select-articles-to-compare-tooltip": "Selecciona dos artículos para calcular su similitud",
     "similarity": "Similitud",
     "not-enough-articles": "No hay suficientes artículos seleccionados",
-    "comparison-error": "Ha ocurrido un error al comparar. Inténtalo de nuevo más tarde"
+    "comparison-error": "Ha ocurrido un error al comparar. Inténtalo de nuevo más tarde",
+    "change-display": "Cambiar visualización"
 }

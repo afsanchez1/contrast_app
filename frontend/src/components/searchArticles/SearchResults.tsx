@@ -39,7 +39,7 @@ import { ErrorPanel } from './ErrorPanel'
 import { ScraperErrorAlert } from './ScraperErrorAlert'
 import { addToCart, removeFromCart, selectCartItems } from '../articleCart'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { BackButton, clearCompare } from '..'
+import { clearCompare } from '..'
 
 /**
  * SearchResults is a custom React component for displaying search results
@@ -143,13 +143,7 @@ export const SearchResults: FC = () => {
     }, [page])
 
     return (
-        <VStack ml='2rem' mr='2rem' mt='1.25rem' mb='1rem' spacing='1.75rem'>
-            {isLoading || errorMessage.length > 0 ? null : (
-                <Flex width='100%' mb='0.75rem' h='0.5rem'>
-                    <BackButton route='/' />
-                </Flex>
-            )}
-
+        <VStack ml='2rem' mr='2rem' mt='0.5rem' mb='1rem' spacing='1.75rem'>
             {isLoading ? (
                 <Spinner data-testid='search-results-spinner' size='xl' />
             ) : errorMessage.length > 0 ? (

@@ -19,6 +19,8 @@ import {
     AlertIcon,
     AlertDescription,
 } from '@chakra-ui/react'
+import { FaRegSquare } from 'react-icons/fa'
+import { BsLayoutSplit } from 'react-icons/bs'
 import { useState, type FC, useEffect } from 'react'
 import {
     ArticleSelector,
@@ -29,6 +31,7 @@ import {
     ArticleBuilder,
     selectCurrSelection,
     clearCompare,
+    updateLayout,
 } from '.'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { useTranslation } from 'react-i18next'
@@ -73,6 +76,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
     const [currSimilarity, setCurrSimilarity] = useState<number>(-1)
     const [hasSimilarityError, setHasSimilarityError] = useState<boolean>(false)
     const token = process.env.COMPARE_API_TOKEN ?? ''
+    const layout = useAppSelector(state => state.compare.layout)
 
     interface ArticleToCompare {
         article: Article
@@ -237,6 +241,10 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
             })
     }
 
+    const changeLayout = (): void => {
+        dispatch(updateLayout())
+    }
+
     // For cleaning comparison selections
     useEffect(() => {
         dispatch(clearCompare())
@@ -285,7 +293,14 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                     h='4rem'
                     border={colorMode === 'light' ? '1px' : 'hidden'}
                 >
-                    <Spacer ml={{ sm: '10 rem', md: '15rem' }} />
+                    <Button ml={'2rem'} onClick={changeLayout}>
+                        <HStack spacing='0.5rem' justifyItems={'center'}>
+                            <Text>{t('change-display')}</Text>
+                            {layout === 1 ? <FaRegSquare /> : <BsLayoutSplit />}
+                        </HStack>
+                    </Button>
+                    <Spacer />
+
                     <Button
                         onClick={handleSwitchCompare}
                         isDisabled={articlesToCompare.length !== 2}
@@ -314,7 +329,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                         </Button>
                     </Tooltip>
                 </Flex>
-                <SimpleGrid width='100%' columns={{ base: 1, md: 2 }} spacing='1rem'>
+                <SimpleGrid width='100%' columns={layout} spacing='1rem'>
                     {compareIndexes.map(index => {
                         return (
                             <Card

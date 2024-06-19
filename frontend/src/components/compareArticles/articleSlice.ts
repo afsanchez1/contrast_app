@@ -11,12 +11,14 @@ interface articleSliceState {
     compareSelections: compareSelection[]
     currSelection: compareSelection | null
     currSelectorIndex: number
+    layout: number
 }
 
 const initialState: articleSliceState = {
     compareSelections: [],
     currSelection: null,
     currSelectorIndex: 0,
+    layout: 2,
 }
 
 export const articleSlice = createSlice({
@@ -49,6 +51,13 @@ export const articleSlice = createSlice({
             state.compareSelections = []
             state.currSelectorIndex = 0
         },
+        updateLayout(state) {
+            if (state.layout === 1) {
+                state.layout = 2
+            } else if (state.layout === 2) {
+                state.layout = 1
+            }
+        },
     },
 })
 
@@ -59,5 +68,5 @@ export const selectCompareArticles = (state: RootState): compareSelection[] => {
 export const selectCurrSelection = (state: RootState): compareSelection | null =>
     state.compare.currSelection
 
-export const { addToCompare, removeFromCompare, setCurrSelector, clearCompare } =
+export const { addToCompare, removeFromCompare, setCurrSelector, clearCompare, updateLayout } =
     articleSlice.actions
