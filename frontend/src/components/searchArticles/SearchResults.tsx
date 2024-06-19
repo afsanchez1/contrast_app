@@ -15,6 +15,7 @@ import {
     VStack,
     useColorMode,
     Tooltip,
+    Checkbox,
 } from '@chakra-ui/react'
 import { type FC, useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
@@ -55,6 +56,7 @@ export const SearchResults: FC = () => {
     const [page, setPage] = useState<number>(0)
     const [scraperErrors, setScraperErrors] = useState<SearchArticlesErrorResult[]>([])
     const [errorMessage, setErrorMessage] = useState<string>('')
+    const [showPremium, setShowPremium] = useState<boolean>(true)
     const { t } = useTranslation()
     const { colorMode } = useColorMode()
 
@@ -164,10 +166,21 @@ export const SearchResults: FC = () => {
                             {topic}
                         </Text>
                     </Flex>
+                    <Checkbox
+                        defaultChecked
+                        onChange={e => {
+                            setShowPremium(e.target.checked)
+                        }}
+                    >
+                        {t('show-premium')}
+                    </Checkbox>
                     <ScraperErrorAlert scraperErrors={scraperErrors} />
                     <SimpleGrid columns={{ sm: 1, md: 2, lg: 2, xl: 3 }} spacing='2rem'>
                         {articleSumms.map(articleResult => {
                             return articleResult.results.map((articleSumm, index) => {
+                                if (articleSumm.is_premium && !showPremium) {
+                                    return null
+                                }
                                 return (
                                     <Card
                                         key={index}
@@ -187,7 +200,7 @@ export const SearchResults: FC = () => {
                                                             base: '1.5rem',
                                                             sm: '1.5rem',
                                                             md: '1.5rem',
-                                                            lg: '2rem',
+                                                            lg: '1.75rem',
                                                         }}
                                                     >
                                                         {articleSumm.title}

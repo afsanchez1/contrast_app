@@ -22,7 +22,7 @@
     "no-article-selected-yet": "No article selected yet...",
     "switch-articles": "Switch articles",
     "clear-all": "Clear all",
-    "is-premium-info": "This article can not be selected because it is premium",
+    "is-premium-info": "This article is premium, it can not be selected",
     "get-article-error": "Something went wrong with this article",
     "remove-this-article": "Remove article",
     "calculate-similarity": "Check similarity",
@@ -31,5 +31,6 @@
     "not-enough-articles": "There are not enough articles selected",
     "comparison-error": "An error ocurred while comparing. Try again later",
     "detail-view": "Detailed view",
-    "comparison-view": "Comparison view"
+    "comparison-view": "Comparison view",
+    "show-premium": "Show premium articles?"
 }

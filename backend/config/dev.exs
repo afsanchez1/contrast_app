@@ -12,7 +12,7 @@ config :newspaper_scraper,
   la_voz_de_galicia_base_url: "https://www.lavozdegalicia.es",
   la_voz_de_galicia_api_url: "/buscador/q/",
   scrapers: [
-    ElMundoScraper,
     ElPaisScraper,
+    ElMundoScraper,
     LaVozDeGaliciaScraper
   ]

@@ -1,7 +1,8 @@
 import { Grid, GridItem, useBreakpoint } from '@chakra-ui/react'
 import type { FC } from 'react'
 import { Outlet } from 'react-router-dom'
-import { NavBar, Footer } from '../components'
+import { NavBar, Footer, BackButton } from '../components'
+import { useAppSelector } from '../app/hooks'
 
 /**
  * Compare is a custom React component for creating the article comparing layout of the app
@@ -10,17 +11,13 @@ import { NavBar, Footer } from '../components'
 export const Compare: FC = () => {
     const breakpoint = useBreakpoint('sm')
     const hasLogo = !(breakpoint === 'base' || breakpoint === 'sm' || breakpoint === 'md')
+    const lastTopic = useAppSelector(state => state.search.lastTopic)
 
     return (
         <>
-            <Grid
-                templateColumns='1fr'
-                templateRows='repeat(auto-fill, 1fr)'
-                height='100vh'
-                alignItems='center'
-            >
+            <Grid templateRows='8vh 8vh 80vh 10vh'>
                 {/* NavBar */}
-                <GridItem rowSpan={1} mb='3rem'>
+                <GridItem>
                     <NavBar
                         hasLogo={hasLogo}
                         hasSideBarButton={true}
@@ -28,13 +25,17 @@ export const Compare: FC = () => {
                     />
                 </GridItem>
 
+                <GridItem ml='4rem'>
+                    <BackButton route={`/search_results/${lastTopic}`} />
+                </GridItem>
+
                 {/* Main Content */}
-                <GridItem rowSpan={40}>
+                <GridItem>
                     <Outlet />
                 </GridItem>
 
                 {/* Footer */}
-                <GridItem rowSpan={1} textAlign='center'>
+                <GridItem textAlign='center'>
                     <Footer />
                 </GridItem>
             </Grid>
