@@ -92,18 +92,15 @@ export const SearchArticles: FC = () => {
         <Flex direction='column' align='center' justify='center' minWidth='20rem'>
             {/* Header */}
             <Box mb={{ base: '1.75rem', md: '2rem', lg: '3rem' }}>
-                <Logo fontSize={{ base: '2.5rem', md: '3rem', lg: '3.5rem' }} />
+                <Logo fontSize={{ base: '3.5rem' }} />
             </Box>
 
             {/* Search input section */}
             <Box as='section'>
                 <form onSubmit={handleSubmit}>
                     <FormControl isInvalid={hasEmptyError || hasSearchError}>
-                        <VStack
-                            alignItems='center'
-                            maxWidth={{ base: '15rem', md: '20rem', lg: '25rem' }}
-                        >
-                            <InputGroup size={{ base: 'sm', md: 'md', lg: 'lg' }}>
+                        <VStack alignItems='center' maxWidth={{ base: '25rem' }}>
+                            <InputGroup size={{ base: 'lg' }}>
                                 <InputLeftElement
                                     pointerEvents='none'
                                     alignContent='center'
@@ -130,7 +127,7 @@ export const SearchArticles: FC = () => {
                             </InputGroup>
                             {isLoading ? <Spinner data-testid='search-spinner' /> : null}
                             <SlideFade in={formError != null ? formError.length > 0 : false}>
-                                <FormErrorMessage size={{ base: 'sm', md: 'md', lg: 'lg' }}>
+                                <FormErrorMessage size={{ base: 'lg' }}>
                                     <Alert status='error' rounded='full'>
                                         <AlertIcon />
                                         <AlertDescription>{t(formError ?? '')}</AlertDescription>

@@ -302,11 +302,11 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                         ml={'2rem'}
                         onChange={handleSelectChange}
                     >
-                        <option value={1}>
-                            <Text>{t('detail-view')}</Text>
-                        </option>
                         <option value={2}>
                             <Text>{t('comparison-view')}</Text>
+                        </option>
+                        <option value={1}>
+                            <Text>{t('detail-view')}</Text>
                         </option>
                     </Select>
                     <Spacer />
