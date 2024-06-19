@@ -406,7 +406,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                         )
                     })}
                 </SimpleGrid>
-                <Flex mt={{ base: '1rem', md: '1.2rem' }} width='100%' justifyContent='center'>
+                <Flex width='100%' justifyContent='center'>
                     {compareStatus === 'loading' ? (
                         <Spinner size='xl' />
                     ) : currSimilarity >= 0 ? (

@@ -10,6 +10,7 @@ import {
     ModalHeader,
     ModalOverlay,
     Text,
+    useColorMode,
 } from '@chakra-ui/react'
 import { type FC } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -42,6 +43,7 @@ export const ArticleErrorModal: FC<ArticleErrorModalProps> = ({
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const currSelection = useAppSelector(state => selectCurrSelection(state))
+    const { colorMode } = useColorMode()
 
     const handleClose = (): void => {
         if (currSelection != null) {
@@ -86,13 +88,21 @@ export const ArticleErrorModal: FC<ArticleErrorModalProps> = ({
                 </ModalBody>
                 <ModalFooter justifyContent='center'>
                     <HStack spacing='1rem'>
-                        <Button onClick={handleRefetch}>
+                        <Button
+                            onClick={handleRefetch}
+                            border='1px'
+                            borderColor={colorMode === 'light' ? 'gray.300' : 'gray.900'}
+                        >
                             <HStack spacing='1rem'>
                                 <Text>{t('try-again')}</Text>
                                 <RepeatIcon />
                             </HStack>
                         </Button>
-                        <Button onClick={handleRemove}>
+                        <Button
+                            onClick={handleRemove}
+                            border='1px'
+                            borderColor={colorMode === 'light' ? 'gray.300' : 'gray.900'}
+                        >
                             <HStack spacing='1rem'>
                                 <Text>{t('remove-this-article')}</Text>
                                 <DeleteIcon />

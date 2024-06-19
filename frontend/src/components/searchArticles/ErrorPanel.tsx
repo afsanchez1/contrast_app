@@ -7,6 +7,7 @@ import {
     Button,
     HStack,
     VStack,
+    useColorMode,
 } from '@chakra-ui/react'
 import type { FC } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -34,6 +35,7 @@ export interface ErrorPanelProps {
 export const ErrorPanel: FC<ErrorPanelProps> = ({ errorMessage, refetchFunction }) => {
     const { t } = useTranslation()
     const navigate = useNavigate()
+    const { colorMode } = useColorMode()
 
     const handleNavigate = (): void => {
         navigate('/')
@@ -59,6 +61,8 @@ export const ErrorPanel: FC<ErrorPanelProps> = ({ errorMessage, refetchFunction 
                         data-testid='refetch-button'
                         leftIcon={<RepeatIcon />}
                         onClick={refetchFunction}
+                        border='1px'
+                        borderColor={colorMode === 'light' ? 'gray.300' : 'gray.900'}
                     >
                         {t('try-again')}
                     </Button>
@@ -66,6 +70,8 @@ export const ErrorPanel: FC<ErrorPanelProps> = ({ errorMessage, refetchFunction 
                         data-testid='search-another-topic-button'
                         leftIcon={<SearchIcon />}
                         onClick={handleNavigate}
+                        border='1px'
+                        borderColor={colorMode === 'light' ? 'gray.300' : 'gray.900'}
                     >
                         {t('search-another-topic')}
                     </Button>
