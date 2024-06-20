@@ -1,17 +1,18 @@
 @startuml system_context
 !include <C4/C4_Container>
 
-Person(User, "User", "Application user")
-System_Boundary(SysBound, "Newspaper scraper System") {
-  System(WebApp, "Newspaper scraper System", "Allows users to search topics, gathers news about them from different newspapers, and provides visualization and comparison features for its contents")
-
+Person(User, "Usuario", "Usuario de la aplicación")
+System_Boundary(SysBound, "Sistema") {
+  System(MyTool, "Herramienta de web scraping de prensa online","Permite a los usuarios hacer búsquedas por tema, recopila diferentes noticias de distintas fuentes sobre ellos y facilita la visualización del contenido y su comparación")
 }
-System(NewsWebApp1, "Newspaper Web Application 1", "A newspapper web application")
-System(NewsWebApp2, "Newspaper Web Application N", "A newspapper web application")
+System_Ext(NewsWebApp1, "Aplicación web de periódico 1", "Aplicación web de algún periódico")
+System_Ext(NewsWebApp2, "Aplicación web de periódico N", "Aplicación web de otro periódico")
+System_Ext(DandelionAPI, "API de comparación de similitud entre textos", "API de Dandelion de comparación semántica de textos")
 
-Rel(User, WebApp, "uses")
-Rel(WebApp, NewsWebApp1, "Gathers contents")
-Rel(WebApp, NewsWebApp2, "Gathers contents")
+Rel(User, MyTool, "utiliza")
+Rel(MyTool, NewsWebApp1, "Recopila contenidos")
+Rel(MyTool, NewsWebApp2, "Recopila contenidos")
+Rel(MyTool, DandelionAPI, "Envía textos para comparar")
 
 @enduml
 
