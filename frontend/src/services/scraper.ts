@@ -10,6 +10,7 @@ import {
 export const scraperApi = createApi({
     reducerPath: 'scraperApi',
     baseQuery: appFetchBaseQuery,
+    keepUnusedDataFor: 120000,
     endpoints: builder => ({
         searchArticles: builder.query<SearchResult, SearchArticlesQuery>({
             query: args => {

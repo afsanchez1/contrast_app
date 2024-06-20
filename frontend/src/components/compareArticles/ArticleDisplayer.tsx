@@ -18,6 +18,7 @@ import {
     Alert,
     AlertIcon,
     AlertDescription,
+    Select,
 } from '@chakra-ui/react'
 import { useState, type FC, useEffect } from 'react'
 import {
@@ -29,14 +30,13 @@ import {
     ArticleBuilder,
     selectCurrSelection,
     clearCompare,
+    updateLayout,
 } from '.'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { useTranslation } from 'react-i18next'
 import { CloseIcon, RepeatIcon } from '@chakra-ui/icons'
 import { scraperApi } from '../../services'
 import type { Article, ArticleSummary } from '../../types'
-import { BackButton } from '..'
-import { selectTopic } from '../searchArticles/searchSlice'
 import { ArticleErrorModal } from './ArticleErrorModal'
 import { type successCompareResult } from '../../types/compareArticles/compareResults'
 
@@ -58,7 +58,6 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
     const compareIndexes = new Array<number>(displayCount).fill(0).map((_, i) => i)
     const compareArticles = useAppSelector(state => selectCompareArticles(state))
     const currSelection = useAppSelector(state => selectCurrSelection(state))
-    const lastTopic = useAppSelector(state => selectTopic(state))
     const dispatch = useAppDispatch()
     const [getArticle] = scraperApi.endpoints.getArticle.useLazyQuery({})
     const [isLoadingArticle, setIsLoadingArticle] = useState<ArticleLoading[]>([
@@ -73,6 +72,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
     const [currSimilarity, setCurrSimilarity] = useState<number>(-1)
     const [hasSimilarityError, setHasSimilarityError] = useState<boolean>(false)
     const token = process.env.COMPARE_API_TOKEN ?? ''
+    const layout = useAppSelector(state => state.compare.layout)
 
     interface ArticleToCompare {
         article: Article
@@ -217,7 +217,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                             setCompareStatus('completed')
                             const data = json as successCompareResult
                             console.log(data)
-                            const similarity = data.similarity * 100
+                            const similarity = data.similarity * 100.0
                             setCurrSimilarity(similarity)
                         })
                         .catch(error => {
@@ -235,6 +235,12 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                 setCompareStatus('failed')
                 console.log(error)
             })
+    }
+
+    const handleSelectChange = (event: React.FormEvent<HTMLSelectElement>): void => {
+        const selectedValue = event.currentTarget.value
+        if (selectedValue === '') return
+        dispatch(updateLayout(parseInt(selectedValue)))
     }
 
     // For cleaning comparison selections
@@ -269,11 +275,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                 onRefetch={handleArticleSelection}
                 onRemove={handleRemove}
             />
-            <VStack maxW='90%' minW='90%' mt='1rem'>
-                <Flex width='100%' mb='2.5rem' h='0.5rem'>
-                    <BackButton route={`/search_results/${lastTopic}`} />
-                </Flex>
-
+            <VStack maxW='90%' minW='90%'>
                 <Flex
                     bgColor={colorMode === 'light' ? 'black' : 'blackAlpha.500'}
                     width='100%'
@@ -285,7 +287,23 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                     h='4rem'
                     border={colorMode === 'light' ? '1px' : 'hidden'}
                 >
-                    <Spacer ml={{ sm: '10 rem', md: '15rem' }} />
+                    <Select
+                        w='14rem'
+                        bgColor={colorMode === 'light' ? 'gray.100' : 'whiteAlpha.200'}
+                        color={colorMode === 'light' ? 'black' : 'white'}
+                        ml={'2rem'}
+                        onChange={handleSelectChange}
+                        value={layout}
+                    >
+                        <option value={2}>
+                            <Text>{t('comparison-view')}</Text>
+                        </option>
+                        <option value={1}>
+                            <Text>{t('detail-view')}</Text>
+                        </option>
+                    </Select>
+                    <Spacer />
+
                     <Button
                         onClick={handleSwitchCompare}
                         isDisabled={articlesToCompare.length !== 2}
@@ -314,7 +332,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                         </Button>
                     </Tooltip>
                 </Flex>
-                <SimpleGrid width='100%' columns={{ base: 1, md: 2 }} spacing='1rem'>
+                <SimpleGrid width='100%' columns={layout} spacing='1rem'>
                     {compareIndexes.map(index => {
                         return (
                             <Card
@@ -381,7 +399,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                         )
                     })}
                 </SimpleGrid>
-                <Flex width='100%' justifyContent='center'>
+                <Flex width='100%' justifyContent='center' mt='0.5rem'>
                     {compareStatus === 'loading' ? (
                         <Spinner size='xl' />
                     ) : currSimilarity >= 0 ? (
@@ -389,7 +407,7 @@ export const ArticleDisplayer: FC<ArticleDisplayerProps> = ({ displayCount }) =>
                             <Text fontSize='2rem' fontWeight='bold'>
                                 {t('similarity') + ': '}
                             </Text>
-                            <Text fontSize='2rem'>{currSimilarity.toString() + '%'}</Text>
+                            <Text fontSize='2rem'>{currSimilarity.toFixed(2) + '%'}</Text>
                         </HStack>
                     ) : null}
                 </Flex>

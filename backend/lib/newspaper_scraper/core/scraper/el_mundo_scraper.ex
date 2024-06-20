@@ -158,6 +158,9 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
         {"li", [], children} ->
           {:art_summ, children}
 
+        {"h2", _attrs, _children} ->
+          nil
+
         {"h3", _attrs, children} ->
           children
 
@@ -227,7 +230,12 @@ defmodule NewspaperScraper.Core.ElMundoScraper do
           end)
       end)
 
-    Task.await_many(tasks, 20_000)
+    res = Task.await_many(tasks, 20_000)
+
+    case res do
+      [] -> {:error, "not_found"}
+      _other -> res
+    end
   end
 
   # This function parses an article to gather info to improve search results, as the search HTML document

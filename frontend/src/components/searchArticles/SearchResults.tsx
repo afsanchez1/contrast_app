@@ -15,6 +15,7 @@ import {
     VStack,
     useColorMode,
     Tooltip,
+    Checkbox,
 } from '@chakra-ui/react'
 import { type FC, useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
@@ -26,14 +27,20 @@ import {
     type SearchArticlesSuccessResult,
     type ArticleSummary,
 } from '../../types'
-import { ChevronDownIcon, ExternalLinkIcon, AddIcon, CloseIcon } from '@chakra-ui/icons'
+import {
+    ChevronDownIcon,
+    ExternalLinkIcon,
+    AddIcon,
+    CloseIcon,
+    NotAllowedIcon,
+} from '@chakra-ui/icons'
 import { useTranslation } from 'react-i18next'
 import { getError, parseDateTime } from '../../utils'
 import { ErrorPanel } from './ErrorPanel'
 import { ScraperErrorAlert } from './ScraperErrorAlert'
 import { addToCart, removeFromCart, selectCartItems } from '../articleCart'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { BackButton, clearCompare } from '..'
+import { clearCompare } from '..'
 
 /**
  * SearchResults is a custom React component for displaying search results
@@ -49,6 +56,7 @@ export const SearchResults: FC = () => {
     const [page, setPage] = useState<number>(0)
     const [scraperErrors, setScraperErrors] = useState<SearchArticlesErrorResult[]>([])
     const [errorMessage, setErrorMessage] = useState<string>('')
+    const [showPremium, setShowPremium] = useState<boolean>(true)
     const { t } = useTranslation()
     const { colorMode } = useColorMode()
 
@@ -137,13 +145,7 @@ export const SearchResults: FC = () => {
     }, [page])
 
     return (
-        <VStack ml='2rem' mr='2rem' mt='1.25rem' mb='1rem' spacing='1.75rem'>
-            {isLoading || errorMessage.length > 0 ? null : (
-                <Flex width='100%' mb='0.75rem' h='0.5rem'>
-                    <BackButton route='/' />
-                </Flex>
-            )}
-
+        <VStack ml='2rem' mr='2rem' mt='0.5rem' mb='1rem' spacing='1.75rem'>
             {isLoading ? (
                 <Spinner data-testid='search-results-spinner' size='xl' />
             ) : errorMessage.length > 0 ? (
@@ -164,10 +166,21 @@ export const SearchResults: FC = () => {
                             {topic}
                         </Text>
                     </Flex>
+                    <Checkbox
+                        defaultChecked
+                        onChange={e => {
+                            setShowPremium(e.target.checked)
+                        }}
+                    >
+                        {t('show-premium')}
+                    </Checkbox>
                     <ScraperErrorAlert scraperErrors={scraperErrors} />
-                    <SimpleGrid columns={{ sm: 1, lg: 2 }} spacing='2rem'>
+                    <SimpleGrid columns={{ sm: 1, md: 2, lg: 2, xl: 3 }} spacing='2rem'>
                         {articleSumms.map(articleResult => {
                             return articleResult.results.map((articleSumm, index) => {
+                                if (articleSumm.is_premium && !showPremium) {
+                                    return null
+                                }
                                 return (
                                     <Card
                                         key={index}
@@ -181,7 +194,17 @@ export const SearchResults: FC = () => {
                                         <CardHeader>
                                             <Link href={articleSumm.url} isExternal={true}>
                                                 <HStack spacing='0.5rem'>
-                                                    <Heading as='h1'>{articleSumm.title}</Heading>
+                                                    <Heading
+                                                        as='h1'
+                                                        fontSize={{
+                                                            base: '1.5rem',
+                                                            sm: '1.5rem',
+                                                            md: '1.5rem',
+                                                            lg: '1.75rem',
+                                                        }}
+                                                    >
+                                                        {articleSumm.title}
+                                                    </Heading>
                                                     <ExternalLinkIcon />
                                                 </HStack>
                                             </Link>
@@ -190,8 +213,8 @@ export const SearchResults: FC = () => {
                                             <Text
                                                 fontSize={{
                                                     sm: '1.25rem',
-                                                    md: '1.5rem',
-                                                    lg: '1.55rem',
+                                                    md: '1.25rem',
+                                                    lg: '1.25rem',
                                                 }}
                                             >
                                                 {articleSumm.excerpt}
@@ -243,7 +266,9 @@ export const SearchResults: FC = () => {
                                                 border={colorMode === 'light' ? '1px' : 'hidden'}
                                                 borderColor='gray.300'
                                             >
-                                                {existsArtSumm(articleSumm) ? (
+                                                {articleSumm.is_premium ? (
+                                                    <NotAllowedIcon />
+                                                ) : existsArtSumm(articleSumm) ? (
                                                     <CloseIcon />
                                                 ) : (
                                                     <AddIcon />

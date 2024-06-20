@@ -22,12 +22,15 @@
     "no-article-selected-yet": "No se ha seleccionado ningún artículo...",
     "switch-articles": "Intercambiar artículos",
     "clear-all": "Borrar todo",
-    "is-premium-info": "Este artículo no puede ser seleccionado porque es premium",
+    "is-premium-info": "Este artículo es premium, no puede ser seleccionado",
     "get-article-error": "Algo ha ido mal con este artículo",
     "remove-this-article": "Borrar artículo",
     "calculate-similarity": "Calcular similitud",
     "select-articles-to-compare-tooltip": "Selecciona dos artículos para calcular su similitud",
     "similarity": "Similitud",
     "not-enough-articles": "No hay suficientes artículos seleccionados",
-    "comparison-error": "Ha ocurrido un error al comparar. Inténtalo de nuevo más tarde"
+    "comparison-error": "Ha ocurrido un error al comparar. Inténtelo de nuevo más tarde",
+    "detail-view": "Vista detallada",
+    "comparison-view": "Vista de comparación",
+    "show-premium": "¿Mostrar artículos premium?"
 }

@@ -1,4 +1,4 @@
-import { Grid, GridItem } from '@chakra-ui/react'
+import { Grid, GridItem, Spacer } from '@chakra-ui/react'
 import type { FC } from 'react'
 import { Outlet } from 'react-router-dom'
 import { NavBar, Footer } from '../components'
@@ -10,7 +10,7 @@ import { NavBar, Footer } from '../components'
 export const Root: FC = () => {
     return (
         <>
-            <Grid templateRows='0.1% 90.9% 9%' height='100vh' alignItems='center'>
+            <Grid templateRows='8vh 25vh 30vh 25vh 8vh'>
                 {/* NavBar */}
                 <GridItem>
                     <NavBar
@@ -20,9 +20,17 @@ export const Root: FC = () => {
                     />
                 </GridItem>
 
+                <GridItem>
+                    <Spacer />
+                </GridItem>
+
                 {/* Main Content */}
                 <GridItem>
                     <Outlet />
+                </GridItem>
+
+                <GridItem>
+                    <Spacer />
                 </GridItem>
 
                 {/* Footer */}
